@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(rm -rf /home/worxbend/Workspace/pixijs-payground/public/assets/main/sounds /home/worxbend/Workspace/pixijs-payground/public/assets/preload '/home/worxbend/Workspace/pixijs-payground/raw-assets/main{m}/sounds' '/home/worxbend/Workspace/pixijs-payground/raw-assets/main{m}/ui{tps}' '/home/worxbend/Workspace/pixijs-payground/raw-assets/preload{m}')",
+      "Bash(rm -f /home/worxbend/Workspace/pixijs-payground/public/assets/main/logo-white.svg /home/worxbend/Workspace/pixijs-payground/public/assets/main/ui@0.5x.png /home/worxbend/Workspace/pixijs-payground/public/assets/main/ui@0.5x.png.json /home/worxbend/Workspace/pixijs-payground/public/assets/main/ui@0.5x.webp /home/worxbend/Workspace/pixijs-payground/public/assets/main/ui@0.5x.webp.json /home/worxbend/Workspace/pixijs-payground/public/assets/main/ui.png /home/worxbend/Workspace/pixijs-payground/public/assets/main/ui.png.json /home/worxbend/Workspace/pixijs-payground/public/assets/main/ui.webp /home/worxbend/Workspace/pixijs-payground/public/assets/main/ui.webp.json '/home/worxbend/Workspace/pixijs-payground/raw-assets/main{m}/logo-white.svg')",
+      "Bash(npx prettier *)"
+    ]
+  }
+}
