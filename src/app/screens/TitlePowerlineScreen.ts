@@ -4,7 +4,7 @@ import { Container, Graphics, Rectangle, Sprite, Text, TextStyle, Texture } from
 // ── Palette ──────────────────────────────────────────────────────────────────
 const TICKER_BG    = 0x00cc44;  // green band
 const TICKER_TEXT  = 0x000000;  // black text
-const TOXIC_VIOLET = 0xbf00ff;  // top & bottom border
+const TOXIC_VIOLET = 0x181825; // top & bottom border
 
 // ── Dimensions ───────────────────────────────────────────────────────────────
 const BORDER_H  = 6;

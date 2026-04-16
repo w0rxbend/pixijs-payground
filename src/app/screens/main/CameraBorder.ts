@@ -333,7 +333,7 @@ const GRAFFITI_DEFS: Array<{
   rot: number;
 }> = [
   {
-    label: "fuck",
+    label: "rust",
     size: 26,
     color: RAZER_GREEN,
     angle: 0.3,
@@ -341,7 +341,7 @@ const GRAFFITI_DEFS: Array<{
     rot: -0.15,
   },
   {
-    label: "death",
+    label: "CODE",
     size: 20,
     color: TOXIC_VIOLET,
     angle: 3.5,
@@ -365,7 +365,7 @@ const GRAFFITI_DEFS: Array<{
     rot: 0.05,
   },
   {
-    label: "XXX",
+    label: "hardcore",
     size: 30,
     color: TOXIC_LIME,
     angle: 2.5,
@@ -381,7 +381,7 @@ const GRAFFITI_DEFS: Array<{
     rot: -0.1,
   },
   {
-    label: "+",
+    label: "craft",
     size: 24,
     color: LOL_BLUE,
     angle: 5.2,
@@ -389,7 +389,7 @@ const GRAFFITI_DEFS: Array<{
     rot: 0.18,
   },
   {
-    label: "×",
+    label: "grind",
     size: 18,
     color: TOXIC_VIOLET,
     angle: 0.9,
