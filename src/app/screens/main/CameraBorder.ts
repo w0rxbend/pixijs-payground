@@ -165,14 +165,29 @@ interface LightningBolt {
 }
 
 interface OrbitDot {
-  angle: number;       // current angular position (radians)
-  speed: number;       // radians per second, signed (CW or CCW)
+  angle: number; // current angular position (radians)
+  speed: number; // radians per second, signed (CW or CCW)
   radiusOffset: number; // pixels offset from baseRadius
-  size: number;        // dot radius in px
+  size: number; // dot radius in px
   color: CattColor;
-  alphaPhase: number;  // phase for alpha pulse
-  alphaSpeed: number;  // Hz of alpha pulse
-  glowAlpha: number;   // soft halo alpha multiplier (0..1)
+  alphaPhase: number; // phase for alpha pulse
+  alphaSpeed: number; // Hz of alpha pulse
+  glowAlpha: number; // soft halo alpha multiplier (0..1)
+}
+
+interface FluidStain {
+  angle: number; // current angular position (radians)
+  speed: number; // radians per second for orbit
+  radiusOffset: number; // pixels offset from baseRadius
+  rotation: number; // current rotation angle for stain shape
+  rotSpeed: number; // rotation speed (rad/s)
+  size: number; // blob radius in px
+  color: CattColor;
+  alpha: number; // current alpha
+  baseAlpha: number; // base alpha before pulse
+  floatAmplitude: number; // drift in/out from radius
+  floatSpeed: number; // drift oscillation speed
+  floatPhase: number; // phase offset for drift
 }
 
 interface GlitchBand {
@@ -507,6 +522,7 @@ export class CameraBorder extends Container {
   private readonly glitchGfx: Graphics; // pixel-glitch chromatic split — above waves
   private readonly splatCont: Container; // orbiting graffiti splat sprites
   private readonly orbitDotGfx: Graphics; // catppuccin dots orbiting the ring
+  private readonly stainGfx: Graphics; // catppuccin fluid stains orbiting the ring
 
   // ── Logo ───────────────────────────────────────────────────────────────────
   private logoSprite: Sprite | null = null;
@@ -531,6 +547,7 @@ export class CameraBorder extends Container {
   private sparks: Spark[] = [];
   private lightningBolts: LightningBolt[] = [];
   private readonly orbitDots: OrbitDot[] = [];
+  private readonly fluidStains: FluidStain[] = [];
 
   private time = 0;
   private glitchActive = false;
@@ -578,6 +595,7 @@ export class CameraBorder extends Container {
     this.effectGfx = new Graphics();
     this.particleGfx = new Graphics();
     this.orbitDotGfx = new Graphics();
+    this.stainGfx = new Graphics();
     this.splatCont = new Container();
 
     this.graffCont.addChild(this.graffGfx);
@@ -590,7 +608,8 @@ export class CameraBorder extends Container {
     this.addChild(this.surfaceGfx);
     this.addChild(this.effectGfx);
     this.addChild(this.particleGfx);
-    this.addChild(this.orbitDotGfx); // catppuccin dots — above particles
+    this.addChild(this.stainGfx); // fluid stains — above particles, below orbit dots
+    this.addChild(this.orbitDotGfx); // catppuccin dots — above stains
     // splatCont and logo layers are added on attach* calls (topmost)
 
     // Per-ring independent drift — random starting phases so no two rings are in sync
@@ -600,6 +619,7 @@ export class CameraBorder extends Container {
     this.drawBaseRing();
     this.initParticles();
     this.initOrbitDots();
+    this.initFluidStains();
     this.initSurfaceLines();
     this.initGraffitiTags();
   }
@@ -888,7 +908,8 @@ export class CameraBorder extends Container {
       const dir = i % 3 === 0 ? -1 : 1;
       // Speed band: slow pack (0.3–0.6 rad/s) and fast outliers (0.9–1.6 rad/s)
       const fast = i % 7 === 0;
-      const speed = dir * (fast ? 0.9 + Math.random() * 0.7 : 0.25 + Math.random() * 0.35);
+      const speed =
+        dir * (fast ? 0.9 + Math.random() * 0.7 : 0.25 + Math.random() * 0.35);
       // Hug the ring: small random offset so they spread slightly around the border
       const radiusOffset = (Math.random() - 0.5) * 18;
       // Size variety: most are small dots, a few are medium beacons
@@ -904,6 +925,38 @@ export class CameraBorder extends Container {
         alphaPhase: Math.random() * Math.PI * 2,
         alphaSpeed: 0.4 + Math.random() * 1.2,
         glowAlpha: beacon ? 0.22 : 0.1,
+      });
+    }
+  }
+
+  private initFluidStains(): void {
+    // 12 fluid stains spread around the ring — Catppuccin palette only
+    // They slowly orbit with gentle rotation and floating motion
+    const count = 12;
+    for (let i = 0; i < count; i++) {
+      const startAngle =
+        (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+      // Slower, smoother orbit speeds than dots
+      const dir = i % 2 === 0 ? -1 : 1;
+      const speed = dir * (0.12 + Math.random() * 0.24);
+      // Stains hover around the ring edge
+      const radiusOffset = (Math.random() - 0.5) * 28;
+      // Larger sizes for better visibility
+      const size = 18 + Math.random() * 24;
+
+      this.fluidStains.push({
+        angle: startAngle,
+        speed,
+        radiusOffset,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.8, // rotation speed rad/s
+        size,
+        color: randomCatt(),
+        alpha: 0.6 + Math.random() * 0.3,
+        baseAlpha: 0.6 + Math.random() * 0.3,
+        floatAmplitude: 8 + Math.random() * 12,
+        floatSpeed: 0.3 + Math.random() * 0.5,
+        floatPhase: Math.random() * Math.PI * 2,
       });
     }
   }
@@ -1049,6 +1102,12 @@ export class CameraBorder extends Container {
     // Particles
     for (const p of this.particles) {
       p.angle += p.orbitSpeed;
+    }
+
+    // Fluid stains
+    for (const stain of this.fluidStains) {
+      stain.angle += stain.speed * dt;
+      stain.rotation += stain.rotSpeed * dt;
     }
 
     this.drawFrame(dt);
@@ -1313,6 +1372,9 @@ export class CameraBorder extends Container {
 
     // ── Catppuccin orbit dots ─────────────────────────────────────────────────
     this.drawOrbitDots(dt, breathe);
+
+    // ── Fluid stains ──────────────────────────────────────────────────────────
+    this.drawFluidStains(breathe);
 
     // ── Logo badge ────────────────────────────────────────────────────────────
     if (this.logoSprite && this.logoGfx) this.animateLogo();
@@ -1743,7 +1805,10 @@ export class CameraBorder extends Container {
       // Alpha pulses gently; beat gives a short brightness kick
       const baseAlpha =
         0.55 + 0.45 * Math.sin(this.time * dot.alphaSpeed + dot.alphaPhase);
-      const kickAlpha = Math.min(1.0, baseAlpha + (this.beatAmplitude - 1.0) * 0.35);
+      const kickAlpha = Math.min(
+        1.0,
+        baseAlpha + (this.beatAmplitude - 1.0) * 0.35,
+      );
       const size = dot.size * (1 + (this.beatAmplitude - 1) * 0.25);
 
       // Soft glow halo
@@ -1760,6 +1825,78 @@ export class CameraBorder extends Container {
       this.orbitDotGfx
         .circle(x, y, size)
         .fill({ color: dot.color, alpha: kickAlpha });
+    }
+  }
+
+  // ── Fluid stains ──────────────────────────────────────────────────────────
+
+  private drawFluidStains(breathe: number): void {
+    this.stainGfx.clear();
+
+    for (const stain of this.fluidStains) {
+      // Floating motion — drift in/out from radius
+      const float =
+        Math.sin(this.time * stain.floatSpeed + stain.floatPhase) *
+        stain.floatAmplitude;
+      const r = (this.baseRadius + stain.radiusOffset + float) * breathe;
+      const cx = Math.cos(stain.angle) * r;
+      const cy = Math.sin(stain.angle) * r;
+
+      // Gentle alpha pulse
+      const alphaPulse =
+        0.45 + 0.45 * Math.sin(this.time * 0.6 + stain.floatPhase);
+      const alpha = Math.max(0.05, stain.baseAlpha * alphaPulse);
+
+      // Organic perimeter via radial sampling (smoothed polygon)
+      const segs = 28;
+      const pts: number[] = [];
+      const baseR = stain.size;
+      for (let i = 0; i < segs; i++) {
+        const theta = (i / segs) * Math.PI * 2;
+        // time-varying wobble for fluid motion
+        const wobble1 =
+          Math.sin(theta * 2 + this.time * 0.9 + stain.floatPhase) *
+          (baseR * 0.18);
+        const wobble2 =
+          Math.cos(theta * 3 - this.time * 0.7 + stain.rotation) *
+          (baseR * 0.12);
+        const squash = 1 + 0.08 * Math.sin(theta * 4 + this.time * 0.6);
+        const rad =
+          baseR * (0.72 + 0.32 * Math.sin(theta * 1.7 + stain.rotation)) +
+          wobble1 +
+          wobble2;
+        const px = cx + Math.cos(theta + stain.rotation) * rad * squash;
+        const py =
+          cy +
+          Math.sin(theta + stain.rotation) *
+            rad *
+            (squash * (0.9 + 0.1 * Math.cos(theta + this.time * 0.4)));
+        pts.push(px, py);
+      }
+
+      // Fill the main blob
+      this.stainGfx.beginFill(stain.color, alpha * 0.95);
+      this.stainGfx.drawPolygon(pts);
+      this.stainGfx.endFill();
+
+      // Subtle outer glow
+      this.stainGfx.beginFill(stain.color, alpha * 0.12);
+      this.stainGfx.drawCircle(cx, cy, baseR * 1.6);
+      this.stainGfx.endFill();
+
+      // Bright specular highlight
+      const hx = cx + Math.cos(stain.rotation * 0.9) * baseR * 0.35;
+      const hy = cy + Math.sin(stain.rotation * 1.1) * baseR * 0.35;
+      this.stainGfx.beginFill(0xffffff, Math.min(0.22, alpha * 0.28));
+      this.stainGfx.drawCircle(hx, hy, baseR * 0.18);
+      this.stainGfx.endFill();
+
+      // Small trailing smear oriented along rotation
+      const sx = cx - Math.cos(stain.angle) * baseR * 0.6;
+      const sy = cy - Math.sin(stain.angle) * baseR * 0.6;
+      this.stainGfx.beginFill(stain.color, alpha * 0.14);
+      this.stainGfx.drawEllipse(sx, sy, baseR * 0.6, baseR * 0.22);
+      this.stainGfx.endFill();
     }
   }
 
