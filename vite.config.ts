@@ -27,6 +27,7 @@ export default defineConfig({
         matrixDots: resolve(__dirname, "matrix-dots.html"),
         waveCam: resolve(__dirname, "wavecam.html"),
         trapCam: resolve(__dirname, "trapcam.html"),
+        generative: resolve(__dirname, "generative.html"),
       },
     },
   },
