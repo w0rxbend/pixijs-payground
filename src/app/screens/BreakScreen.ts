@@ -23,9 +23,8 @@ const SYMS = [
   '\uF001', '\uF236', '\uF017',
 ] as const;
 
-// ── Text phrases — randomly assigned to floating labels ───────────────────────
+// ── Text phrases ───────────────────────────────────────────────────────────────
 const PHRASES = [
-  // status
   "BRB",
   "AFK",
   "BE RIGHT BACK",
@@ -34,7 +33,6 @@ const PHRASES = [
   "PLEASE WAIT",
   "STAND BY",
   "ONE MOMENT",
-  // activities
   "TOUCHING GRASS",
   "COFFEE BREAK",
   "SNACK RUN",
@@ -45,7 +43,6 @@ const PHRASES = [
   "PETTING THE CAT",
   "TAKING A WALK",
   "SKILL ISSUE: IRL",
-  // developer humour
   "DEBUGGING LIFE",
   "GIT COMMIT --SELF",
   "COFFEE.EXE RUNNING",
@@ -62,7 +59,6 @@ const PHRASES = [
   "git stash && go eat",
   "yarn add caffeine",
   "npm install sleep",
-  // misc
   "GRASS NOT FOUND",
   "UNLOCKING OUTSIDE",
   "FRESH AIR SPEEDRUN",
@@ -71,52 +67,31 @@ const PHRASES = [
   "ACHIEVEMENT: MOVED",
 ] as const;
 
-// ── Background line definition ────────────────────────────────────────────────
+// ── Font pool ─────────────────────────────────────────────────────────────────
+const FONTS = [
+  { family: "'Rock Salt', cursive",   size: 72,  strokeMult: 0.14, weight: "normal" },
+  { family: "'Bangers', cursive",     size: 110, strokeMult: 0.05, weight: "normal" },
+  { family: "'Silkscreen', monospace", size: 68, strokeMult: 0.10, weight: "normal" },
+  { family: "'Silkscreen', monospace", size: 52, strokeMult: 0.10, weight: "700" },
+] as const;
+
+// ── Interfaces ────────────────────────────────────────────────────────────────
+
 interface BgLine {
-  angle:  number;   // radians
-  offset: number;   // perpendicular shift from centre
-  drift:  number;   // slow drift speed (px/s along perpendicular)
-  color:  number;
-  alpha:  number;
-  width:  number;
+  angle: number;
+  offset: number;
+  drift: number;
+  color: number;
+  alpha: number;
+  width: number;
 }
 
-// ── Floating text label ───────────────────────────────────────────────────────
-interface FloatingText {
-  node:          Text;
-  baseX:         number;
-  baseY:         number;
-  // bounce — slow large oscillation
-  bounceAmpX:    number;
-  bounceAmpY:    number;
-  bounceFreqX:   number;
-  bounceFreqY:   number;
-  bouncePhaseX:  number;
-  bouncePhaseY:  number;
-  // vibration — fast tiny jitter
-  vibeAmp:       number;
-  vibeFreq:      number;
-  vibePhaseX:    number;
-  vibePhaseY:    number;
-  // alpha pulse
-  alphaBase:     number;
-  alphaAmp:      number;
-  alphaFreq:     number;
-  alphaPhase:    number;
-  // text cycling
-  changeTimer:   number;
-  changeInterval: number;
-  color:         number;
-}
-
-// ── Network dot ───────────────────────────────────────────────────────────────
 interface NetDot {
   x: number; y: number;
   vx: number; vy: number;
   size: number; color: number; alpha: number; phase: number;
 }
 
-// ── Particle ──────────────────────────────────────────────────────────────────
 interface Particle {
   x: number; y: number;
   vx: number; vy: number;
@@ -124,25 +99,33 @@ interface Particle {
   twinklePhase: number; twinkleSpeed: number;
 }
 
-// ── Floating symbol ───────────────────────────────────────────────────────────
 interface FloatingSymbol {
-  node:        Text;
-  angle:       number; orbitSpeed: number; orbitR: number;
-  driftX:      number; driftY: number;
+  node: Text;
+  angle: number; orbitSpeed: number; orbitR: number;
+  driftX: number; driftY: number;
   driftSpeedX: number; driftSpeedY: number;
-  alphaBase:   number; alphaAmp: number; alphaSpeed: number; alphaPhase: number;
-  scaleBase:   number; scaleAmp: number; scaleSpeed: number; scalePhase: number;
-  spinSpeed:   number;
+  alphaBase: number; alphaAmp: number; alphaSpeed: number; alphaPhase: number;
+  scaleBase: number; scaleAmp: number; scaleSpeed: number; scalePhase: number;
+  spinSpeed: number;
   wx: number; wy: number; color: number;
 }
 
+interface CenterTextSlot {
+  node: Text;
+  alpha: number;
+}
+
+type CenterTextState = "show" | "fade_out" | "fade_in";
+
 // ── Constants ─────────────────────────────────────────────────────────────────
-const NET_DOT_COUNT  = 55;
-const NET_MAX_DIST   = 200;
-const PARTICLE_COUNT = 180;
-const SYM_COUNT      = 48;
-const TEXT_COUNT     = 10;  // floating text labels
-const BG_LINE_COUNT  = 18;  // diagonal background lines
+const NET_DOT_COUNT    = 55;
+const NET_MAX_DIST     = 200;
+const PARTICLE_COUNT   = 180;
+const SYM_COUNT        = 48;
+const BG_LINE_COUNT    = 18;
+const FADE_DURATION    = 0.7;
+const SHOW_DURATION_MIN = 3.5;
+const SHOW_DURATION_MAX = 6.5;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -165,38 +148,38 @@ function randomPhrase(): string {
   return PHRASES[Math.floor(Math.random() * PHRASES.length)];
 }
 
-// ── Predefined scatter positions (normalised, applied after resize) ────────────
-// Spread across the screen avoiding dead-centre cluster
-const BASE_POSITIONS: [number, number][] = [
-  [-0.72, -0.60],
-  [ 0.10, -0.68],
-  [ 0.68, -0.48],
-  [-0.82,  0.05],
-  [ 0.78,  0.10],
-  [-0.55,  0.55],
-  [ 0.45,  0.58],
-  [-0.20, -0.30],
-  [ 0.60,  0.30],
-  [-0.35,  0.72],
-];
+function randomShowDuration(): number {
+  return SHOW_DURATION_MIN + Math.random() * (SHOW_DURATION_MAX - SHOW_DURATION_MIN);
+}
+
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
 
 export class BreakScreen extends Container {
   public static assetBundles = ["main"];
 
   // ── Layers ─────────────────────────────────────────────────────────────────
-  private readonly bgGfx       = new Graphics(); // radial haze
-  private readonly bgLinesGfx  = new Graphics(); // diagonal accent lines
-  private readonly netGfx      = new Graphics(); // network dots
-  private readonly particleGfx = new Graphics(); // particles
-  private readonly connGfx     = new Graphics(); // symbol connections
-  private readonly symbolCont  = new Container();
-  private readonly textCont    = new Container(); // floating text labels
+  private readonly bgGfx           = new Graphics();
+  private readonly bgLinesGfx      = new Graphics();
+  private readonly netGfx          = new Graphics();
+  private readonly particleGfx     = new Graphics();
+  private readonly connGfx         = new Graphics();
+  private readonly symbolCont      = new Container();
+  private readonly centerTextCont  = new Container();
 
-  private readonly bgLines:   BgLine[]        = [];
-  private readonly netDots:   NetDot[]         = [];
-  private readonly particles: Particle[]       = [];
-  private readonly symbols:   FloatingSymbol[] = [];
-  private readonly texts:     FloatingText[]   = [];
+  private readonly bgLines:   BgLine[]         = [];
+  private readonly netDots:   NetDot[]          = [];
+  private readonly particles: Particle[]        = [];
+  private readonly symbols:   FloatingSymbol[]  = [];
+
+  // ── Center text state ──────────────────────────────────────────────────────
+  private readonly slot: CenterTextSlot[] = [];
+  private activeSlot    = 0;
+  private centerState: CenterTextState = "show";
+  private centerTimer   = 0;
+  private showDuration  = SHOW_DURATION_MIN;
+  private fadeTimer     = 0;
 
   private time = 0;
   private w    = 0;
@@ -210,7 +193,7 @@ export class BreakScreen extends Container {
     this.addChild(this.particleGfx);
     this.addChild(this.connGfx);
     this.addChild(this.symbolCont);
-    this.addChild(this.textCont);
+    this.addChild(this.centerTextCont);
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -220,7 +203,7 @@ export class BreakScreen extends Container {
     this.spawnSymbols();
     this.spawnNetDots();
     this.spawnParticles();
-    this.spawnTexts();
+    this.spawnCenterText();
   }
 
   public update(ticker: Ticker): void {
@@ -235,7 +218,7 @@ export class BreakScreen extends Container {
     this.drawParticles(dt);
     this.updateSymbols(dt, breathe);
     this.drawSymbolConnections();
-    this.updateTexts(dt);
+    this.updateCenterText(dt);
   }
 
   public resize(width: number, height: number): void {
@@ -243,21 +226,13 @@ export class BreakScreen extends Container {
     this.h = height;
     this.x = width  * 0.5;
     this.y = height * 0.5;
-    // Reposition text base positions when screen size changes
-    for (let i = 0; i < this.texts.length; i++) {
-      const [nx, ny] = BASE_POSITIONS[i % BASE_POSITIONS.length];
-      this.texts[i].baseX = nx * width  * 0.48;
-      this.texts[i].baseY = ny * height * 0.48;
-    }
   }
 
   // ── Background radial haze ────────────────────────────────────────────────
 
   private drawBackground(breathe: number): void {
     this.bgGfx.clear();
-    const hw = this.w * 0.5;
-    const hh = this.h * 0.5;
-    const r  = Math.max(hw, hh);
+    const r = Math.max(this.w, this.h) * 0.5;
 
     this.bgGfx.circle(0, 0, r * 2.0 * breathe).fill({ color: CATT_TEAL,   alpha: 0.018 });
     this.bgGfx.circle(0, 0, r * 1.4 * breathe).fill({ color: TOXIC_GREEN, alpha: 0.028 });
@@ -271,11 +246,11 @@ export class BreakScreen extends Container {
   private spawnBgLines(): void {
     for (let i = 0; i < BG_LINE_COUNT; i++) {
       this.bgLines.push({
-        angle:  (Math.random() * Math.PI),               // 0–180°
-        offset: (Math.random() - 0.5) * 1200,            // spread across screen
-        drift:  (Math.random() - 0.5) * 18,              // slow perpendicular drift
+        angle:  Math.random() * Math.PI,
+        offset: (Math.random() - 0.5) * 1200,
+        drift:  (Math.random() - 0.5) * 18,
         color:  randomFrom(PALETTE),
-        alpha:  0.04 + Math.random() * 0.10,
+        alpha:  0.04 + Math.random() * 0.1,
         width:  0.5  + Math.random() * 2.0,
       });
     }
@@ -288,128 +263,115 @@ export class BreakScreen extends Container {
     const diag = Math.sqrt(this.w * this.w + this.h * this.h) * 0.5 + 40;
 
     for (const l of this.bgLines) {
-      // Drift offset slowly
       l.offset += l.drift * dt;
-      // Wrap offset
       if (Math.abs(l.offset) > diag * 1.2) l.drift *= -1;
 
-      // Perpendicular direction (normal to the line)
       const nx = -Math.sin(l.angle);
       const ny =  Math.cos(l.angle);
-      // Centre of the line (shifted perpendicularly by offset)
       const cx = nx * l.offset;
       const cy = ny * l.offset;
-      // Line direction
       const dx = Math.cos(l.angle);
       const dy = Math.sin(l.angle);
 
       const x1 = cx - dx * diag, y1 = cy - dy * diag;
       const x2 = cx + dx * diag, y2 = cy + dy * diag;
 
-      // Glow pass
       this.bgLinesGfx.moveTo(x1, y1).lineTo(x2, y2)
         .stroke({ color: l.color, alpha: l.alpha * 0.35, width: l.width * 6, cap: "butt" });
-      // Core
       this.bgLinesGfx.moveTo(x1, y1).lineTo(x2, y2)
         .stroke({ color: l.color, alpha: l.alpha,        width: l.width,     cap: "butt" });
     }
   }
 
-  // ── Floating text labels ──────────────────────────────────────────────────
+  // ── Centered text with fade transitions ───────────────────────────────────
 
-  private spawnTexts(): void {
-    const sizes = [52, 38, 64, 32, 48, 42, 56, 36, 44, 60];
-
-    for (let i = 0; i < TEXT_COUNT; i++) {
-      const color   = randomFrom(PALETTE);
-      const fontSize = sizes[i % sizes.length];
-      const phrase  = randomPhrase();
-
-      const node = new Text({
-        text: phrase,
-        style: new TextStyle({
-          fontFamily: "'Rock Salt', cursive",
-          fontSize,
-          fill:       color,
-          stroke:     { color: 0x000000, width: Math.max(4, fontSize * 0.14) },
-          align:      "center",
-          padding:    40,
-          dropShadow: { color, blur: 22, distance: 0, alpha: 0.80, angle: 0 },
-        }),
-      });
-      node.anchor.set(0.5);
-      this.textCont.addChild(node);
-
-      const [nx, ny] = BASE_POSITIONS[i % BASE_POSITIONS.length];
-
-      this.texts.push({
-        node,
-        baseX:         nx * (this.w > 0 ? this.w : 1920) * 0.48,
-        baseY:         ny * (this.h > 0 ? this.h : 1080) * 0.48,
-        bounceAmpX:    12 + Math.random() * 28,
-        bounceAmpY:    18 + Math.random() * 38,
-        bounceFreqX:   0.30 + Math.random() * 0.50,
-        bounceFreqY:   0.25 + Math.random() * 0.55,
-        bouncePhaseX:  Math.random() * Math.PI * 2,
-        bouncePhaseY:  Math.random() * Math.PI * 2,
-        vibeAmp:       1.2 + Math.random() * 2.0,
-        vibeFreq:      8  + Math.random() * 14,
-        vibePhaseX:    Math.random() * Math.PI * 2,
-        vibePhaseY:    Math.random() * Math.PI * 2,
-        alphaBase:     0.65 + Math.random() * 0.25,
-        alphaAmp:      0.20 + Math.random() * 0.25,
-        alphaFreq:     0.35 + Math.random() * 0.80,
-        alphaPhase:    Math.random() * Math.PI * 2,
-        changeTimer:   2.0  + Math.random() * 6.0,
-        changeInterval: 3.0 + Math.random() * 7.0,
-        color,
-      });
-    }
+  private makeTextNode(phrase: string, color: number, fontIdx: number): Text {
+    const f = FONTS[fontIdx % FONTS.length];
+    return new Text({
+      text: phrase,
+      style: new TextStyle({
+        fontFamily: f.family,
+        fontWeight: f.weight as import("pixi.js").TextStyleFontWeight,
+        fontSize:   f.size,
+        fill:       color,
+        stroke:     { color: 0x000000, width: Math.max(3, f.size * f.strokeMult) },
+        align:      "center",
+        padding:    48,
+        dropShadow: { color, blur: 28, distance: 0, alpha: 0.90, angle: 0 },
+      }),
+    });
   }
 
-  private updateTexts(dt: number): void {
-    const t = this.time;
-
-    for (const ft of this.texts) {
-      // ── Random phrase cycling ──────────────────────────────────────────────
-      ft.changeTimer -= dt;
-      if (ft.changeTimer <= 0) {
-        ft.changeTimer    = ft.changeInterval + Math.random() * 4.0;
-        ft.changeInterval = 3.0 + Math.random() * 7.0;
-        ft.node.text      = randomPhrase();
-        // Pick a new colour on change
-        ft.color = randomFrom(PALETTE);
-        (ft.node.style as TextStyle).fill       = ft.color;
-        (ft.node.style as TextStyle).dropShadow = {
-          color: ft.color, blur: 22, distance: 0, alpha: 0.80, angle: 0,
-        };
-      }
-
-      // ── Bounce (slow large wave) ───────────────────────────────────────────
-      ft.bouncePhaseX += ft.bounceFreqX * dt;
-      ft.bouncePhaseY += ft.bounceFreqY * dt;
-      const bx = Math.sin(ft.bouncePhaseX) * ft.bounceAmpX;
-      const by = Math.sin(ft.bouncePhaseY) * ft.bounceAmpY;
-
-      // ── Vibration (fast tiny jitter) ──────────────────────────────────────
-      ft.vibePhaseX += ft.vibeFreq * dt;
-      ft.vibePhaseY += ft.vibeFreq * dt * 1.31; // slightly offset
-      const vx = Math.sin(ft.vibePhaseX) * ft.vibeAmp;
-      const vy = Math.sin(ft.vibePhaseY) * ft.vibeAmp;
-
-      ft.node.x = ft.baseX + bx + vx;
-      ft.node.y = ft.baseY + by + vy;
-
-      // ── Alpha pulse ───────────────────────────────────────────────────────
-      ft.alphaPhase += ft.alphaFreq * dt;
-      ft.node.alpha  = Math.min(1, Math.max(0.1,
-        ft.alphaBase + ft.alphaAmp * Math.sin(ft.alphaPhase + t * 0.2),
-      ));
-
-      // ── Subtle scale pulse ────────────────────────────────────────────────
-      const scale = 1 + 0.04 * Math.sin(ft.bouncePhaseY * 1.3 + 0.5);
-      ft.node.scale.set(scale);
+  private spawnCenterText(): void {
+    for (let i = 0; i < 2; i++) {
+      const node = this.makeTextNode(randomPhrase(), randomFrom(PALETTE), i);
+      node.anchor.set(0.5);
+      node.alpha = i === 0 ? 1 : 0;
+      this.centerTextCont.addChild(node);
+      this.slot.push({ node, alpha: node.alpha });
     }
+    this.showDuration = randomShowDuration();
+    this.centerState  = "show";
+    this.centerTimer  = 0;
+  }
+
+  private applyNewPhrase(slotIdx: number): void {
+    const s     = this.slot[slotIdx];
+    const node  = this.makeTextNode(
+      randomPhrase(),
+      randomFrom(PALETTE),
+      Math.floor(Math.random() * FONTS.length),
+    );
+    node.anchor.set(0.5);
+    node.alpha = 0;
+    s.node.destroy();
+    this.centerTextCont.addChild(node);
+    s.node  = node;
+    s.alpha = 0;
+  }
+
+  private updateCenterText(dt: number): void {
+    switch (this.centerState) {
+      case "show": {
+        this.centerTimer += dt;
+        if (this.centerTimer >= this.showDuration) {
+          this.centerState = "fade_out";
+          this.fadeTimer   = 0;
+        }
+        break;
+      }
+      case "fade_out": {
+        this.fadeTimer += dt;
+        const t = Math.min(1, this.fadeTimer / FADE_DURATION);
+        this.slot[this.activeSlot].alpha = 1 - easeInOutCubic(t);
+        this.slot[this.activeSlot].node.alpha = this.slot[this.activeSlot].alpha;
+        if (t >= 1) {
+          const next = 1 - this.activeSlot;
+          this.applyNewPhrase(next);
+          this.centerState = "fade_in";
+          this.fadeTimer   = 0;
+        }
+        break;
+      }
+      case "fade_in": {
+        this.fadeTimer += dt;
+        const t    = Math.min(1, this.fadeTimer / FADE_DURATION);
+        const next = 1 - this.activeSlot;
+        this.slot[next].alpha = easeInOutCubic(t);
+        this.slot[next].node.alpha = this.slot[next].alpha;
+        if (t >= 1) {
+          this.slot[this.activeSlot].node.alpha = 0;
+          this.activeSlot   = next;
+          this.centerState  = "show";
+          this.centerTimer  = 0;
+          this.showDuration = randomShowDuration();
+        }
+        break;
+      }
+    }
+
+    const active = this.slot[this.activeSlot];
+    active.node.scale.set(1 + 0.03 * Math.sin(this.time * 1.1));
   }
 
   // ── Network dots ──────────────────────────────────────────────────────────
@@ -540,11 +502,11 @@ export class BreakScreen extends Container {
         driftX:      0, driftY: 0,
         driftSpeedX: (Math.random() - 0.5) * 28,
         driftSpeedY: (Math.random() - 0.5) * 28,
-        alphaBase:   0.30 + Math.random() * 0.45,
+        alphaBase:   0.3  + Math.random() * 0.45,
         alphaAmp:    0.15 + Math.random() * 0.25,
         alphaSpeed:  0.4  + Math.random() * 1.2,
         alphaPhase:  Math.random() * Math.PI * 2,
-        scaleBase:   0.85 + Math.random() * 0.30,
+        scaleBase:   0.85 + Math.random() * 0.3,
         scaleAmp:    0.06 + Math.random() * 0.10,
         scaleSpeed:  0.6  + Math.random() * 1.8,
         scalePhase:  Math.random() * Math.PI * 2,

@@ -20,6 +20,7 @@ export default defineConfig({
         background: resolve(__dirname, "background.html"),
         placeholder1: resolve(__dirname, "placeholder-1.html"),
         musicBreak: resolve(__dirname, "music-break.html"),
+        break: resolve(__dirname, "break.html"),
         planet: resolve(__dirname, "planet.html"),
         aquarium: resolve(__dirname, "aquarium.html"),
         atom: resolve(__dirname, "atom.html"),

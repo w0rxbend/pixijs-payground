@@ -1,5 +1,5 @@
 import type { Ticker } from "pixi.js";
-import { Container, Graphics, Text, TextStyle } from "pixi.js";
+import { Container, Graphics, Sprite, Text, TextStyle, Texture } from "pixi.js";
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const TAPE_YELLOW = 0xf9e2af; // Catppuccin Mocha Yellow
@@ -63,7 +63,6 @@ const MAIN_PHRASES = [
   "NOTHING HAPPENED. GO WATCH ADS.",
 ] as const;
 
-const SEPARATORS = [" ★ ", " // ", " >> ", " :: ", " ## ", " ** ", " -- "] as const;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const NET_DOT_COUNT = 45;
@@ -81,28 +80,31 @@ const PULSE_DOT_COUNT = 22;
 const ORBIT_GROUP_COUNT = 6;
 // Local half-width of each tape (must reach screen edges from centre at any rotation)
 const TAPE_HW = 1400;
+const TAPE_FADE_DURATION = 0.5;
+const TAPE_SHOW_MIN = 4.0;
+const TAPE_SHOW_MAX = 8.5;
 
 // ── Interfaces ────────────────────────────────────────────────────────────────
 
 interface TapeObj {
-  container: Container;
-  labelA: Text;
-  labelB: Text;
-  labelWidth: number; // estimated px width of one label (2 chunk repeats)
-  scrollSpeed: number; // px/s in tape-local x, negative = leftward
-  baseCX: number;
-  baseCY: number;
-  baseAngle: number;
-  bounceAmp: number;
-  bounceFreq: number;
+  container:   Container;
+  contentCont: Container; // holds label + icons; faded as a unit
+  isMain:      boolean;
+  baseCX:      number;
+  baseCY:      number;
+  baseAngle:   number;
+  bounceAmp:   number;
+  bounceFreq:  number;
   bouncePhase: number;
-  wobbleAmp: number;
-  wobbleFreq: number;
+  wobbleAmp:   number;
+  wobbleFreq:  number;
   wobblePhase: number;
-  isMain: boolean;
-  // per-label fade state (0 = invisible, 1 = fully visible)
-  fadeA: number;
-  fadeB: number;
+  fontSize:    number;
+  hh:          number;
+  state:       "show" | "fade_out" | "fade_in";
+  fadeTimer:   number;
+  showTimer:   number;
+  showDuration: number;
 }
 
 interface NetDot {
@@ -284,6 +286,10 @@ interface YellowDot {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
 function randomFrom<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -363,7 +369,7 @@ function buildTapeGraphics(hh: number): Graphics {
 }
 
 export class ConfidentialScreen extends Container {
-  public static assetBundles: string[] = [];
+  public static assetBundles: string[] = ["main"];
 
   // ── Layers ─────────────────────────────────────────────────────────────────
   private readonly bgGfx = new Graphics();
@@ -644,98 +650,73 @@ export class ConfidentialScreen extends Container {
   }
 
   private buildTape(opts: {
-    cx: number;
-    cy: number;
-    angle: number;
-    height: number;
-    isMain: boolean;
-    bounceAmp: number;
-    bounceFreq: number;
-    wobbleAmp: number;
-    wobbleFreq: number;
+    cx: number; cy: number; angle: number; height: number; isMain: boolean;
+    bounceAmp: number; bounceFreq: number; wobbleAmp: number; wobbleFreq: number;
     scrollSpeed: number;
   }): void {
-    const {
-      cx,
-      cy,
-      angle,
-      height,
-      isMain,
-      bounceAmp,
-      bounceFreq,
-      wobbleAmp,
-      wobbleFreq,
-      scrollSpeed,
-    } = opts;
+    const { cx, cy, angle, height, isMain, bounceAmp, bounceFreq, wobbleAmp, wobbleFreq } = opts;
     const hh = height * 0.5;
 
     const container = new Container();
     container.x = cx;
     container.y = cy;
     container.rotation = angle;
-
-    const g = buildTapeGraphics(hh);
-    container.addChild(g);
+    container.addChild(buildTapeGraphics(hh));
 
     const fontSize = isMain ? 52 : Math.round(height * 0.4);
-    const phrase = randomFrom(MAIN_PHRASES);
-
-    // Silkscreen monospace: ~0.62em per char. Keep each label to 2 repeats to stay well under
-    // the 4096px WebGL texture limit — two labels side-by-side give seamless infinite scroll.
-    const charPx = fontSize * 0.62;
-
-    const txtFont = `'Silkscreen', monospace`;
-    const sep = randomFrom(SEPARATORS);
-    const chunkHtml = phrase + sep;
-
-    // Estimate chunk width: phrase chars + separator chars
-    const chunkCharEstimate = phrase.length + sep.length;
-    const labelWidth = chunkCharEstimate * charPx * 2;
-
-    const makeLabel = (): Text => {
-      const t = new Text({
-        text: chunkHtml.repeat(2),
-        style: new TextStyle({
-          fontFamily: txtFont,
-          fontSize,
-          fill: TAPE_BLACK,
-          align: "left",
-          padding: 12,
-          letterSpacing: isMain ? 3 : 2,
-        }),
-      });
-      t.anchor.set(0, 0.5);
-      return t;
-    };
-
-    const labelA = makeLabel();
-    const labelB = makeLabel();
-    labelA.x = -TAPE_HW;
-    labelB.x = -TAPE_HW + labelWidth;
-    container.addChild(labelA);
-    container.addChild(labelB);
+    const contentCont = new Container();
+    container.addChild(contentCont);
+    this.buildTapeContent(contentCont, fontSize, hh, isMain);
 
     this.tapeCont.addChild(container);
-
     this.tapes.push({
-      container,
-      labelA,
-      labelB,
-      labelWidth,
-      scrollSpeed,
-      baseCX: cx,
-      baseCY: cy,
-      baseAngle: angle,
-      bounceAmp,
-      bounceFreq,
-      bouncePhase: Math.random() * Math.PI * 2,
-      wobbleAmp,
-      wobbleFreq,
-      wobblePhase: Math.random() * Math.PI * 2,
-      isMain,
-      fadeA: 1,
-      fadeB: 1,
+      container, contentCont, isMain,
+      baseCX: cx, baseCY: cy, baseAngle: angle,
+      bounceAmp, bounceFreq, bouncePhase: Math.random() * Math.PI * 2,
+      wobbleAmp, wobbleFreq, wobblePhase: Math.random() * Math.PI * 2,
+      fontSize, hh,
+      state: "show",
+      fadeTimer: 0,
+      showTimer: Math.random() * TAPE_SHOW_MIN,
+      showDuration: TAPE_SHOW_MIN + Math.random() * (TAPE_SHOW_MAX - TAPE_SHOW_MIN),
     });
+  }
+
+  private buildTapeContent(contentCont: Container, fontSize: number, hh: number, isMain: boolean): void {
+    contentCont.removeChildren().forEach((c) => (c as Container).destroy({ children: true }));
+
+    const ICON_NAMES = ["1.png", "2.png", "3.png", "4.png", "5.png"] as const;
+    const iconSize   = Math.round(hh * 0.75);
+    const charPx     = fontSize * 0.62;
+    const phrase     = randomFrom(MAIN_PHRASES);
+    const halfW      = (phrase.length * charPx) * 0.5;
+
+    // Label — centred on the tape
+    const label = new Text({
+      text: phrase,
+      style: new TextStyle({
+        fontFamily: "'Silkscreen', monospace",
+        fontSize,
+        fill: TAPE_BLACK,
+        align: "center",
+        padding: 12,
+        letterSpacing: isMain ? 3 : 2,
+      }),
+    });
+    label.anchor.set(0.5);
+    contentCont.addChild(label);
+
+    // Left icon (before text) and right icon (after text)
+    for (const side of [-1, 1]) {
+      const tex  = Texture.from(randomFrom(ICON_NAMES));
+      const node = new Sprite(tex);
+      node.anchor.set(0.5);
+      node.width  = iconSize;
+      node.height = iconSize;
+      node.x = side * (halfW + iconSize * 4.0);
+      node.y = 0;
+      contentCont.addChild(node);
+    }
   }
 
   // ── Tape update ────────────────────────────────────────────────────────────
@@ -746,46 +727,45 @@ export class ConfidentialScreen extends Container {
       tape.wobblePhase += tape.wobbleFreq * dt;
 
       const offset = Math.sin(tape.bouncePhase) * tape.bounceAmp;
-      const perpX = -Math.sin(tape.baseAngle) * offset;
-      const perpY = Math.cos(tape.baseAngle) * offset;
+      tape.container.x = tape.baseCX - Math.sin(tape.baseAngle) * offset;
+      tape.container.y = tape.baseCY + Math.cos(tape.baseAngle) * offset;
+      tape.container.rotation = tape.baseAngle + Math.sin(tape.wobblePhase) * tape.wobbleAmp;
 
-      tape.container.x = tape.baseCX + perpX;
-      tape.container.y = tape.baseCY + perpY;
-      tape.container.rotation =
-        tape.baseAngle + Math.sin(tape.wobblePhase) * tape.wobbleAmp;
-
-      // Move both labels by the scroll speed
-      const dx = tape.scrollSpeed * dt;
-      tape.labelA.x += dx;
-      tape.labelB.x += dx;
-
-      // When a label scrolls fully off the left, jump it to the right of the other
-      if (tape.scrollSpeed < 0) {
-        if (tape.labelA.x + tape.labelWidth < -TAPE_HW)
-          tape.labelA.x = tape.labelB.x + tape.labelWidth;
-        if (tape.labelB.x + tape.labelWidth < -TAPE_HW)
-          tape.labelB.x = tape.labelA.x + tape.labelWidth;
-      } else {
-        // Scrolling right: jump label off the right back to the left of the other
-        if (tape.labelA.x > TAPE_HW)
-          tape.labelA.x = tape.labelB.x - tape.labelWidth;
-        if (tape.labelB.x > TAPE_HW)
-          tape.labelB.x = tape.labelA.x - tape.labelWidth;
+      // Fade cycle
+      switch (tape.state) {
+        case "show": {
+          tape.showTimer += dt;
+          if (tape.showTimer >= tape.showDuration) {
+            tape.state    = "fade_out";
+            tape.fadeTimer = 0;
+          }
+          break;
+        }
+        case "fade_out": {
+          tape.fadeTimer += dt;
+          const t = Math.min(1, tape.fadeTimer / TAPE_FADE_DURATION);
+          tape.contentCont.alpha = 1 - easeInOutCubic(t);
+          if (t >= 1) {
+            this.buildTapeContent(tape.contentCont, tape.fontSize, tape.hh, tape.isMain);
+            tape.contentCont.alpha = 0;
+            tape.state    = "fade_in";
+            tape.fadeTimer = 0;
+          }
+          break;
+        }
+        case "fade_in": {
+          tape.fadeTimer += dt;
+          const t = Math.min(1, tape.fadeTimer / TAPE_FADE_DURATION);
+          tape.contentCont.alpha = easeInOutCubic(t);
+          if (t >= 1) {
+            tape.contentCont.alpha = 1;
+            tape.state       = "show";
+            tape.showTimer   = 0;
+            tape.showDuration = TAPE_SHOW_MIN + Math.random() * (TAPE_SHOW_MAX - TAPE_SHOW_MIN);
+          }
+          break;
+        }
       }
-
-      // Fade each label in/out based on proximity to the tape edges
-      const FADE_ZONE = 320;
-      const edgeFade = (lx: number) => {
-        const cx = lx + tape.labelWidth * 0.5;
-        const dist = TAPE_HW - Math.abs(cx);
-        return Math.max(0, Math.min(1, dist / FADE_ZONE));
-      };
-      tape.fadeA += (edgeFade(tape.labelA.x) - tape.fadeA) * Math.min(1, dt * 8);
-      tape.fadeB += (edgeFade(tape.labelB.x) - tape.fadeB) * Math.min(1, dt * 8);
-
-      const breathe = tape.isMain ? 0.85 + 0.15 * Math.sin(this.time * 2.1) : 1;
-      tape.labelA.alpha = tape.fadeA * breathe;
-      tape.labelB.alpha = tape.fadeB * breathe;
     }
   }
 

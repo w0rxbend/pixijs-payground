@@ -9,6 +9,7 @@ setEngine(engine);
   await Promise.all([
     document.fonts.load("1em 'Silkscreen'"),
     document.fonts.load("1em 'Rock Salt'"),
+    document.fonts.load("1em 'Bangers'"),
     document.fonts.load("1em 'SymbolsNF'"),
   ]);
 

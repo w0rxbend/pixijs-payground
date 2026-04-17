@@ -24,6 +24,7 @@ const DARK    = 0x11111b;
 // ── Fish types ────────────────────────────────────────────────────────────────
 const enum FishType {
   SARDINE, TROPICAL, ANGEL, PUFFER, SHARK, MANTA, SUBMARINE, PIRANHA, HAMMERHEAD,
+  JELLYFISH, SEA_SNAKE, CROCODILE, SHRIMP,
 }
 
 interface FishColors {
@@ -72,9 +73,39 @@ const PIRANHA_PALETTES: FishColors[] = [
   { body: 0xa09868, accent: 0x685838, fin: 0x78885a, belly: 0xff5533, eye: DARK },
   { body: 0x708870, accent: 0x486048, fin: 0x587058, belly: 0xff2222, eye: DARK },
 ];
+const CRAB_PALETTES: FishColors[] = [
+  { body: 0xd44400, accent: 0xb03000, fin: 0xf07840, belly: 0xffd0a0, eye: DARK },
+  { body: 0x1e6888, accent: 0x104858, fin: 0x3090b0, belly: 0x90d0e0, eye: DARK },
+  { body: 0x7a5a30, accent: 0x5a3a18, fin: 0xa07848, belly: 0xe8c880, eye: DARK },
+  { body: 0x7030a0, accent: 0x501878, fin: 0x9050c0, belly: 0xd0a8e8, eye: DARK },
+  { body: 0x406030, accent: 0x284018, fin: 0x608040, belly: 0xb0d880, eye: DARK },
+];
 const HAMMERHEAD_PALETTES: FishColors[] = [
   { body: 0x546e7a, accent: 0x37474f, fin: 0x607d8b, belly: 0xe0e0e0, eye: DARK },
   { body: 0x78909c, accent: 0x546e7a, fin: 0x607d8b, belly: WHITE,    eye: DARK },
+];
+const JELLYFISH_PALETTES: FishColors[] = [
+  { body: 0x4ab8d8, accent: 0x2a98b8, fin: 0x7ad8f0, belly: 0xd0f0ff, eye: 0x1a7898 },
+  { body: 0xd080c8, accent: 0xb060a8, fin: 0xe8a8e0, belly: 0xffe0ff, eye: DARK    },
+  { body: 0xe0eef8, accent: 0xb8cce0, fin: 0xf0f8ff, belly: WHITE,    eye: 0x809098 },
+  { body: 0x80d0a0, accent: 0x50a878, fin: 0xb0e8c8, belly: 0xd8f8e8, eye: DARK    },
+];
+const SEA_SNAKE_PALETTES: FishColors[] = [
+  { body: 0x202020, accent: 0x141414, fin: 0x303030, belly: 0xd8c820, eye: 0x60c030, stripe: YELLOW },
+  { body: 0x1c3c14, accent: 0x102010, fin: 0x2a5420, belly: 0x70b050, eye: DARK,     stripe: DARK   },
+  { body: 0x1c2850, accent: 0x101830, fin: 0x2c4080, belly: 0x7090c8, eye: DARK,     stripe: DARK   },
+  { body: 0x503010, accent: 0x301808, fin: 0x704828, belly: 0xd09050, eye: DARK,     stripe: 0xc07030},
+];
+const CROCODILE_PALETTES: FishColors[] = [
+  { body: 0x2d5016, accent: 0x1e380e, fin: 0x3d6820, belly: 0x90a840, eye: 0xd4a017 },
+  { body: 0x4a5828, accent: 0x303818, fin: 0x5a6838, belly: 0x8a9050, eye: 0xc8a820 },
+  { body: 0x485850, accent: 0x303838, fin: 0x586870, belly: 0x788878, eye: 0xd0c010 },
+];
+const SHRIMP_PALETTES: FishColors[] = [
+  { body: 0xf8a0a0, accent: 0xd05050, fin: 0xf8c0c0, belly: WHITE,  eye: DARK },
+  { body: 0xf8a060, accent: 0xd07030, fin: 0xf8c880, belly: YELLOW, eye: DARK },
+  { body: 0xd0e8f0, accent: 0x88b0c8, fin: 0xe0f0f8, belly: WHITE,  eye: DARK },
+  { body: 0xe8c8a0, accent: 0xb89060, fin: 0xf0dcc0, belly: WHITE,  eye: DARK },
 ];
 
 // ── Plant types ───────────────────────────────────────────────────────────────
@@ -541,6 +572,246 @@ function drawHammerhead(g: Graphics, tp: number, c: FishColors): void {
   }
 }
 
+// ── JELLYFISH — pulsing bell with trailing oral arms and tentacles ─────────────
+function drawJellyfish(g: Graphics, tp: number, c: FishColors): void {
+  const pulse = 0.82 + 0.18 * Math.sin(tp * 2.2);
+
+  // Outer glow halo
+  g.ellipse(0, -8, 36 * pulse, 28).fill({ color: c.body, alpha: 0.12 });
+
+  // Bell
+  g.moveTo(-30 * pulse, 8)
+   .bezierCurveTo(-30 * pulse, -18, -16 * pulse, -32, 0, -34)
+   .bezierCurveTo(16 * pulse, -32, 30 * pulse, -18, 30 * pulse, 8)
+   .bezierCurveTo(20 * pulse, 18, 0, 22, -20 * pulse, 16)
+   .fill({ color: c.body, alpha: 0.62 });
+
+  // Inner dome highlight
+  g.moveTo(-16 * pulse, 4)
+   .bezierCurveTo(-16 * pulse, -14, -8 * pulse, -26, 0, -28)
+   .bezierCurveTo(8 * pulse, -26, 16 * pulse, -14, 16 * pulse, 4)
+   .fill({ color: c.belly, alpha: 0.22 });
+
+  // Radial rib lines on bell
+  for (let r = 0; r < 6; r++) {
+    const rx = (r / 5 - 0.5) * 52 * pulse;
+    const ry1 = -28 + Math.abs(r - 2.5) * 4;
+    g.moveTo(rx * 0.5, ry1).lineTo(rx * 0.85, 8).stroke({ color: c.accent, alpha: 0.20, width: 0.8 });
+  }
+
+  // Oral arms (thick, wavy, 4)
+  for (let i = 0; i < 4; i++) {
+    const ox = (i - 1.5) * 11 * pulse;
+    const sw1 = Math.sin(tp + i * 0.9) * 9;
+    const sw2 = Math.sin(tp * 0.75 + i * 1.3) * 13;
+    g.moveTo(ox, 16)
+     .bezierCurveTo(ox + sw1, 32, ox + sw2, 50, ox + sw1 * 0.6, 65)
+     .stroke({ color: c.fin, alpha: 0.52, width: 2.8, cap: "round" });
+  }
+
+  // Tentacles (thin, 8)
+  for (let i = 0; i < 8; i++) {
+    const tx = (i - 3.5) * 7.5 * pulse;
+    const sw = Math.sin(tp * 0.85 + i * 0.7) * 15;
+    g.moveTo(tx, 18)
+     .bezierCurveTo(tx + sw * 0.4, 40, tx + sw * 0.8, 60, tx + sw, 82)
+     .stroke({ color: c.accent, alpha: 0.30, width: 1, cap: "round" });
+  }
+
+  // Bioluminescent dots inside bell
+  for (let d = 0; d < 5; d++) {
+    const da = (d / 5) * Math.PI;
+    const dx = Math.cos(da) * 14 * pulse;
+    const dy = -18 + Math.sin(da) * 8;
+    const da2 = 0.4 + 0.6 * Math.sin(tp * 2 + d * 1.1);
+    g.circle(dx, dy, 1.8).fill({ color: c.eye, alpha: da2 * 0.70 });
+  }
+}
+
+// ── SEA SNAKE — long sinusoidal body with paddle tail and forked tongue ────────
+function drawSeaSnake(g: Graphics, tp: number, c: FishColors): void {
+  const SEGS = 12;
+  const SEG_LEN = 9;
+
+  const pts: Array<{ x: number; y: number }> = [];
+  for (let i = 0; i <= SEGS; i++) {
+    const sx = (SEGS / 2 - i) * SEG_LEN;
+    const sy = Math.sin(tp - i * 0.48) * (4 + i * 0.9);
+    pts.push({ x: sx, y: sy });
+  }
+
+  // Body segments, tail → head so head draws on top
+  for (let i = SEGS - 1; i >= 0; i--) {
+    const p0 = pts[i]; const p1 = pts[i + 1];
+    const taper = 1 - (i / SEGS) * 0.55;
+    const w = 9 * taper + 1.5;
+    g.moveTo(p0.x, p0.y).lineTo(p1.x, p1.y).stroke({ color: c.body, alpha: 0.95, width: w, cap: "round" });
+    if (i % 2 === 0 && c.stripe !== undefined) {
+      g.moveTo(p0.x, p0.y).lineTo(p1.x, p1.y).stroke({ color: c.stripe, alpha: 0.65, width: w * 0.52, cap: "round" });
+    }
+  }
+
+  // Paddle tail
+  const tp0 = pts[SEGS]; const tp1 = pts[SEGS - 1];
+  const ta = Math.atan2(tp0.y - tp1.y, tp0.x - tp1.x);
+  const tf = Math.sin(tp) * 3;
+  g.moveTo(tp0.x, tp0.y)
+   .lineTo(tp0.x + Math.cos(ta + 0.7) * 14, tp0.y + Math.sin(ta + 0.7) * 14 + tf)
+   .lineTo(tp0.x + Math.cos(ta) * 8,         tp0.y + Math.sin(ta) * 8)
+   .lineTo(tp0.x + Math.cos(ta - 0.7) * 14, tp0.y + Math.sin(ta - 0.7) * 14 - tf)
+   .fill({ color: c.fin, alpha: 0.82 });
+
+  // Head
+  const hp = pts[0];
+  g.ellipse(hp.x + 2, hp.y, 11, 8).fill({ color: c.body });
+  g.ellipse(hp.x,     hp.y - 2, 7, 4).fill({ color: c.accent, alpha: 0.38 });
+
+  // Eye
+  g.circle(hp.x + 7, hp.y - 2, 3.2).fill({ color: WHITE });
+  g.circle(hp.x + 7.5, hp.y - 2.5, 2).fill({ color: c.eye });
+  g.circle(hp.x + 7, hp.y - 3.2, 0.7).fill({ color: WHITE, alpha: 0.75 });
+
+  // Forked tongue (flick)
+  const flick = Math.max(0, Math.sin(tp * 1.8));
+  if (flick > 0.35) {
+    const tx = hp.x + 18;
+    g.moveTo(hp.x + 11, hp.y + 1).lineTo(tx, hp.y).stroke({ color: 0xff4444, alpha: 0.92, width: 1.3 });
+    g.moveTo(tx, hp.y).lineTo(tx + 5, hp.y - 3).stroke({ color: 0xff4444, alpha: 0.85, width: 1 });
+    g.moveTo(tx, hp.y).lineTo(tx + 5, hp.y + 3).stroke({ color: 0xff4444, alpha: 0.85, width: 1 });
+  }
+}
+
+// ── CROCODILE — armored flat body, wide snout, vertical slit pupils ────────────
+function drawCrocodile(g: Graphics, tp: number, c: FishColors): void {
+  const ts = Math.sin(tp);
+  const tw = ts * 8;
+
+  // Tail (swings)
+  g.moveTo(-38, -6)
+   .bezierCurveTo(-52, tw * 0.3 - 4, -68, tw * 0.65 - 1, -76, tw - 2)
+   .bezierCurveTo(-76, tw + 3, -68, tw * 0.65 + 4, -52, tw * 0.3 + 6)
+   .bezierCurveTo(-42, 7, -38, 6, -38, -6).fill({ color: c.body });
+
+  // Body
+  g.moveTo(44, -5)
+   .bezierCurveTo(22, -13, -8, -15, -38, -10)
+   .bezierCurveTo(-44, -8, -44, 0, -38, 8)
+   .bezierCurveTo(-8, 14, 22, 12, 40, 7)
+   .bezierCurveTo(46, 5, 46, -1, 44, -5).fill({ color: c.body });
+
+  // Belly
+  g.moveTo(36, -1).bezierCurveTo(18, 8, -8, 11, -30, 7)
+   .bezierCurveTo(-28, 12, 10, 15, 36, 5).fill({ color: c.belly, alpha: 0.55 });
+
+  // Dorsal scutes
+  for (let i = 0; i < 9; i++) {
+    const sx = 26 - i * 7;
+    g.moveTo(sx - 3, -12).lineTo(sx, -20).lineTo(sx + 3, -12).fill({ color: c.accent, alpha: 0.88 });
+  }
+
+  // Legs (4 stubby)
+  const legPairs: [number, number][] = [[22, 1], [4, 1], [-14, 1], [-28, 1]];
+  for (const [lx, ] of legPairs) {
+    g.moveTo(lx, 10).bezierCurveTo(lx + 4, 20, lx + 2, 28, lx - 4, 30)
+     .lineTo(lx - 8, 28).bezierCurveTo(lx - 4, 22, lx - 2, 14, lx, 10).fill({ color: c.body, alpha: 0.82 });
+    // Claws
+    for (let cl = 0; cl < 3; cl++) {
+      g.moveTo(lx - 4 + cl * 3, 30).lineTo(lx - 5 + cl * 3, 36).stroke({ color: c.accent, alpha: 0.7, width: 1.2, cap: "round" });
+    }
+  }
+
+  // Head / snout
+  g.moveTo(44, -5)
+   .bezierCurveTo(54, -5, 74, -7, 86, -2)
+   .bezierCurveTo(92, 1, 86, 7, 72, 7)
+   .bezierCurveTo(52, 8, 46, 5, 44, 5).fill({ color: c.body });
+  g.ellipse(72, -1, 18, 6).fill({ color: c.body }); // upper jaw bulge
+  g.ellipse(72, -2, 11, 3.5).fill({ color: c.accent, alpha: 0.28 });
+
+  // Nostrils
+  g.circle(84, -4, 2.8).fill({ color: c.accent, alpha: 0.85 });
+  g.circle(88, -3, 2.8).fill({ color: c.accent, alpha: 0.85 });
+
+  // Teeth
+  for (let t = 0; t < 7; t++) {
+    const tx = 50 + t * 5.5;
+    g.moveTo(tx, -4).lineTo(tx + 1.2, -12).lineTo(tx + 2.8, -4).fill({ color: WHITE, alpha: 0.93 });
+    g.moveTo(tx + 1, 5).lineTo(tx + 2.2, 12).lineTo(tx + 4, 5).fill({ color: WHITE, alpha: 0.85 });
+  }
+
+  // Eye with vertical slit pupil
+  g.circle(52, -9, 6.5).fill({ color: c.fin });
+  g.circle(52, -9, 5).fill({ color: c.eye });
+  g.ellipse(52, -9, 1.8, 4.5).fill({ color: DARK, alpha: 0.92 });
+  g.circle(50.5, -10.5, 1.4).fill({ color: WHITE, alpha: 0.65 });
+
+  // Scale texture
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 7; col++) {
+      g.ellipse(-22 + col * 10, -9 + row * 7, 4, 3).stroke({ color: c.accent, alpha: 0.20, width: 0.7 });
+    }
+  }
+}
+
+// ── SHRIMP — segmented carapace, fan tail, long antennae, pleopods ─────────────
+function drawShrimp(g: Graphics, tp: number, c: FishColors): void {
+  const ts = Math.sin(tp);
+
+  // Abdomen segments (6)
+  for (let s = 0; s < 6; s++) {
+    const sx = -4 - s * 7;
+    const sy = Math.sin(tp * 0.6 + s * 0.3) * 1.5;
+    const w = 9 - s * 0.7;
+    g.ellipse(sx, sy, w, 5.5 - s * 0.2).fill({ color: c.body, alpha: 0.78 });
+    if (s > 0) g.moveTo(sx - 3.5, sy - 4).lineTo(sx - 3.5, sy + 4).stroke({ color: c.accent, alpha: 0.28, width: 0.7 });
+  }
+
+  // Carapace (cephalothorax)
+  g.moveTo(10, 0).bezierCurveTo(12, -10, 6, -13, -2, -11)
+   .bezierCurveTo(-8, -9, -4, 0, 0, 0).fill({ color: c.body, alpha: 0.85 });
+  g.moveTo(0, 0).bezierCurveTo(-4, 9, 4, 11, 10, 7)
+   .bezierCurveTo(14, 4, 12, 0, 10, 0).fill({ color: c.body, alpha: 0.85 });
+  g.moveTo(4, -11).bezierCurveTo(7, -7, 5, -2, 2, 0).stroke({ color: WHITE, alpha: 0.22, width: 1.5 });
+
+  // Rostrum
+  g.moveTo(10, -1).lineTo(22, -5).lineTo(11, -0.5).fill({ color: c.accent, alpha: 0.92 });
+
+  // Antennae (long pair)
+  const as = ts * 5;
+  g.moveTo(14, -3).bezierCurveTo(22, -9 + as, 30, -13 + as, 40, -11 + as * 0.6)
+   .stroke({ color: c.accent, alpha: 0.68, width: 0.8 });
+  g.moveTo(14, -2).bezierCurveTo(22, -5 + as * 0.8, 32, -7 + as * 0.8, 42, -6 + as * 0.5)
+   .stroke({ color: c.accent, alpha: 0.50, width: 0.6 });
+  // Antennules (short)
+  g.moveTo(14, -1).lineTo(20, -6).stroke({ color: c.accent, alpha: 0.48, width: 0.6 });
+  g.moveTo(14, 1).lineTo(20, 5).stroke({ color: c.accent, alpha: 0.48, width: 0.6 });
+
+  // Pleopods / walking legs (5 pairs)
+  for (let l = 0; l < 5; l++) {
+    const lx = 2 - l * 4;
+    const lsw = Math.sin(tp + l * 0.5) * 4;
+    g.moveTo(lx, 5).lineTo(lx - 1 + lsw * 0.4, 11 + lsw).stroke({ color: c.fin, alpha: 0.68, width: 0.9 });
+    g.moveTo(lx - 1 + lsw * 0.4, 11 + lsw).lineTo(lx - 2 + lsw * 0.6, 17 + lsw * 0.6)
+     .stroke({ color: c.fin, alpha: 0.48, width: 0.7 });
+  }
+
+  // Fan tail (uropods + telson)
+  const tailX = -46; const tailY = Math.sin(tp * 0.6 + 1.5) * 1.5;
+  for (let f = 0; f < 5; f++) {
+    const fa = ((f - 2) / 4) * 0.85;
+    const fx = tailX + Math.cos(Math.PI + fa) * 13;
+    const fy = tailY + Math.sin(Math.PI + fa) * 8 + ts * 2;
+    g.moveTo(tailX, tailY).lineTo(fx, fy).stroke({ color: c.fin, alpha: 0.72, width: 2.2, cap: "round" });
+    g.circle(fx, fy, 2.2).fill({ color: c.body, alpha: 0.62 });
+  }
+
+  // Eye (stalked)
+  g.moveTo(12, -3).lineTo(15, -8).stroke({ color: c.accent, alpha: 0.6, width: 1 });
+  g.circle(15, -9, 3.2).fill({ color: WHITE, alpha: 0.88 });
+  g.circle(15.4, -9.5, 2).fill({ color: c.eye });
+  g.circle(14.8, -10.3, 0.7).fill({ color: WHITE, alpha: 0.72 });
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // PLANT DRAWING FUNCTIONS  (world coordinates, called from plantsGfx)
 // ═════════════════════════════════════════════════════════════════════════════
@@ -996,6 +1267,7 @@ class FishAgent extends Container {
   private readonly gfx = new Graphics();
 
   vx = 0; vy = 0;
+  maxSpeed = 0;
   wobblePhase = 0; wobbleSpeed = 0; wobbleAmp = 0;
   tailPhase   = 0; tailSpeed   = 0;
   propPhase   = 0;
@@ -1026,8 +1298,12 @@ class FishAgent extends Container {
       case FishType.SHARK:      drawShark(this.gfx, tp, c);      break;
       case FishType.MANTA:      drawManta(this.gfx, tp, c);      break;
       case FishType.SUBMARINE:  drawSubmarine(this.gfx, this.propPhase, c); break;
-      case FishType.PIRANHA:    drawPiranha(this.gfx, tp, c);    break;
-      case FishType.HAMMERHEAD: drawHammerhead(this.gfx, tp, c); break;
+      case FishType.PIRANHA:    drawPiranha(this.gfx, tp, c);        break;
+      case FishType.HAMMERHEAD: drawHammerhead(this.gfx, tp, c);     break;
+      case FishType.JELLYFISH:  drawJellyfish(this.gfx, tp, c);      break;
+      case FishType.SEA_SNAKE:  drawSeaSnake(this.gfx, tp, c);       break;
+      case FishType.CROCODILE:  drawCrocodile(this.gfx, tp, c);      break;
+      case FishType.SHRIMP:     drawShrimp(this.gfx, tp, c);         break;
     }
     this.scale.set(
       this.baseScale * (this.facingRight ? 1 : -1),
@@ -1047,9 +1323,100 @@ interface Bubble {
   alpha: number; alphaPhase: number; wobblePhase: number; wobbleAmp: number;
 }
 
+// ── Crab drawing (top-down view, front = +X, legs along Y axis) ───────────────
+function drawCrab(
+  g: Graphics, cx: number, cy: number,
+  phase: number, facingRight: boolean, sc: number, c: FishColors,
+): void {
+  const fx = facingRight ? sc : -sc;
+  const px = (lx: number) => cx + lx * fx;
+  const py = (ly: number) => cy + ly * sc;
+
+  const clawSnap = 0.28 + 0.22 * Math.sin(phase * 0.55);
+
+  // Walking legs — drawn before body so carapace covers roots
+  const legXs = [-13, -5, 4, 12] as const;
+  for (let i = 0; i < 4; i++) {
+    const lx = legXs[i];
+    const sw = Math.sin(phase + i * 0.85) * 9;
+    for (const side of [-1, 1] as const) {
+      const sy = side * 15;
+      const ky1 = side * (24 - sw * 0.4 * side);
+      const ky2 = side * (33 - sw * 0.7 * side);
+      g.moveTo(px(lx), py(sy))
+       .lineTo(px(lx + sw * 0.15), py(ky1))
+       .stroke({ color: c.body,   alpha: 0.90, width: 2.6 * sc, cap: "round" });
+      g.moveTo(px(lx + sw * 0.15), py(ky1))
+       .lineTo(px(lx + sw * 0.30), py(ky2))
+       .stroke({ color: c.accent, alpha: 0.78, width: 1.7 * sc, cap: "round" });
+      g.circle(px(lx + sw * 0.30), py(ky2), 1.4 * sc).fill({ color: c.accent, alpha: 0.70 });
+    }
+  }
+
+  // Carapace
+  g.ellipse(px(0), py(0), 22 * sc, 17 * sc).fill({ color: c.body });
+  for (let r = 1; r <= 3; r++) {
+    g.ellipse(px(0), py(0), 22 * sc * (1 - r * 0.22), 17 * sc * (1 - r * 0.22))
+     .stroke({ color: c.accent, alpha: 0.20, width: 0.7 });
+  }
+  g.moveTo(px(8), py(0)).lineTo(px(-7), py(0)).stroke({ color: c.accent, alpha: 0.16, width: 0.8 });
+  g.ellipse(px(-4), py(-4), 11 * sc, 7 * sc).fill({ color: WHITE, alpha: 0.10 });
+
+  // Chelipeds (claws) — one per side
+  for (const side of [-1, 1] as const) {
+    const s12 = side * 12; const s14 = side * 14; const s19 = side * 19;
+    const s24 = side * 24; const s27 = side * 27;
+    g.moveTo(px(14), py(s12))
+     .bezierCurveTo(px(24), py(s14), px(32), py(s19), px(33), py(s24))
+     .bezierCurveTo(px(33), py(s27), px(30), py(s27), px(28), py(s24))
+     .bezierCurveTo(px(23), py(s19), px(18), py(s14), px(14), py(s12))
+     .fill({ color: c.body, alpha: 0.95 });
+    g.moveTo(px(33), py(s24))
+     .lineTo(px(38 + clawSnap * 5), py(side * (20)))
+     .stroke({ color: c.fin, alpha: 0.85, width: 2 * sc, cap: "round" });
+    g.moveTo(px(33), py(s24))
+     .lineTo(px(35), py(side * (30 + clawSnap * 4)))
+     .stroke({ color: c.fin, alpha: 0.85, width: 2 * sc, cap: "round" });
+  }
+
+  // Eye stalks
+  for (const side of [-1, 1] as const) {
+    const ey = side * 14;
+    g.moveTo(px(14), py(side * 7)).lineTo(px(20), py(ey))
+     .stroke({ color: c.accent, alpha: 0.72, width: 1.1 * sc, cap: "round" });
+    g.circle(px(20), py(ey), 3.6 * sc).fill({ color: WHITE });
+    g.circle(px(20.5), py(side * 14.5), 2.3 * sc).fill({ color: c.eye });
+    g.circle(px(20), py(side * 15.3), 0.7 * sc).fill({ color: WHITE, alpha: 0.65 });
+  }
+}
+
 // ── Constants ──────────────────────────────────────────────────────────────────
-const BUBBLE_COUNT  = 80;
-const PARTICLE_COUNT = 55;
+const BUBBLE_COUNT        = 80;
+const PARTICLE_COUNT      = 55;
+const PLANKTON_PER_SWARM  = 38;
+const PLANKTON_SWARM_COUNT = 6;
+
+interface Crab {
+  nx: number; dir: 1 | -1; speed: number;
+  phase: number; phaseSpeed: number; pauseTimer: number;
+  scale: number; colors: FishColors;
+}
+
+interface PlanktonMember {
+  x: number; y: number;
+  vx: number; vy: number;
+  phase: number; phaseSpeed: number;
+  r: number;
+  shape: 0 | 1 | 2;   // 0=copepod  1=radiolarian  2=dinoflagellate
+}
+
+interface PlanktonSwarm {
+  cx: number; cy: number;
+  vcx: number; vcy: number;
+  color: number;
+  glowColor: number;
+  members: PlanktonMember[];
+}
 
 // ═════════════════════════════════════════════════════════════════════════════
 // AQUARIUM SCREEN
@@ -1060,11 +1427,14 @@ export class AquariumScreen extends Container {
 
   // Layers back → front
   private readonly bgGfx       = new Graphics();
+  private readonly lightRayGfx = new Graphics();
   private readonly causticGfx  = new Graphics();
   private readonly sandGfx     = new Graphics();
   private readonly decoGfx     = new Graphics();   // rocks, starfish, shells, anchor, chest
   private readonly plantsGfx   = new Graphics();   // all plants
+  private readonly crabGfx     = new Graphics();
   private readonly particleGfx = new Graphics();
+  private readonly planktonGfx = new Graphics();
   private readonly fishCont    = new Container();
   private readonly bubbleGfx   = new Graphics();
   private readonly surfaceGfx  = new Graphics();
@@ -1080,6 +1450,15 @@ export class AquariumScreen extends Container {
   // Caustic pools
   private readonly caustics: Array<{ x:number; y:number; phase:number; speed:number; size:number; alpha:number }> = [];
 
+  // Light rays
+  private readonly lightRays: Array<{ nx:number; phase:number; speed:number; width:number; alpha:number }> = [];
+
+  // Plankton swarms
+  private readonly planktonSwarms: PlanktonSwarm[] = [];
+
+  // Crabs
+  private readonly crabs: Crab[] = [];
+
   // Terrain
   private readonly terrainPts:   Array<{nx: number; ny: number}> = [];
   private readonly terrainRocks: Array<{nx: number; width: number}> = [];
@@ -1092,11 +1471,14 @@ export class AquariumScreen extends Container {
   constructor() {
     super();
     this.addChild(this.bgGfx);
+    this.addChild(this.lightRayGfx);
     this.addChild(this.causticGfx);
     this.addChild(this.sandGfx);
     this.addChild(this.decoGfx);
     this.addChild(this.plantsGfx);
+    this.addChild(this.crabGfx);
     this.addChild(this.particleGfx);
+    this.addChild(this.planktonGfx);
     this.addChild(this.fishCont);
     this.addChild(this.bubbleGfx);
     this.addChild(this.surfaceGfx);
@@ -1107,9 +1489,12 @@ export class AquariumScreen extends Container {
   public async show(): Promise<void> {
     this.spawnTerrain();
     this.spawnCaustics();
+    this.spawnLightRays();
     this.spawnPlants();
     this.spawnDecos();
+    this.spawnCrabs();
     this.spawnAgents();
+    this.spawnPlankton();
     this.spawnBubbles();
     this.spawnParticles();
   }
@@ -1119,11 +1504,14 @@ export class AquariumScreen extends Container {
     this.time += dt;
 
     this.drawBackground();
+    this.drawLightRays(dt);
     this.drawCaustics(dt);
     this.drawSand();
     this.drawDecos();
     this.drawPlants(dt);
+    this.updateCrabs(dt);
     this.drawParticles(dt);
+    this.drawPlankton(dt);
     this.updateAgents(dt);
     this.drawBubbles(dt);
     this.drawSurface();
@@ -1145,12 +1533,91 @@ export class AquariumScreen extends Container {
     for (let i = 0; i < steps; i++) {
       this.bgGfx.rect(0, (i / steps) * this.h, this.w, this.h / steps).fill({ color: colors[i], alpha: 1 });
     }
+
+    // ── Distant whale silhouette ──────────────────────────────────────────────
+    // Drifts slowly left-to-right across the deep background, looping
+    const whalePeriod = 180; // seconds per full crossing
+    const wt   = (this.time % whalePeriod) / whalePeriod;
+    const wx   = -0.18 * this.w + wt * 1.36 * this.w;
+    const wy   = this.h * 0.42;
+    const wsc  = this.h * 0.00042; // scale relative to screen height
+    const wAlpha = 0.10 + 0.04 * Math.sin(this.time * 0.12); // barely visible
+    const tw   = Math.sin(this.time * 0.22) * 14 * wsc; // tail fluke sway
+
+    // Body
+    this.bgGfx
+      .moveTo(wx + 320 * wsc, wy)
+      .bezierCurveTo(wx + 280 * wsc, wy - 70 * wsc, wx + 100 * wsc, wy - 90 * wsc, wx, wy - 55 * wsc)
+      .bezierCurveTo(wx - 60 * wsc, wy - 20 * wsc, wx - 80 * wsc, wy + 30 * wsc, wx - 40 * wsc, wy + 60 * wsc)
+      .bezierCurveTo(wx + 60 * wsc, wy + 95 * wsc, wx + 220 * wsc, wy + 80 * wsc, wx + 320 * wsc, wy)
+      .fill({ color: 0x0a1828, alpha: wAlpha });
+
+    // Tail flukes
+    this.bgGfx
+      .moveTo(wx + 320 * wsc, wy)
+      .bezierCurveTo(wx + 360 * wsc, wy - 10 * wsc, wx + 400 * wsc, wy - 60 * wsc + tw, wx + 390 * wsc, wy - 100 * wsc + tw)
+      .bezierCurveTo(wx + 380 * wsc, wy - 120 * wsc + tw, wx + 360 * wsc, wy - 90 * wsc + tw, wx + 320 * wsc, wy)
+      .fill({ color: 0x0a1828, alpha: wAlpha });
+    this.bgGfx
+      .moveTo(wx + 320 * wsc, wy)
+      .bezierCurveTo(wx + 360 * wsc, wy + 10 * wsc, wx + 400 * wsc, wy + 60 * wsc - tw, wx + 390 * wsc, wy + 100 * wsc - tw)
+      .bezierCurveTo(wx + 380 * wsc, wy + 120 * wsc - tw, wx + 360 * wsc, wy + 90 * wsc - tw, wx + 320 * wsc, wy)
+      .fill({ color: 0x0a1828, alpha: wAlpha });
+
+    // Pectoral fin
+    this.bgGfx
+      .moveTo(wx + 140 * wsc, wy + 20 * wsc)
+      .bezierCurveTo(wx + 120 * wsc, wy + 80 * wsc, wx + 80 * wsc, wy + 110 * wsc, wx + 60 * wsc, wy + 90 * wsc)
+      .bezierCurveTo(wx + 80 * wsc, wy + 60 * wsc, wx + 110 * wsc, wy + 40 * wsc, wx + 140 * wsc, wy + 20 * wsc)
+      .fill({ color: 0x0a1828, alpha: wAlpha * 0.8 });
+
+    // Light sheen on back
+    this.bgGfx
+      .moveTo(wx + 60 * wsc, wy - 50 * wsc)
+      .bezierCurveTo(wx + 150 * wsc, wy - 85 * wsc, wx + 240 * wsc, wy - 75 * wsc, wx + 300 * wsc, wy - 30 * wsc)
+      .stroke({ color: 0x1a3a5a, alpha: wAlpha * 0.6, width: 8 * wsc });
+
     const cx = this.w * 0.5;
     for (let r = 0; r < 5; r++) {
       const angle = (r - 2) * 0.22;
       const alpha = 0.03 + 0.018 * Math.sin(this.time * 0.3 + r);
       this.bgGfx.moveTo(cx, 0).lineTo(cx + Math.sin(angle) * this.h * 1.2, this.h)
        .stroke({ color: CAUSTIC, alpha, width: 55 + r * 28 });
+    }
+  }
+
+  private spawnLightRays(): void {
+    for (let i = 0; i < 14; i++) {
+      this.lightRays.push({
+        nx:    rnd(0.05, 0.95),
+        phase: rnd(0, Math.PI * 2),
+        speed: rnd(0.08, 0.22),
+        width: rnd(18, 75),
+        alpha: rnd(0.025, 0.085),
+      });
+    }
+  }
+
+  private drawLightRays(dt: number): void {
+    this.lightRayGfx.clear();
+    if (this.w === 0) return;
+    for (const r of this.lightRays) {
+      r.phase += r.speed * dt;
+      const drift = Math.sin(r.phase) * this.w * 0.035;
+      const cx    = r.nx * this.w + drift;
+      const alpha = r.alpha * (0.55 + 0.45 * Math.sin(r.phase * 1.6));
+      const rayH  = this.h * 0.82;
+      const STRIPS = 6;
+      for (let s = 0; s < STRIPS; s++) {
+        const t0   = s / STRIPS;
+        const t1   = (s + 1) / STRIPS;
+        const fade = Math.pow(1 - t0, 1.6);
+        const wx0  = r.width * 0.4 + this.w * 0.09 * t0;
+        const wx1  = r.width * 0.4 + this.w * 0.09 * t1;
+        this.lightRayGfx
+          .poly([cx - wx0, rayH * t0, cx + wx0, rayH * t0, cx + wx1, rayH * t1, cx - wx1, rayH * t1])
+          .fill({ color: 0x7ad8ee, alpha: alpha * fade });
+      }
     }
   }
 
@@ -1355,36 +1822,64 @@ export class AquariumScreen extends Container {
     };
     // Kelp — tall, back-of-tank feel
     add(PlantType.KELP,        0.06, 280, 0x8B7355, 0x4a7c3f);
+    add(PlantType.KELP,        0.13, 190, 0x7a6840, 0x3d6b34);
     add(PlantType.KELP,        0.18, 220, 0x7a6840, 0x3d6b34);
+    add(PlantType.KELP,        0.32, 260, 0x9c7f50, 0x527a3a);
+    add(PlantType.KELP,        0.50, 210, 0x8B7355, 0x4a7c3f);
     add(PlantType.KELP,        0.72, 300, 0x9c7f50, 0x527a3a);
+    add(PlantType.KELP,        0.82, 180, 0x7a6840, 0x3d6b34);
     add(PlantType.KELP,        0.88, 240, 0x8B7355, 0x4a7c3f);
+    add(PlantType.KELP,        0.95, 200, 0x9c7f50, 0x4a7c3f);
 
     // Sea fans — branching gorgonians
+    add(PlantType.SEA_FAN,     0.10, 130, 0xff6b9d, 0xff6b9d);
+    add(PlantType.SEA_FAN,     0.22, 150, TEAL,     TEAL);
     add(PlantType.SEA_FAN,     0.28, 160, CORAL1,   CORAL1);
+    add(PlantType.SEA_FAN,     0.40, 120, 0xff9f43, 0xff9f43);
     add(PlantType.SEA_FAN,     0.55, 140, 0xff9f43, 0xff9f43);
+    add(PlantType.SEA_FAN,     0.63, 155, BLUE,     BLUE);
     add(PlantType.SEA_FAN,     0.80, 170, MAUVE,    MAUVE);
+    add(PlantType.SEA_FAN,     0.90, 135, CORAL1,   CORAL1);
 
     // Anemones
+    add(PlantType.ANEMONE,     0.04, 75,  TEAL,     0xd0fff8);
     add(PlantType.ANEMONE,     0.12, 90,  0xff6b6b, WHITE);
+    add(PlantType.ANEMONE,     0.26, 85,  0x4db6ac, WHITE);
+    add(PlantType.ANEMONE,     0.38, 80,  YELLOW,   WHITE);
     add(PlantType.ANEMONE,     0.42, 80,  MAUVE,    0xffffff);
+    add(PlantType.ANEMONE,     0.58, 88,  0xff6b6b, YELLOW);
     add(PlantType.ANEMONE,     0.65, 95,  0xff9f43, YELLOW);
+    add(PlantType.ANEMONE,     0.75, 78,  BLUE,     WHITE);
+    add(PlantType.ANEMONE,     0.87, 92,  MAUVE,    0xffd0f0);
+    add(PlantType.ANEMONE,     0.97, 70,  TEAL,     WHITE);
 
     // Bubble algae
+    add(PlantType.BUBBLE_ALGAE,0.16, 95,  0x52b788, 0x74c69d);
     add(PlantType.BUBBLE_ALGAE,0.35, 110, 0x52b788, 0x74c69d);
+    add(PlantType.BUBBLE_ALGAE,0.47, 80,  0x40916c, 0x52b788);
     add(PlantType.BUBBLE_ALGAE,0.60, 90,  0x40916c, 0x52b788);
+    add(PlantType.BUBBLE_ALGAE,0.78, 105, 0x52b788, 0x95d5b2);
     add(PlantType.BUBBLE_ALGAE,0.92, 100, 0x52b788, 0x74c69d);
 
     // Sea grass — dense patches
+    add(PlantType.SEA_GRASS,   0.03, 50,  0x52b788, 0x2d6a4f);
     add(PlantType.SEA_GRASS,   0.22, 55,  0x52b788, 0x2d6a4f);
+    add(PlantType.SEA_GRASS,   0.30, 45,  0x74c69d, 0x40916c);
     add(PlantType.SEA_GRASS,   0.48, 48,  0x40916c, 0x2d6a4f);
+    add(PlantType.SEA_GRASS,   0.57, 52,  0x52b788, 0x2d6a4f);
     add(PlantType.SEA_GRASS,   0.68, 60,  0x74c69d, 0x40916c);
+    add(PlantType.SEA_GRASS,   0.77, 46,  0x40916c, 0x2d6a4f);
     add(PlantType.SEA_GRASS,   0.84, 50,  0x52b788, 0x2d6a4f);
     add(PlantType.SEA_GRASS,   0.96, 45,  0x40916c, 0x2d6a4f);
 
     // Ferns
     add(PlantType.FERN,        0.08, 150, 0x74c69d, 0x52b788);
+    add(PlantType.FERN,        0.24, 120, 0x52b788, 0x2d6a4f);
+    add(PlantType.FERN,        0.37, 140, 0x95d5b2, 0x74c69d);
     add(PlantType.FERN,        0.44, 130, 0x52b788, 0x2d6a4f);
+    add(PlantType.FERN,        0.62, 155, 0x74c69d, 0x52b788);
     add(PlantType.FERN,        0.76, 160, 0x95d5b2, 0x74c69d);
+    add(PlantType.FERN,        0.93, 135, 0x52b788, 0x2d6a4f);
   }
 
   private drawPlants(dt: number): void {
@@ -1492,6 +1987,164 @@ export class AquariumScreen extends Container {
     }
   }
 
+  // ── Plankton ───────────────────────────────────────────────────────────────
+
+  // ── Crabs ──────────────────────────────────────────────────────────────────
+
+  private spawnCrabs(): void {
+    for (let i = 0; i < 8; i++) {
+      this.crabs.push({
+        nx:         rnd(0.05, 0.95),
+        dir:        Math.random() > 0.5 ? 1 : -1,
+        speed:      rnd(18, 45),
+        phase:      rnd(0, Math.PI * 2),
+        phaseSpeed: rnd(2.5, 4.5),
+        pauseTimer: rnd(0, 2),
+        scale:      rnd(0.55, 0.85),
+        colors:     pick(CRAB_PALETTES),
+      });
+    }
+  }
+
+  private updateCrabs(dt: number): void {
+    this.crabGfx.clear();
+    if (this.w === 0) return;
+
+    for (const crab of this.crabs) {
+      if (crab.pauseTimer > 0) {
+        crab.pauseTimer -= dt;
+        crab.phase += crab.phaseSpeed * 0.25 * dt; // idle claw animation
+      } else {
+        crab.phase += crab.phaseSpeed * dt;
+        crab.nx    += (crab.dir * crab.speed * dt) / this.w;
+
+        if (crab.nx < 0.02) { crab.nx = 0.02; crab.dir =  1; }
+        if (crab.nx > 0.98) { crab.nx = 0.98; crab.dir = -1; }
+
+        if (Math.random() < 0.004) {
+          crab.pauseTimer = rnd(0.4, 2.2);
+          if (Math.random() < 0.3) crab.dir = (crab.dir * -1) as 1 | -1;
+        }
+      }
+
+      const wx = crab.nx * this.w;
+      const wy = this.getTerrainY(crab.nx);
+      drawCrab(this.crabGfx, wx, wy, crab.phase, crab.dir === 1, crab.scale, crab.colors);
+    }
+  }
+
+  private spawnPlankton(): void {
+    const palette: Array<{ color: number; glow: number }> = [
+      { color: 0x4ad8e8, glow: 0x00ffff },
+      { color: 0x80e840, glow: 0x88ff00 },
+      { color: 0xf0e070, glow: 0xffff88 },
+      { color: 0xf078d8, glow: 0xff88ff },
+      { color: 0x60a8f8, glow: 0x44aaff },
+      { color: 0xf8a060, glow: 0xffcc44 },
+    ];
+    const baseW = this.w > 0 ? this.w : 1920;
+    const baseH = this.h > 0 ? this.h : 1080;
+
+    for (let s = 0; s < PLANKTON_SWARM_COUNT; s++) {
+      const pal = palette[s % palette.length];
+      const cx  = rnd(0.1, 0.9) * baseW;
+      const cy  = rnd(0.1, 0.78) * baseH;
+      const members: PlanktonMember[] = [];
+      for (let i = 0; i < PLANKTON_PER_SWARM; i++) {
+        members.push({
+          x: cx + rnd(-200, 200), y: cy + rnd(-120, 120),
+          vx: rnd(-4, 4),         vy: rnd(-3, 3),
+          phase: rnd(0, Math.PI * 2), phaseSpeed: rnd(1.2, 3.0),
+          r: rnd(1.2, 3.2),
+          shape: (i % 3) as 0 | 1 | 2,
+        });
+      }
+      this.planktonSwarms.push({ cx, cy, vcx: rnd(-10, 10), vcy: rnd(-5, 5), color: pal.color, glowColor: pal.glow, members });
+    }
+  }
+
+  private drawPlankton(dt: number): void {
+    this.planktonGfx.clear();
+    if (this.w === 0) return;
+    const floorY = this.h * 0.84;
+
+    for (const sw of this.planktonSwarms) {
+      // Drift swarm center with gentle random steering
+      sw.vcx += rnd(-0.8, 0.8) * dt;
+      sw.vcy += rnd(-0.5, 0.5) * dt;
+      sw.vcx  = Math.max(-14, Math.min(14, sw.vcx));
+      sw.vcy  = Math.max(-7,  Math.min(7,  sw.vcy));
+      sw.cx  += sw.vcx * dt;
+      sw.cy  += sw.vcy * dt;
+      if (sw.cx < -60)           sw.cx = this.w + 60;
+      if (sw.cx > this.w + 60)   sw.cx = -60;
+      if (sw.cy < this.h * 0.05) { sw.cy = this.h * 0.05; sw.vcy =  Math.abs(sw.vcy); }
+      if (sw.cy > this.h * 0.78) { sw.cy = this.h * 0.78; sw.vcy = -Math.abs(sw.vcy); }
+
+      for (const m of sw.members) {
+        m.phase += m.phaseSpeed * dt;
+
+        // Weak cohesion + gentle random walk — keep members spread out
+        m.vx += (sw.cx - m.x) * 0.12 * dt + rnd(-4, 4) * dt;
+        m.vy += (sw.cy - m.y) * 0.12 * dt + rnd(-3, 3) * dt;
+        const spd = Math.sqrt(m.vx * m.vx + m.vy * m.vy);
+        if (spd > 10) { m.vx = m.vx / spd * 10; m.vy = m.vy / spd * 10; }
+
+        m.x += m.vx * dt;
+        m.y += m.vy * dt;
+        if (m.y > floorY) { m.y = floorY; m.vy = -Math.abs(m.vy); }
+
+        const blink = 0.45 + 0.55 * Math.sin(m.phase);
+        const ga    = blink * 0.18;
+        const ba    = blink * 0.72;
+
+        // Outer glow
+        this.planktonGfx.circle(m.x, m.y, m.r * 4).fill({ color: sw.glowColor, alpha: ga });
+
+        if (m.shape === 0) {
+          // Copepod — oval body + two antennae
+          this.planktonGfx.ellipse(m.x, m.y, m.r * 1.6, m.r).fill({ color: sw.color, alpha: ba });
+          const aLen = m.r * 3.5;
+          const as   = Math.sin(m.phase * 1.4) * 0.4;
+          this.planktonGfx.moveTo(m.x - m.r, m.y).lineTo(m.x - m.r - aLen * Math.cos(as), m.y - aLen * Math.sin(as))
+            .stroke({ color: sw.color, alpha: ba * 0.6, width: 0.6 });
+          this.planktonGfx.moveTo(m.x - m.r, m.y).lineTo(m.x - m.r - aLen * Math.cos(-as), m.y - aLen * Math.sin(-as))
+            .stroke({ color: sw.color, alpha: ba * 0.6, width: 0.6 });
+        } else if (m.shape === 1) {
+          // Radiolarian — circle + radiating spines
+          this.planktonGfx.circle(m.x, m.y, m.r).fill({ color: sw.color, alpha: ba });
+          const SPINES = 8;
+          for (let sp = 0; sp < SPINES; sp++) {
+            const sa  = (sp / SPINES) * Math.PI * 2 + m.phase * 0.15;
+            const sLen = m.r * (2.8 + 0.7 * Math.sin(m.phase + sp));
+            this.planktonGfx
+              .moveTo(m.x + Math.cos(sa) * m.r, m.y + Math.sin(sa) * m.r)
+              .lineTo(m.x + Math.cos(sa) * sLen, m.y + Math.sin(sa) * sLen)
+              .stroke({ color: sw.color, alpha: ba * 0.55, width: 0.5 });
+          }
+        } else {
+          // Dinoflagellate — teardrop body + curling flagellum
+          const angle = Math.atan2(m.vy, m.vx);
+          this.planktonGfx
+            .moveTo(m.x + Math.cos(angle) * m.r * 2, m.y + Math.sin(angle) * m.r * 2)
+            .bezierCurveTo(
+              m.x + Math.cos(angle + 1.1) * m.r * 1.8, m.y + Math.sin(angle + 1.1) * m.r * 1.8,
+              m.x + Math.cos(angle + 2.2) * m.r * 1.5, m.y + Math.sin(angle + 2.2) * m.r * 1.5,
+              m.x, m.y,
+            ).fill({ color: sw.color, alpha: ba });
+          // Flagellum whip
+          const fw = Math.sin(m.phase * 2) * m.r * 2;
+          this.planktonGfx
+            .moveTo(m.x, m.y)
+            .bezierCurveTo(m.x - Math.cos(angle) * m.r * 2 + fw, m.y - Math.sin(angle) * m.r * 2,
+              m.x - Math.cos(angle) * m.r * 4,                    m.y - Math.sin(angle) * m.r * 4 + fw,
+              m.x - Math.cos(angle) * m.r * 5.5,                  m.y - Math.sin(angle) * m.r * 5.5)
+            .stroke({ color: sw.color, alpha: ba * 0.5, width: 0.6 });
+        }
+      }
+    }
+  }
+
   // ── Particles ──────────────────────────────────────────────────────────────
 
   private spawnParticles(): void {
@@ -1531,6 +2184,7 @@ export class AquariumScreen extends Container {
     agent.y          = schoolY !== undefined ? schoolY + rnd(-35, 35) : rnd(yMin, yMax) * baseH;
     agent.vx         = speed * (goRight ? 1 : -1);
     agent.vy         = rnd(-6, 6);
+    agent.maxSpeed   = speed;
     agent.facingRight = goRight;
     agent.wobbleSpeed = rnd(0.6, 1.4);
     agent.wobbleAmp   = wobbleAmp;
@@ -1568,6 +2222,18 @@ export class AquariumScreen extends Container {
 
     // HAMMERHEADS — large, deep patrol
     for (let i = 0; i < 2;  i++) this.spawnAgent(FishType.HAMMERHEAD, HAMMERHEAD_PALETTES, rnd(1.2,  1.7),  rnd(45, 80),    8, 2.8, 0.18, 0.68);
+
+    // JELLYFISH — slow drifters spread through full water column
+    for (let i = 0; i < 18; i++) this.spawnAgent(FishType.JELLYFISH,  JELLYFISH_PALETTES,  rnd(0.6,  1.2),  rnd(6,  24),    6, 2.0, 0.05, 0.82);
+
+    // SEA SNAKES — sinuous mid-water hunters
+    for (let i = 0; i < 4;  i++) this.spawnAgent(FishType.SEA_SNAKE,  SEA_SNAKE_PALETTES,  rnd(0.7,  1.0),  rnd(28, 55),   10, 3.5, 0.30, 0.80);
+
+    // CROCODILES — slow armoured bottom-dwellers
+    for (let i = 0; i < 3;  i++) this.spawnAgent(FishType.CROCODILE,  CROCODILE_PALETTES,  rnd(0.65, 0.95), rnd(12, 22),    3, 1.8, 0.65, 0.80);
+
+    // SHRIMPS — small, skittery, near floor
+    for (let i = 0; i < 12; i++) this.spawnAgent(FishType.SHRIMP,     SHRIMP_PALETTES,     rnd(0.45, 0.70), rnd(18, 40),    3, 4.5, 0.68, 0.82);
   }
 
   private updateAgents(dt: number): void {
@@ -1590,6 +2256,14 @@ export class AquariumScreen extends Container {
       const yMin = this.h * (a.fishType === FishType.SHARK || a.fishType === FishType.HAMMERHEAD ? 0.12 : 0.06);
       if (a.y > floor) { a.y = floor; a.vy = -Math.abs(a.vy) - rnd(5, 18); }
       if (a.y < yMin)  { a.vy = Math.abs(a.vy) + rnd(2, 8); }
+
+      // clamp to per-fish speed cap so velocity doesn't grow unboundedly
+      const vyMax = a.maxSpeed * 0.6;
+      if (a.vy >  vyMax) a.vy =  vyMax;
+      if (a.vy < -vyMax) a.vy = -vyMax;
+      const vxMax = a.maxSpeed * 1.3;
+      if (a.vx >  vxMax) a.vx =  vxMax;
+      if (a.vx < -vxMax) a.vx = -vxMax;
 
       if (a.vx >  0.5) a.facingRight = true;
       if (a.vx < -0.5) a.facingRight = false;
