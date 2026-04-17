@@ -200,15 +200,12 @@ interface Drop {
 }
 
 interface FireParticle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
+  x: number; y: number;
+  vx: number; vy: number;
+  life: number; maxLife: number;
   size: number;
-  baseX: number; // emitter x anchor
-  baseY: number; // emitter y anchor
+  baseX: number; baseY: number;
+  turbPhase: number; turbFreq: number; turbAmp: number;
 }
 
 interface FireworkShell {
@@ -1249,22 +1246,20 @@ export class ConfidentialScreen extends Container {
     }
   }
 
-  private makeFireParticle(
-    baseX: number,
-    baseY: number,
-    randomY = false,
-  ): FireParticle {
-    const maxLife = 1.2 + Math.random() * 2.0;
+  private makeFireParticle(baseX: number, baseY: number, randomY = false): FireParticle {
+    const maxLife = 0.9 + Math.random() * 1.8;
     return {
-      baseX,
-      baseY,
-      x: baseX + (Math.random() - 0.5) * 80,
-      y: randomY ? baseY - Math.random() * 420 : baseY,
-      vx: (Math.random() - 0.5) * 32,
-      vy: -(140 + Math.random() * 260),
-      life: randomY ? Math.random() * maxLife : 0,
+      baseX, baseY,
+      x:          baseX + (Math.random() - 0.5) * 70,
+      y:          randomY ? baseY - Math.random() * 400 : baseY - Math.random() * 8,
+      vx:         (Math.random() - 0.5) * 28,
+      vy:         -(200 + Math.random() * 320),
+      life:       randomY ? Math.random() * maxLife : 0,
       maxLife,
-      size: 4 + Math.random() * Math.random() * 60,
+      size:       3 + Math.random() * Math.random() * 52,
+      turbPhase:  Math.random() * Math.PI * 2,
+      turbFreq:   1.8 + Math.random() * 3.5,
+      turbAmp:    18 + Math.random() * 38,
     };
   }
 
@@ -1273,40 +1268,46 @@ export class ConfidentialScreen extends Container {
     if (this.w === 0) return;
     const hh = this.h * 0.5;
 
+    // Base glow at each emitter
+    const hw = this.w * 0.5;
+    const emitterXs = [-hw*0.85, -hw*0.55, -hw*0.25, 0, hw*0.25, hw*0.55, hw*0.85];
+    for (const bx of emitterXs) {
+      this.fireGfx.ellipse(bx, hh, 90, 28).fill({ color: FIRE_ORANGE, alpha: 0.18 });
+      this.fireGfx.ellipse(bx, hh, 44, 14).fill({ color: 0xffffff,    alpha: 0.12 });
+    }
+
     for (const p of this.fireParticles) {
       p.life += dt;
       if (p.life >= p.maxLife) {
         Object.assign(p, this.makeFireParticle(p.baseX, p.baseY));
         continue;
       }
-      p.x += p.vx * dt;
-      p.vy -= 20 * dt; // slight upward acceleration
-      p.y += p.vy * dt;
-      p.vx *= 0.98;
 
-      const prog = p.life / p.maxLife; // 0 = born, 1 = dead
-      const size = p.size * (1 - prog * 0.6);
+      // Turbulent horizontal drift
+      p.turbPhase += p.turbFreq * dt;
+      p.vx += Math.sin(p.turbPhase) * p.turbAmp * dt;
+      p.vx *= 0.965;
+      p.vy -= 55 * dt; // buoyancy
+      p.x  += p.vx * dt;
+      p.y  += p.vy * dt;
 
-      // Color ramp: red → orange → yellow → tip (white-ish lemon)
+      const prog = p.life / p.maxLife;
+      const size = p.size * Math.pow(1 - prog, 0.55);
+
+      // Color: white-hot base → orange → red → yellow tip
       let col: number;
-      if (prog < 0.33) {
-        col = lerpColor(FIRE_RED, FIRE_ORANGE, prog / 0.33);
-      } else if (prog < 0.66) {
-        col = lerpColor(FIRE_ORANGE, FIRE_YELLOW, (prog - 0.33) / 0.33);
-      } else {
-        col = lerpColor(FIRE_YELLOW, FIRE_TIP, (prog - 0.66) / 0.34);
-      }
+      if      (prog < 0.12) col = lerpColor(0xffffff,     FIRE_ORANGE, prog / 0.12);
+      else if (prog < 0.40) col = lerpColor(FIRE_ORANGE,  FIRE_RED,   (prog - 0.12) / 0.28);
+      else if (prog < 0.72) col = lerpColor(FIRE_RED,     FIRE_YELLOW,(prog - 0.40) / 0.32);
+      else                  col = lerpColor(FIRE_YELLOW,  FIRE_TIP,   (prog - 0.72) / 0.28);
 
-      const a = (1 - prog) * 0.55;
-      // Soft outer glow
-      this.fireGfx
-        .circle(p.x, p.y, size * 1.8)
-        .fill({ color: col, alpha: a * 0.2 });
-      // Core flame blob
-      this.fireGfx.circle(p.x, p.y, size).fill({ color: col, alpha: a });
+      const a = Math.pow(1 - prog, 1.05) * 0.80;
+
+      // Three layers: wide soft halo → mid bloom → hot core
+      this.fireGfx.circle(p.x, p.y, size * 2.4).fill({ color: col, alpha: a * 0.12 });
+      this.fireGfx.circle(p.x, p.y, size * 1.3).fill({ color: col, alpha: a * 0.42 });
+      this.fireGfx.circle(p.x, p.y, size * 0.55).fill({ color: 0xffffff, alpha: a * 0.25 });
     }
-
-    void hh;
   }
 
   // ── Fireworks ─────────────────────────────────────────────────────────────
