@@ -26,6 +26,7 @@ export default defineConfig({
         webcamBorder2: resolve(__dirname, "webcam-border-2.html"),
         matrixDots: resolve(__dirname, "matrix-dots.html"),
         waveCam: resolve(__dirname, "wavecam.html"),
+        trapCam: resolve(__dirname, "trapcam.html"),
       },
     },
   },
