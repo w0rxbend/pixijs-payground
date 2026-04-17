@@ -16,7 +16,8 @@
       "Bash(curl -sL \"https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap\")",
       "Bash(curl -sL \"https://fonts.googleapis.com/css2?family=Bangers&display=swap\")",
       "Bash(curl -sL \"https://fonts.gstatic.com/s/rocksalt/v24/MwQ0bhv11fWD6QsAVOZbsA.ttf\" -o RockSalt-Regular.ttf)",
-      "Bash(curl -sL \"https://fonts.gstatic.com/s/bangers/v25/FeVQS0BTqb0h60ACL5k.ttf\" -o Bangers-Regular.ttf)"
+      "Bash(curl -sL \"https://fonts.gstatic.com/s/bangers/v25/FeVQS0BTqb0h60ACL5k.ttf\" -o Bangers-Regular.ttf)",
+      "Bash(xdg-open http://localhost:8080/atom.html)"
     ]
   }
 }

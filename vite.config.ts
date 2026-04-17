@@ -22,6 +22,7 @@ export default defineConfig({
         musicBreak: resolve(__dirname, "music-break.html"),
         planet: resolve(__dirname, "planet.html"),
         aquarium: resolve(__dirname, "aquarium.html"),
+        atom: resolve(__dirname, "atom.html"),
       },
     },
   },
