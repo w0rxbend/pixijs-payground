@@ -15,6 +15,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         webcamBorder1: resolve(__dirname, "webcam-border-1.html"),
+        webcamBorder3: resolve(__dirname, "camera-border-3.html"),
         titlePowerline: resolve(__dirname, "title-powerline.html"),
         logo: resolve(__dirname, "logo.html"),
         background: resolve(__dirname, "background.html"),

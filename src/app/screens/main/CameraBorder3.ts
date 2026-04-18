@@ -1,10 +1,7 @@
 import {
   Container,
   Graphics,
-  Rectangle,
   Sprite,
-  Text,
-  TextStyle,
   Texture,
 } from "pixi.js";
 
@@ -104,19 +101,6 @@ interface BrushStroke {
   dripLength: number;
 }
 
-interface GraffitiTag {
-  node: Text;
-  baseX: number;
-  baseY: number;
-  alphaMin: number;
-  alphaMax: number;
-  alphaSpeed: number;
-  alphaPhase: number;
-  bobAmp: number;
-  bobSpeed: number;
-  bobPhase: number;
-}
-
 interface SurfaceLine {
   x1: number;
   y1: number;
@@ -164,6 +148,56 @@ interface LightningBolt {
   width: number;
 }
 
+interface FireworkParticle {
+  x: number; y: number;
+  vx: number; vy: number;
+  life: number; decay: number;
+  size: number; color: PaletteColor;
+}
+
+interface ElectricSpike {
+  points: Array<[number, number]>;
+  alpha: number; decay: number;
+  color: PaletteColor; width: number;
+}
+
+interface SplashDroplet {
+  x: number; y: number;
+  vx: number; vy: number;
+  life: number; decay: number;
+  size: number; color: PaletteColor;
+}
+
+interface AsteroidBody {
+  cont: Container;
+  orbitAngle: number;
+  orbitSpeed: number;
+  semiMajor: number;        // ellipse semi-major axis (px)
+  semiMinor: number;        // ellipse semi-minor axis (px)
+  orbitTilt: number;        // current rotation of the ellipse (rad)
+  precessionSpeed: number;  // orbit rotation speed (rad/s)
+  selfRotSpeed: number;
+  alpha: number;
+  dying: boolean;
+  dyingTimer: number;
+}
+
+interface DebrisParticle {
+  x: number; y: number;
+  vx: number; vy: number;
+  r: number; color: number;
+  life: number; maxLife: number;
+}
+
+interface NaturalSatellite {
+  cont: Container;
+  orbitAngle: number;
+  orbitSpeed: number;   // rad/s, signed
+  orbitRadius: number;
+  selfRotSpeed: number; // slow self-rotation of surface features
+  kind: number;         // 0=moon 1=europa 2=io
+}
+
 interface OrbitDot {
   angle: number; // current angular position (radians)
   speed: number; // radians per second, signed (CW or CCW)
@@ -195,27 +229,6 @@ interface FluidStain {
   modes: Array<{ amp: number; phase: number; speed: number }>;
 }
 
-/**
- * A floating Nerd Font / Unicode symbol that orbits the camera ring,
- * vibrates in scale, and pulses its alpha for a glowing effect.
- */
-interface FloatingSymbol {
-  node:        Text;
-  angle:       number;   // current orbital position (rad)
-  orbitSpeed:  number;   // rad/s, signed (CW / CCW)
-  orbitRadius: number;   // px from centre — always outside the ring
-  vibeAmp:     number;   // scale oscillation amplitude (0.1 = ±10 %)
-  vibeSpeed:   number;   // rad/s
-  vibePhase:   number;
-  alphaBase:   number;   // centre alpha value
-  alphaAmp:    number;   // alpha pulse depth
-  alphaSpeed:  number;
-  alphaPhase:  number;
-  jitterAmp:   number;   // positional jitter radius px
-  jitterPhase: number;
-  baseScale:   number;
-}
-
 interface GlitchBand {
   y: number;
   height: number;
@@ -233,75 +246,6 @@ interface WaveConfig {
   lineWidth: number; // base core stroke width in px
   breatheMode: "calm" | "bass" | "electric" | "fluid";
 }
-
-// wander=random, orbit=circular, bounce=elastic, pulse=scale-oscillate, beat=heartbeat-kick, float=slow-bob, spin=fast-rotate
-type AnimStyle =
-  | "wander"
-  | "orbit"
-  | "bounce"
-  | "pulse"
-  | "beat"
-  | "float"
-  | "spin";
-
-interface GraffitiOrbitSprite {
-  sprite: Sprite;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  targetVx: number;
-  targetVy: number;
-  dirTimer: number;
-  dirInterval: number;
-  rotSpeed: number;
-  baseScale: number;
-  cellIdx: number; // index into SPRITE_CELLS
-  swapTimer: number; // countdown seconds until next swap
-  swapInterval: number; // seconds between swaps
-  fadeAlpha: number; // 0..1
-  fadingOut: boolean; // true = fading out to swap texture
-  animStyle: AnimStyle;
-  phase: number; // random phase for oscillations
-  pulseSpeed: number; // rad/s for pulse/float breathe
-  pulseAmp: number; // scale amplitude for pulse
-  beatTimer: number; // countdown to next heartbeat kick
-  beatInterval: number; // seconds between kicks
-  beatScale: number; // current kick multiplier, decays to 1.0
-  orbitAngle: number; // current angle for orbit style
-  orbitRadius: number; // orbit distance from centre
-  orbitSpeed: number; // rad/s, signed — CW or CCW
-}
-
-// ── Graffiti splat frame crops (source: 6000 × 2864 px sheet) ────────────────
-// Each entry is a [x, y, w, h] rect cropping one element from the spritesheet.
-
-// ── Sprite sheet grid (sprite.png — 2048×2048, 8×8 grid, 256 px per cell) ─────
-// Each entry is [col, row] (0-based). Cell size = 256.
-
-const CELL = 256;
-const SPRITE_CELLS: [number, number][] = [
-  [0, 0], // skull
-  [1, 0], // X mark
-  [3, 0], // XO tag
-  [4, 0], // + cross
-  [7, 0], // skull variant
-  [0, 1], // XO text
-  [1, 1], // laptop
-  [5, 1], // ring/circle
-  [0, 2], // grunge ring
-  [2, 2], // tooth
-  [3, 2], // teeth/mouth
-  [6, 2], // laptop alt
-  [7, 2], // skull side
-  [4, 4], // gun
-  [0, 5], // skull front
-  [2, 5], // X large
-  [3, 5], // + large
-  [1, 6], // XO spray
-  [5, 6], // skull grin
-  [6, 6], // gun alt
-];
 
 // ── Wave configs — TrapNation neon-tube style ─────────────────────────────────
 
@@ -392,98 +336,6 @@ const WAVE_CONFIGS: WaveConfig[] = [
 
 const WAVE_STEPS = 240;
 
-// ── Graffiti tag definitions ──────────────────────────────────────────────────
-
-const GRAFFITI_DEFS: Array<{
-  label: string;
-  size: number;
-  color: PaletteColor;
-  angle: number;
-  rOffset: number;
-  rot: number;
-}> = [
-  {
-    label: "rust",
-    size: 26,
-    color: RAZER_GREEN,
-    angle: 0.3,
-    rOffset: -18,
-    rot: -0.15,
-  },
-  {
-    label: "CODE",
-    size: 20,
-    color: TOXIC_VIOLET,
-    angle: 3.5,
-    rOffset: 22,
-    rot: 0.2,
-  },
-  {
-    label: "crazy",
-    size: 15,
-    color: TOXIC_GREEN,
-    angle: 1.1,
-    rOffset: -12,
-    rot: -0.25,
-  },
-  {
-    label: "★",
-    size: 22,
-    color: LOL_VIOLET,
-    angle: 1.8,
-    rOffset: 20,
-    rot: 0.05,
-  },
-  {
-    label: "hardcore",
-    size: 30,
-    color: TOXIC_LIME,
-    angle: 2.5,
-    rOffset: -22,
-    rot: 0.3,
-  },
-  {
-    label: "*",
-    size: 34,
-    color: RAZER_GREEN,
-    angle: 4.1,
-    rOffset: 26,
-    rot: -0.1,
-  },
-  {
-    label: "craft",
-    size: 24,
-    color: LOL_BLUE,
-    angle: 5.2,
-    rOffset: -16,
-    rot: 0.18,
-  },
-  {
-    label: "grind",
-    size: 18,
-    color: TOXIC_VIOLET,
-    angle: 0.9,
-    rOffset: 28,
-    rot: -0.22,
-  },
-  {
-    label: "+",
-    size: 20,
-    color: TOXIC_GREEN,
-    angle: 3.9,
-    rOffset: -24,
-    rot: 0.12,
-  },
-  {
-    label: ">>>",
-    size: 14,
-    color: LIME_GREEN,
-    angle: 5.8,
-    rOffset: 16,
-    rot: -0.08,
-  },
-];
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function randomPalette(): PaletteColor {
@@ -515,6 +367,255 @@ function jaggedPath(
   return pts;
 }
 
+// ── Asteroid paint ────────────────────────────────────────────────────────────
+// Called once per asteroid during init — Math.random() gives each a unique shape.
+
+function paintAsteroid(g: Graphics, r: number): void {
+  const sides = 7 + Math.floor(Math.random() * 5); // 7-11 vertices
+  const baseColor = [0x5a5a62, 0x636258, 0x524a48, 0x5e5252, 0x585662, 0x4e5258][
+    Math.floor(Math.random() * 6)
+  ];
+
+  // Irregular outline — angular jitter per vertex
+  const pts: number[] = [];
+  for (let i = 0; i < sides; i++) {
+    const a  = (i / sides) * Math.PI * 2 + (Math.random() - 0.5) * (Math.PI / sides) * 0.65;
+    const rr = r * (0.60 + Math.random() * 0.55);
+    pts.push(Math.cos(a) * rr, Math.sin(a) * rr);
+  }
+  g.poly(pts, true).fill({ color: baseColor, alpha: 1.0 });
+
+  // Shadow side — dark overlay bottom-right
+  g.circle(r * 0.20, r * 0.20, r * 0.74).fill({ color: 0x14141c, alpha: 0.50 });
+
+  // Lit side — soft highlight upper-left
+  g.circle(-r * 0.18, -r * 0.18, r * 0.60).fill({ color: 0x9898a0, alpha: 0.30 });
+  g.circle(-r * 0.26, -r * 0.26, r * 0.30).fill({ color: 0xbabac0, alpha: 0.20 });
+
+  // Impact craters (only on bodies large enough to show them)
+  if (r >= 7) {
+    const n = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+      const ca = Math.random() * Math.PI * 2;
+      const cd = r * (0.10 + Math.random() * 0.30);
+      const cx = Math.cos(ca) * cd, cy = Math.sin(ca) * cd;
+      const cr = r * (0.11 + Math.random() * 0.15);
+      g.circle(cx, cy, cr).fill({ color: 0x242430, alpha: 0.70 });
+      g.circle(cx - cr * 0.18, cy - cr * 0.18, cr * 0.55).fill({ color: 0x3c3c46, alpha: 0.35 });
+      g.circle(cx, cy, cr).stroke({ color: 0x888890, alpha: 0.18, width: 0.5 });
+    }
+  }
+
+  // Specular limb — faint bright outline on lit side
+  g.poly(pts, true).stroke({ color: 0xc0c0c8, alpha: 0.20, width: 0.7 });
+}
+
+// ── Natural satellite paint functions ─────────────────────────────────────────
+// Drawn in local space, centred at origin. Lit from upper-left (−1, −1 direction).
+// r = body radius in pixels.
+
+function paintNatSatellite(g: Graphics, kind: number, r: number): void {
+  switch (kind) {
+    case 0: paintMoonBody(g, r);   break;
+    case 1: paintEuropaBody(g, r); break;
+    default: paintIoBody(g, r);    break;
+  }
+}
+
+/**
+ * Moon — ancient, cratered, lit from upper-left.
+ * Grey regolith, dark mare basins, nested impact craters with bright rims.
+ */
+function paintMoonBody(g: Graphics, r: number): void {
+  // ── Deep space glow halo ────────────────────────────────────────────────────
+  g.circle(0, 0, r * 1.55).fill({ color: 0xd8d4cc, alpha: 0.04 });
+  g.circle(0, 0, r * 1.22).fill({ color: 0xd8d4cc, alpha: 0.07 });
+
+  // ── Base sphere — shadowed mid-grey ────────────────────────────────────────
+  g.circle(0, 0, r).fill({ color: 0x6a6a72, alpha: 1.0 });
+
+  // ── Lit hemisphere — layered offset circles simulate sphere gradient ────────
+  g.circle(-r * 0.18, -r * 0.18, r * 0.97).fill({ color: 0xbcb8b0, alpha: 0.52 });
+  g.circle(-r * 0.24, -r * 0.24, r * 0.72).fill({ color: 0xccc8c0, alpha: 0.38 });
+  g.circle(-r * 0.30, -r * 0.30, r * 0.44).fill({ color: 0xd8d4cc, alpha: 0.26 });
+  // Specular highlight
+  g.circle(-r * 0.38, -r * 0.38, r * 0.13).fill({ color: 0xf0ece4, alpha: 0.22 });
+
+  // ── Dark mare basins (ancient volcanic plains) ─────────────────────────────
+  g.circle(-r * 0.08, -r * 0.22, r * 0.30).fill({ color: 0x3e3e48, alpha: 0.60 }); // Mare Imbrium
+  g.circle( r * 0.26, -r * 0.06, r * 0.19).fill({ color: 0x424250, alpha: 0.52 }); // Mare Serenitatis
+  g.circle(-r * 0.30,  r * 0.28, r * 0.14).fill({ color: 0x444450, alpha: 0.44 }); // Mare Humorum
+  g.circle( r * 0.10,  r * 0.32, r * 0.11).fill({ color: 0x464656, alpha: 0.38 }); // Mare Nubium
+
+  // ── Impact craters — shadow floor + bright ejecta rim ─────────────────────
+  const craters = [
+    { cx:  0.14, cy:  0.30, cr: 0.20 }, // large — centre-south
+    { cx: -0.32, cy:  0.18, cr: 0.13 }, // mid — west
+    { cx:  0.36, cy: -0.30, cr: 0.11 }, // mid — north-east
+    { cx: -0.12, cy: -0.36, cr: 0.09 }, // small — north
+    { cx:  0.44, cy:  0.22, cr: 0.08 }, // small — east edge
+    { cx: -0.38, cy: -0.14, cr: 0.07 }, // small — west
+    { cx:  0.22, cy:  0.46, cr: 0.07 }, // small — south
+    { cx: -0.20, cy:  0.44, cr: 0.06 }, // tiny — south-west
+    { cx:  0.02, cy: -0.50, cr: 0.05 }, // tiny — far north
+    { cx:  0.50, cy: -0.06, cr: 0.05 }, // tiny — far east
+  ];
+  for (const c of craters) {
+    const cx = c.cx * r, cy = c.cy * r, cr = c.cr * r;
+    // Shadow floor
+    g.circle(cx, cy, cr).fill({ color: 0x2e2e36, alpha: 0.65 });
+    // Interior — slight lighter centre (central peak)
+    g.circle(cx - cr * 0.15, cy - cr * 0.15, cr * 0.55).fill({ color: 0x585860, alpha: 0.30 });
+    // Bright ejecta rim
+    g.circle(cx, cy, cr).stroke({ color: 0xc8c4bc, alpha: 0.50, width: r * 0.022 });
+    // Shadow crescent on rim (southeast)
+    g.circle(cx + cr * 0.28, cy + cr * 0.28, cr * 0.22).fill({ color: 0x222228, alpha: 0.45 });
+  }
+
+  // ── Terminator edge — soft shadow on right side ────────────────────────────
+  g.circle(r * 0.12, 0, r * 0.92).fill({ color: 0x1a1a22, alpha: 0.28 });
+
+  // ── Thin atmosphere limb glow ──────────────────────────────────────────────
+  g.circle(0, 0, r).stroke({ color: 0xe0dcd4, alpha: 0.18, width: r * 0.04 });
+}
+
+/**
+ * Europa — Jupiter's icy moon. Alabaster surface crisscrossed by reddish-brown
+ * lineae (tidal crack networks) overlying a subsurface ocean. Alien, unsettling.
+ */
+function paintEuropaBody(g: Graphics, r: number): void {
+  // ── Deep glow — cold blue ──────────────────────────────────────────────────
+  g.circle(0, 0, r * 1.50).fill({ color: 0x88ccff, alpha: 0.05 });
+  g.circle(0, 0, r * 1.18).fill({ color: 0xaaddff, alpha: 0.08 });
+
+  // ── Base sphere — icy blue-white ───────────────────────────────────────────
+  g.circle(0, 0, r).fill({ color: 0x9fc8e8, alpha: 1.0 });
+
+  // ── Lit hemisphere gradient ────────────────────────────────────────────────
+  g.circle(-r * 0.16, -r * 0.16, r * 0.96).fill({ color: 0xd8eef8, alpha: 0.55 });
+  g.circle(-r * 0.22, -r * 0.22, r * 0.70).fill({ color: 0xe8f6ff, alpha: 0.38 });
+  g.circle(-r * 0.28, -r * 0.28, r * 0.42).fill({ color: 0xf4faff, alpha: 0.25 });
+  g.circle(-r * 0.36, -r * 0.36, r * 0.12).fill({ color: 0xffffff, alpha: 0.22 });
+
+  // ── Subsurface warm glow (hint of the ocean beneath the ice) ───────────────
+  g.circle(r * 0.08, r * 0.08, r * 0.65).fill({ color: 0x2244aa, alpha: 0.10 });
+
+  // ── Chaos terrain patches — older disrupted ice regions ───────────────────
+  const patches = [
+    { cx: 0.18, cy: 0.24, rx: 0.22, ry: 0.14 },
+    { cx: -0.25, cy: -0.28, rx: 0.18, ry: 0.11 },
+    { cx: 0.30, cy: -0.18, rx: 0.15, ry: 0.10 },
+  ];
+  for (const p of patches) {
+    // Use a circle as approximation of the elliptical patch
+    g.circle(p.cx * r, p.cy * r, (p.rx + p.ry) * 0.5 * r).fill({ color: 0x7898b8, alpha: 0.22 });
+  }
+
+  // ── Lineae — the iconic reddish-brown crack network ────────────────────────
+  // Major tidal cracks crossing the globe
+  const lineae: Array<[number, number, number, number]> = [
+    [ -0.70, -0.28,  0.65,  0.40 ], // Thera Macula diagonal
+    [  0.20, -0.72, -0.30,  0.68 ], // cross-equatorial ridge
+    [ -0.55,  0.55,  0.70, -0.42 ], // Minos Linea
+    [  0.60,  0.55, -0.58, -0.30 ], // Cadmus Linea
+    [ -0.10, -0.68,  0.15,  0.72 ], // Conamara region
+    [  0.68, -0.20, -0.62,  0.35 ], // Astypalaea Linea
+  ];
+  for (const [x1, y1, x2, y2] of lineae) {
+    const lx1 = x1 * r, ly1 = y1 * r, lx2 = x2 * r, ly2 = y2 * r;
+    // Outer warm glow — reddish-brown
+    g.moveTo(lx1, ly1).lineTo(lx2, ly2)
+      .stroke({ color: 0x8b3a1a, alpha: 0.25, width: r * 0.065, cap: "round" });
+    // Core crack line
+    g.moveTo(lx1, ly1).lineTo(lx2, ly2)
+      .stroke({ color: 0xb85a2a, alpha: 0.55, width: r * 0.025, cap: "round" });
+    // Bright frost along crack edge
+    g.moveTo(lx1, ly1).lineTo(lx2, ly2)
+      .stroke({ color: 0xddeeff, alpha: 0.18, width: r * 0.008, cap: "round" });
+  }
+  // Finer secondary cracks
+  const fineLineae: Array<[number, number, number, number]> = [
+    [ -0.40,  0.10,  0.45, -0.35 ],
+    [  0.10,  0.55, -0.50, -0.10 ],
+    [  0.55,  0.15,  0.10,  0.60 ],
+    [ -0.22, -0.50,  0.50,  0.22 ],
+  ];
+  for (const [x1, y1, x2, y2] of fineLineae) {
+    g.moveTo(x1 * r, y1 * r).lineTo(x2 * r, y2 * r)
+      .stroke({ color: 0x7a3318, alpha: 0.32, width: r * 0.016, cap: "round" });
+  }
+
+  // ── Terminator shadow ──────────────────────────────────────────────────────
+  g.circle(r * 0.12, 0, r * 0.92).fill({ color: 0x0a1828, alpha: 0.24 });
+
+  // ── Icy limb glow ──────────────────────────────────────────────────────────
+  g.circle(0, 0, r).stroke({ color: 0xcceeff, alpha: 0.22, width: r * 0.05 });
+}
+
+/**
+ * Io — Jupiter's hellish volcanic moon. Sulfur plains of yellow-orange,
+ * dark volcanic calderas, lava flows, and active plume halos. Genuinely terrifying.
+ */
+function paintIoBody(g: Graphics, r: number): void {
+  // ── Volcanic heat glow ──────────────────────────────────────────────────────
+  g.circle(0, 0, r * 1.55).fill({ color: 0xff6600, alpha: 0.04 });
+  g.circle(0, 0, r * 1.22).fill({ color: 0xff8800, alpha: 0.07 });
+
+  // ── Base sphere — sulfur yellow ────────────────────────────────────────────
+  g.circle(0, 0, r).fill({ color: 0xd4aa18, alpha: 1.0 });
+
+  // ── Lit hemisphere ─────────────────────────────────────────────────────────
+  g.circle(-r * 0.17, -r * 0.17, r * 0.96).fill({ color: 0xeec830, alpha: 0.52 });
+  g.circle(-r * 0.24, -r * 0.24, r * 0.70).fill({ color: 0xf8dc50, alpha: 0.35 });
+  g.circle(-r * 0.30, -r * 0.30, r * 0.40).fill({ color: 0xfcec78, alpha: 0.22 });
+  g.circle(-r * 0.37, -r * 0.37, r * 0.12).fill({ color: 0xfffc9a, alpha: 0.20 });
+
+  // ── Sulfur dioxide frost patches — bright white-yellow regions ─────────────
+  g.circle(-r * 0.20, -r * 0.32, r * 0.24).fill({ color: 0xf8f4dc, alpha: 0.45 });
+  g.circle( r * 0.28,  r * 0.26, r * 0.20).fill({ color: 0xf0ecd0, alpha: 0.38 });
+  g.circle(-r * 0.10,  r * 0.40, r * 0.15).fill({ color: 0xece8c8, alpha: 0.32 });
+
+  // ── Red & orange sulphur flows ─────────────────────────────────────────────
+  g.circle( r * 0.22,  r * 0.08, r * 0.28).fill({ color: 0xc84400, alpha: 0.40 });
+  g.circle(-r * 0.32,  r * 0.14, r * 0.20).fill({ color: 0xd05800, alpha: 0.35 });
+  g.circle( r * 0.10, -r * 0.30, r * 0.16).fill({ color: 0xe06000, alpha: 0.30 });
+
+  // ── Volcanic calderas — dark pits ─────────────────────────────────────────
+  const calderas = [
+    { cx: 0.16, cy: 0.10, cr: 0.14 }, // Pele — giant caldera
+    { cx: -0.24, cy: 0.28, cr: 0.10 }, // Loki Patera
+    { cx: 0.38, cy: -0.22, cr: 0.08 }, // Tvashtar
+    { cx: -0.10, cy: -0.36, cr: 0.07 }, // Prometheus
+    { cx: 0.44, cy:  0.30, cr: 0.06 }, // Ra Patera
+    { cx: -0.36, cy: -0.22, cr: 0.05 },
+  ];
+  for (const c of calderas) {
+    const cx = c.cx * r, cy = c.cy * r, cr = c.cr * r;
+    // Outer lava field — dark reddish ring
+    g.circle(cx, cy, cr * 1.5).fill({ color: 0x5a1a00, alpha: 0.35 });
+    // Caldera floor — black/dark brown
+    g.circle(cx, cy, cr).fill({ color: 0x1a0800, alpha: 0.88 });
+    // Active lava lake glow — orange hotspot
+    g.circle(cx, cy, cr * 0.55).fill({ color: 0xff4400, alpha: 0.55 });
+    g.circle(cx, cy, cr * 0.28).fill({ color: 0xff8c00, alpha: 0.70 });
+    g.circle(cx, cy, cr * 0.10).fill({ color: 0xffee00, alpha: 0.60 }); // white-hot centre
+    // Ejecta ring — bright sulphur around rim
+    g.circle(cx, cy, cr).stroke({ color: 0xf0c020, alpha: 0.40, width: r * 0.020 });
+  }
+
+  // ── Pele plume halo — enormous SO₂ deposit ring around the biggest volcano ─
+  g.circle(0.16 * r, 0.10 * r, r * 0.62)
+    .stroke({ color: 0xe84400, alpha: 0.16, width: r * 0.05 });
+  g.circle(0.16 * r, 0.10 * r, r * 0.55)
+    .stroke({ color: 0xff8800, alpha: 0.10, width: r * 0.03 });
+
+  // ── Terminator shadow ──────────────────────────────────────────────────────
+  g.circle(r * 0.12, 0, r * 0.92).fill({ color: 0x1a0800, alpha: 0.30 });
+
+  // ── Sulphur limb glow — eerie orange atmosphere ────────────────────────────
+  g.circle(0, 0, r).stroke({ color: 0xff6600, alpha: 0.20, width: r * 0.05 });
+}
+
 // ── CameraBorder ──────────────────────────────────────────────────────────────
 
 /**
@@ -533,7 +634,7 @@ function jaggedPath(
  *   logoGfx      — logo glow / orbital rings (added on attachLogo)
  *   logoSprite   — worxbend logo badge (top-left corner)
  */
-export class CameraBorder extends Container {
+export class CameraBorder3 extends Container {
   private readonly baseRadius: number;
 
   // ── Graphics layers ────────────────────────────────────────────────────────
@@ -546,28 +647,25 @@ export class CameraBorder extends Container {
   private readonly effectGfx: Graphics;
   private readonly particleGfx: Graphics;
   private readonly glitchGfx: Graphics; // pixel-glitch chromatic split — above waves
-  private readonly splatCont: Container; // orbiting graffiti splat sprites
   private readonly orbitDotGfx: Graphics; // catppuccin dots orbiting the ring
   private readonly stainGfx: Graphics;    // catppuccin fluid stains orbiting the ring
-  private readonly symbolCont: Container; // floating Nerd Font / Unicode symbols
+  private readonly beltCont: Container;       // asteroid bodies
+  private readonly beltEffectGfx: Graphics;   // debris particles from destruction
+  private readonly natSatCont: Container;     // natural satellite sprites
 
   // ── Logo ───────────────────────────────────────────────────────────────────
   private logoSprite: Sprite | null = null;
   private logoGfx: Graphics | null = null;
   private logoBaseScale = 1.0;
 
-  // ── Graffiti orbit sprites ─────────────────────────────────────────────────
-  private readonly splatSprites: GraffitiOrbitSprite[] = [];
-  private splatSheetTexture: Texture | null = null;
-
-  // Top-left corner at ~45° diagonal, distance ≈ 233 px from centre
-  private static readonly LOGO_X = -165;
-  private static readonly LOGO_Y = -165;
   private static readonly LOGO_SIZE = 96;
+  private static readonly LOGO_ORBIT_RADIUS = 233; // px from centre
+  private static readonly LOGO_ORBIT_SPEED = 0.12;  // rad/s
+
+  private logoOrbitAngle = -Math.PI * 0.75; // start at top-left (~225°)
 
   // ── State ──────────────────────────────────────────────────────────────────
   private readonly particles: Particle[] = [];
-  private readonly graffitiTags: GraffitiTag[] = [];
   private surfaceLines: SurfaceLine[] = [];
   private brushStrokes: BrushStroke[] = [];
   private sparkles: Sparkle[] = [];
@@ -575,7 +673,13 @@ export class CameraBorder extends Container {
   private lightningBolts: LightningBolt[] = [];
   private readonly orbitDots: OrbitDot[] = [];
   private readonly fluidStains: FluidStain[] = [];
-  private readonly floatingSymbols: FloatingSymbol[] = [];
+  private fireworkParticles: FireworkParticle[] = [];
+  private electricSpikes: ElectricSpike[] = [];
+  private splashDroplets: SplashDroplet[] = [];
+  private asteroidBelt: AsteroidBody[] = [];
+  private debrisParticles: DebrisParticle[] = [];
+  private beltSpawnTimer = 0;
+  private naturalSatellites: NaturalSatellite[] = [];
 
   private time = 0;
   private glitchActive = false;
@@ -588,6 +692,9 @@ export class CameraBorder extends Container {
   private sparkleAccum = 0;
   private sparkAccum = 0;
   private lightningAccum = 0;
+  private fireworkAccum = 0;
+  private spikeAccum = 0;
+  private splashAccum = 0;
   private beatAmplitude = 1.0;
   private nextBeatTime = 0.5;
 
@@ -599,14 +706,24 @@ export class CameraBorder extends Container {
   private readonly ringSpeedDrift: number[];
   private readonly ringAmpDrift: number[];
 
-  private static readonly BRUSH_INTERVAL = 0.09;
-  private static readonly SPARKLE_INTERVAL = 0.28;
-  private static readonly SPARK_INTERVAL = 0.15;
-  private static readonly LIGHTNING_INTERVAL = 5.0;
-  private static readonly MAX_STROKES = 120;
-  private static readonly MAX_SPARKS = 120;
-  private static readonly MAX_SPARKLES = 60;
-  private static readonly MAX_BOLTS = 8;
+  private static readonly BRUSH_INTERVAL = 0.07;
+  private static readonly SPARKLE_INTERVAL = 0.09;
+  private static readonly SPARK_INTERVAL = 0.10;
+  private static readonly LIGHTNING_INTERVAL = 4.0;
+  private static readonly FIREWORK_INTERVAL = 3.5;
+  private static readonly SPIKE_INTERVAL = 0.65;
+  private static readonly SPLASH_INTERVAL = 1.4;
+  private static readonly MAX_STROKES = 150;
+  private static readonly MAX_SPARKS = 180;
+  private static readonly MAX_SPARKLES = 160;
+  private static readonly MAX_BOLTS = 10;
+  private static readonly MAX_FIREWORK_PARTICLES = 300;
+  private static readonly MAX_SPIKES = 90;
+  private static readonly MAX_SPLASH_DROPLETS = 180;
+  private static readonly MAX_ASTEROIDS           = 200;
+  private static readonly ASTEROID_SPAWN_INTERVAL = 1.2;  // seconds between spawn bursts
+  private static readonly ASTEROID_DEATH_CHANCE   = 0.0012; // per asteroid per second
+  private static readonly ASTEROID_DEATH_DURATION = 0.55; // seconds for death animation
 
   constructor(radius = 200) {
     super();
@@ -624,8 +741,9 @@ export class CameraBorder extends Container {
     this.particleGfx = new Graphics();
     this.orbitDotGfx = new Graphics();
     this.stainGfx = new Graphics();
-    this.symbolCont = new Container();
-    this.splatCont = new Container();
+    this.beltCont      = new Container();
+    this.beltEffectGfx = new Graphics();
+    this.natSatCont    = new Container();
 
     this.graffCont.addChild(this.graffGfx);
 
@@ -638,9 +756,11 @@ export class CameraBorder extends Container {
     this.addChild(this.effectGfx);
     this.addChild(this.particleGfx);
     this.addChild(this.stainGfx);    // fluid stains — above particles, below orbit dots
-    this.addChild(this.orbitDotGfx); // catppuccin orbit dots
-    this.addChild(this.symbolCont);  // floating symbols — topmost non-logo layer
-    // splatCont and logo layers are added on attach* calls (topmost)
+    this.addChild(this.orbitDotGfx);    // catppuccin orbit dots
+    this.addChild(this.beltCont);       // asteroid bodies
+    this.addChild(this.beltEffectGfx);  // destruction debris
+    this.addChild(this.natSatCont);     // natural satellites — above ring, below logo
+    // logo layer is added on attachLogo call (topmost)
 
     // Per-ring independent drift — random starting phases so no two rings are in sync
     this.ringSpeedDrift = WAVE_CONFIGS.map(() => Math.random() * Math.PI * 2);
@@ -650,9 +770,9 @@ export class CameraBorder extends Container {
     this.initParticles();
     this.initOrbitDots();
     this.initFluidStains();
-    this.initFloatingSymbols();
     this.initSurfaceLines();
-    this.initGraffitiTags();
+    this.initAsteroidBelt();
+    this.initNaturalSatellites();
   }
 
   // ── Logo API ───────────────────────────────────────────────────────────────
@@ -670,194 +790,14 @@ export class CameraBorder extends Container {
 
     const sprite = new Sprite(texture);
     sprite.anchor.set(0.5);
-    sprite.width = CameraBorder.LOGO_SIZE;
+    sprite.width = CameraBorder3.LOGO_SIZE;
     sprite.scale.y = sprite.scale.x;
-    sprite.x = CameraBorder.LOGO_X;
-    sprite.y = CameraBorder.LOGO_Y;
+    sprite.x = Math.cos(this.logoOrbitAngle) * CameraBorder3.LOGO_ORBIT_RADIUS;
+    sprite.y = Math.sin(this.logoOrbitAngle) * CameraBorder3.LOGO_ORBIT_RADIUS;
     this.addChild(sprite);
 
     this.logoBaseScale = sprite.scale.x;
     this.logoSprite = sprite;
-  }
-
-  /**
-   * Spawn graffiti splat sprites orbiting the border ring.
-   * Call after the "main" asset bundle has been loaded (from show()).
-   */
-  public attachGraffitiSplats(texture: Texture): void {
-    this.splatSheetTexture = texture;
-    this.addChild(this.splatCont); // inserted below logo layers
-    const usedIndices = new Set<number>();
-
-    // 10 sprites distributed across 7 animation personalities
-    const STYLES: AnimStyle[] = [
-      "orbit",
-      "bounce",
-      "pulse",
-      "beat",
-      "float",
-      "spin",
-      "orbit",
-      "bounce",
-      "pulse",
-      "wander",
-    ];
-    // Pixel sizes — variety keeps things visually interesting
-    const SIZES = [80, 55, 70, 45, 65, 90, 55, 60, 75, 40];
-
-    for (let i = 0; i < STYLES.length; i++) {
-      let cellIdx: number;
-      do {
-        cellIdx = Math.floor(Math.random() * SPRITE_CELLS.length);
-      } while (usedIndices.has(cellIdx));
-      usedIndices.add(cellIdx);
-
-      const [col, row] = SPRITE_CELLS[cellIdx];
-      const frame = new Rectangle(col * CELL, row * CELL, CELL, CELL);
-      const cropped = new Texture({ source: texture.source, frame });
-
-      const sprite = new Sprite(cropped);
-      sprite.anchor.set(0.5);
-      const baseScale = SIZES[i] / CELL;
-      sprite.scale.set(baseScale);
-      sprite.blendMode = "screen";
-      sprite.alpha = 0;
-
-      const style = STYLES[i];
-      const phase = Math.random() * Math.PI * 2;
-      const startAngle = (i / STYLES.length) * Math.PI * 2;
-      const startR = this.baseRadius + 22 + Math.random() * 65;
-      sprite.x = Math.cos(startAngle) * startR;
-      sprite.y = Math.sin(startAngle) * startR;
-
-      this.splatCont.addChild(sprite);
-
-      const initSpeed =
-        style === "float"
-          ? 8 + Math.random() * 12
-          : style === "bounce"
-            ? 60 + Math.random() * 80
-            : 25 + Math.random() * 55;
-      const ang = Math.random() * Math.PI * 2;
-      const beatInterval = 0.8 + Math.random() * 1.2;
-
-      this.splatSprites.push({
-        sprite,
-        x: sprite.x,
-        y: sprite.y,
-        vx: Math.cos(ang) * initSpeed,
-        vy: Math.sin(ang) * initSpeed,
-        targetVx: Math.cos(ang) * initSpeed,
-        targetVy: Math.sin(ang) * initSpeed,
-        dirTimer: Math.random() * 2.0,
-        dirInterval: 1.2 + Math.random() * 2.5,
-        rotSpeed:
-          style === "spin"
-            ? (1.8 + Math.random() * 2.2) * (Math.random() < 0.5 ? 1 : -1)
-            : (Math.random() - 0.5) * 0.6,
-        baseScale,
-        cellIdx,
-        swapTimer: 1.5 + i * 0.7 + Math.random() * 2.0,
-        swapInterval: 3.5 + Math.random() * 4.5,
-        fadeAlpha: 0,
-        fadingOut: false,
-        animStyle: style,
-        phase,
-        pulseSpeed: 1.2 + Math.random() * 2.5,
-        pulseAmp: 0.25 + Math.random() * 0.35,
-        beatTimer: Math.random() * beatInterval,
-        beatInterval,
-        beatScale: 1.0,
-        orbitAngle: startAngle,
-        orbitRadius: startR,
-        orbitSpeed:
-          (0.08 + Math.random() * 0.22) * (Math.random() < 0.5 ? 1 : -1),
-      });
-    }
-  }
-
-  private animateSplatSprites(breathe: number): void {
-    const dt = 1 / 60;
-    const t = this.time;
-
-    for (const s of this.splatSprites) {
-      // ── Orbit movement — matches FloatingSymbol pattern ───────────────────
-      s.orbitAngle += s.orbitSpeed * dt;
-      const orbitR = s.orbitRadius * breathe;
-      s.x = Math.cos(s.orbitAngle) * orbitR;
-      s.y = Math.sin(s.orbitAngle) * orbitR;
-
-      // ── Visual effects — per style ─────────────────────────────────────────
-      let scaleF = 1.0;
-      let spriteY = s.y;
-
-      switch (s.animStyle) {
-        case "pulse":
-          scaleF = 1 + s.pulseAmp * Math.sin(t * s.pulseSpeed + s.phase);
-          break;
-
-        case "beat":
-          s.beatTimer -= dt;
-          if (s.beatTimer <= 0) {
-            s.beatTimer = s.beatInterval;
-            s.beatScale = 2.4; // sharp kick
-          }
-          s.beatScale = Math.max(1.0, s.beatScale - 6.0 * dt); // fast decay
-          scaleF = s.beatScale;
-          break;
-
-        case "float":
-          // Vertical sinusoidal bob + gentle scale breathe
-          spriteY = s.y + Math.sin(t * 0.85 + s.phase) * 24;
-          scaleF = 1 + 0.14 * Math.sin(t * 0.55 + s.phase + 1.2);
-          break;
-
-        case "orbit":
-          // Gentle scale breathe synced with orbit
-          scaleF = 1 + 0.12 * Math.sin(t * 1.1 + s.phase);
-          break;
-
-        case "bounce":
-          // Tremor tied to current speed magnitude
-          scaleF = 1 + 0.08 * Math.abs(Math.sin(t * 3.5 + s.phase));
-          break;
-      }
-
-      s.sprite.x = s.x;
-      s.sprite.y = spriteY;
-      s.sprite.rotation += s.rotSpeed * dt;
-      s.sprite.scale.set(s.baseScale * scaleF);
-
-      // ── Swap lifecycle ─────────────────────────────────────────────────────
-      if (s.fadingOut) {
-        s.fadeAlpha -= dt * 3.0; // fade out ~0.33 s
-        if (s.fadeAlpha <= 0) {
-          s.fadeAlpha = 0;
-          s.fadingOut = false;
-          let newIdx: number;
-          do {
-            newIdx = Math.floor(Math.random() * SPRITE_CELLS.length);
-          } while (newIdx === s.cellIdx);
-          s.cellIdx = newIdx;
-          if (this.splatSheetTexture) {
-            const [col, row] = SPRITE_CELLS[newIdx];
-            const frame = new Rectangle(col * CELL, row * CELL, CELL, CELL);
-            s.sprite.texture = new Texture({
-              source: this.splatSheetTexture.source,
-              frame,
-            });
-          }
-          s.swapTimer = s.swapInterval;
-        }
-      } else {
-        s.fadeAlpha = Math.min(1.0, s.fadeAlpha + dt * 3.0);
-        if (s.fadeAlpha >= 1.0) {
-          s.swapTimer -= dt;
-          if (s.swapTimer <= 0) s.fadingOut = true;
-        }
-      }
-      s.sprite.alpha = s.fadeAlpha;
-    }
   }
 
   // ── Init helpers ───────────────────────────────────────────────────────────
@@ -991,44 +931,6 @@ export class CameraBorder extends Container {
       this.surfaceLines.push(this.createSurfaceLine());
   }
 
-  private initGraffitiTags(): void {
-    const r = this.baseRadius;
-    const graffStyle = (size: number, color: number) =>
-      new TextStyle({
-        fontFamily: "'Permanent Marker', 'Rock Salt', cursive",
-        fontSize: size,
-        fill: color,
-        stroke: { color: INK_BLACK, width: Math.max(2, size * 0.14) },
-      });
-
-    for (const def of GRAFFITI_DEFS) {
-      const x = Math.cos(def.angle) * (r + def.rOffset);
-      const y = Math.sin(def.angle) * (r + def.rOffset);
-      const tag = new Text({
-        text: def.label,
-        style: graffStyle(def.size, def.color),
-      });
-      tag.anchor.set(0.5);
-      tag.x = x;
-      tag.y = y;
-      tag.rotation = def.rot;
-      tag.alpha = 0;
-      this.graffCont.addChild(tag);
-      this.graffitiTags.push({
-        node: tag,
-        baseX: x,
-        baseY: y,
-        alphaMin: 0.25 + Math.random() * 0.2,
-        alphaMax: 0.75 + Math.random() * 0.25,
-        alphaSpeed: 0.18 + Math.random() * 0.38,
-        alphaPhase: Math.random() * Math.PI * 2,
-        bobAmp: 3 + Math.random() * 6,
-        bobSpeed: 0.25 + Math.random() * 0.5,
-        bobPhase: Math.random() * Math.PI * 2,
-      });
-    }
-  }
-
   // ── Public update ──────────────────────────────────────────────────────────
 
   public update(): void {
@@ -1039,13 +941,13 @@ export class CameraBorder extends Container {
 
     // Dynamic intervals — scale with activity level
     const dynBrushInterval =
-      CameraBorder.BRUSH_INTERVAL / (0.4 + this.activityLevel * 0.8);
+      CameraBorder3.BRUSH_INTERVAL / (0.4 + this.activityLevel * 0.8);
     const dynSparkleInterval =
-      CameraBorder.SPARKLE_INTERVAL / (0.3 + this.activityLevel * 0.9);
+      CameraBorder3.SPARKLE_INTERVAL / (0.3 + this.activityLevel * 0.9);
     const dynSparkInterval =
-      CameraBorder.SPARK_INTERVAL / (0.4 + this.activityLevel * 0.7);
+      CameraBorder3.SPARK_INTERVAL / (0.4 + this.activityLevel * 0.7);
     const dynLightningInterval =
-      CameraBorder.LIGHTNING_INTERVAL * (1.5 - this.activityLevel * 0.7);
+      CameraBorder3.LIGHTNING_INTERVAL * (1.5 - this.activityLevel * 0.7);
 
     // Brush strokes
     this.brushAccum += dt;
@@ -1096,6 +998,108 @@ export class CameraBorder extends Container {
       return b.alpha > 0;
     });
 
+    // Fireworks
+    this.fireworkAccum += dt;
+    if (this.fireworkAccum >= CameraBorder3.FIREWORK_INTERVAL / (0.5 + this.activityLevel * 0.8)) {
+      this.fireworkAccum = 0;
+      this.spawnFirework();
+    }
+    for (const p of this.fireworkParticles) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.life -= p.decay * dt;
+    }
+    this.fireworkParticles = this.fireworkParticles.filter((p) => p.life > 0);
+
+    // Electric spikes
+    this.spikeAccum += dt;
+    if (this.spikeAccum >= CameraBorder3.SPIKE_INTERVAL / (0.5 + this.activityLevel * 0.8)) {
+      this.spikeAccum = 0;
+      this.spawnElectricSpikes();
+    }
+    this.electricSpikes = this.electricSpikes.filter((s) => {
+      s.alpha -= s.decay * dt;
+      return s.alpha > 0;
+    });
+
+    // Paint splashes
+    this.splashAccum += dt;
+    if (this.splashAccum >= CameraBorder3.SPLASH_INTERVAL / (0.4 + this.activityLevel * 0.8)) {
+      this.splashAccum = 0;
+      this.spawnPaintSplash();
+    }
+    for (const d of this.splashDroplets) {
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+      d.life -= d.decay * dt;
+    }
+    this.splashDroplets = this.splashDroplets.filter((d) => d.life > 0);
+
+    // Asteroid belt — spawn, orbit, random destruction
+    const breatheNow = 1 + 0.03 * Math.sin(this.time * 0.7);
+
+    this.beltSpawnTimer += dt;
+    if (this.beltSpawnTimer >= CameraBorder3.ASTEROID_SPAWN_INTERVAL) {
+      this.beltSpawnTimer = 0;
+      const burst = 2 + Math.floor(Math.random() * 4);
+      for (let s = 0; s < burst && this.asteroidBelt.length < CameraBorder3.MAX_ASTEROIDS; s++)
+        this.spawnAsteroid();
+    }
+
+    for (let i = this.asteroidBelt.length - 1; i >= 0; i--) {
+      const ast = this.asteroidBelt[i];
+      ast.orbitAngle     += ast.orbitSpeed * dt;
+      ast.orbitTilt      += ast.precessionSpeed * dt;
+      // Elliptic position in orbit frame, then rotated by tilt
+      const lx = ast.semiMajor * Math.cos(ast.orbitAngle) * breatheNow;
+      const ly = ast.semiMinor * Math.sin(ast.orbitAngle) * breatheNow;
+      const ct = Math.cos(ast.orbitTilt), st = Math.sin(ast.orbitTilt);
+      ast.cont.x = lx * ct - ly * st;
+      ast.cont.y = lx * st + ly * ct;
+      ast.cont.rotation += ast.selfRotSpeed * dt;
+
+      if (ast.dying) {
+        ast.dyingTimer -= dt;
+        ast.alpha = Math.max(0, ast.dyingTimer / CameraBorder3.ASTEROID_DEATH_DURATION);
+        ast.cont.alpha = ast.alpha;
+        ast.cont.scale.set(1 + (1 - ast.alpha) * 0.7);
+        if (ast.dyingTimer <= 0) {
+          this.beltCont.removeChild(ast.cont);
+          this.asteroidBelt.splice(i, 1);
+        }
+      } else {
+        // Fade in on spawn
+        if (ast.alpha < 1) {
+          ast.alpha = Math.min(1, ast.alpha + dt * 3.0);
+          ast.cont.alpha = ast.alpha;
+        }
+        // Random destruction
+        if (Math.random() < CameraBorder3.ASTEROID_DEATH_CHANCE * dt * 60) {
+          ast.dying = true;
+          ast.dyingTimer = CameraBorder3.ASTEROID_DEATH_DURATION;
+          this.spawnDebris(ast.cont.x, ast.cont.y);
+        }
+      }
+    }
+
+    // Debris particles
+    const debrisDrag = Math.pow(0.82, dt * 60);
+    for (const d of this.debrisParticles) {
+      d.life -= dt;
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+      d.vx *= debrisDrag;
+      d.vy *= debrisDrag;
+    }
+    this.debrisParticles = this.debrisParticles.filter((d) => d.life > 0);
+    for (const sat of this.naturalSatellites) {
+      sat.orbitAngle += sat.orbitSpeed * dt;
+      const r = sat.orbitRadius * breatheNow;
+      sat.cont.x = Math.cos(sat.orbitAngle) * r;
+      sat.cont.y = Math.sin(sat.orbitAngle) * r;
+      sat.cont.rotation += sat.selfRotSpeed * dt;
+    }
+
     // Particles
     for (const p of this.particles) {
       p.angle += p.orbitSpeed;
@@ -1106,14 +1110,6 @@ export class CameraBorder extends Container {
       stain.angle    += stain.speed   * dt;
       stain.rotation += stain.rotSpeed * dt;
       for (const m of stain.modes) m.phase += m.speed * dt;
-    }
-
-    // Floating symbols — orbital + vibration phases advance each frame
-    for (const s of this.floatingSymbols) {
-      s.angle      += s.orbitSpeed * dt;
-      s.vibePhase  += s.vibeSpeed  * dt;
-      s.alphaPhase += s.alphaSpeed * dt;
-      s.jitterPhase += 1.7 * dt; // irrational multiple so x/y jitter are out of sync
     }
 
     this.drawFrame(dt);
@@ -1146,6 +1142,9 @@ export class CameraBorder extends Container {
 
         this.spawnSparks(true);
         if (Math.random() < 0.45 * this.activityLevel) this.spawnLightning();
+        this.spawnElectricSpikes();
+        if (Math.random() < 0.3 * this.activityLevel) this.spawnFirework();
+        if (Math.random() < 0.25 * this.activityLevel) this.spawnPaintSplash();
 
         // Glitch: rare, only during active phases
         if (
@@ -1199,10 +1198,10 @@ export class CameraBorder extends Container {
       hasDrip: Math.random() < 0.3,
       dripLength: 12 + Math.random() * 28,
     });
-    if (this.brushStrokes.length > CameraBorder.MAX_STROKES) {
+    if (this.brushStrokes.length > CameraBorder3.MAX_STROKES) {
       this.brushStrokes.splice(
         0,
-        this.brushStrokes.length - CameraBorder.MAX_STROKES,
+        this.brushStrokes.length - CameraBorder3.MAX_STROKES,
       );
     }
   }
@@ -1221,8 +1220,8 @@ export class CameraBorder extends Container {
       rotSpeed: (Math.random() - 0.5) * 3,
       color: randomPalette(),
     });
-    if (this.sparkles.length > CameraBorder.MAX_SPARKLES) {
-      this.sparkles.splice(0, this.sparkles.length - CameraBorder.MAX_SPARKLES);
+    if (this.sparkles.length > CameraBorder3.MAX_SPARKLES) {
+      this.sparkles.splice(0, this.sparkles.length - CameraBorder3.MAX_SPARKLES);
     }
   }
 
@@ -1249,8 +1248,8 @@ export class CameraBorder extends Container {
         color,
       });
     }
-    if (this.sparks.length > CameraBorder.MAX_SPARKS) {
-      this.sparks.splice(0, this.sparks.length - CameraBorder.MAX_SPARKS);
+    if (this.sparks.length > CameraBorder3.MAX_SPARKS) {
+      this.sparks.splice(0, this.sparks.length - CameraBorder3.MAX_SPARKS);
     }
   }
 
@@ -1279,7 +1278,7 @@ export class CameraBorder extends Container {
     // 40 % chance of a branch from the midpoint
     if (
       Math.random() < 0.4 &&
-      this.lightningBolts.length < CameraBorder.MAX_BOLTS
+      this.lightningBolts.length < CameraBorder3.MAX_BOLTS
     ) {
       const mid = this.lightningBolts[this.lightningBolts.length - 1].points[5];
       const bAng = Math.random() * Math.PI * 2;
@@ -1301,6 +1300,124 @@ export class CameraBorder extends Container {
     }
   }
 
+  private spawnFirework(): void {
+    const angle = Math.random() * Math.PI * 2;
+    const r = this.baseRadius + (Math.random() - 0.5) * 12;
+    const ox = Math.cos(angle) * r;
+    const oy = Math.sin(angle) * r;
+    const color = randomPalette();
+    const count = 22 + Math.floor(Math.random() * 16);
+    for (let i = 0; i < count; i++) {
+      const shootAngle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+      const speed = 55 + Math.random() * 145;
+      this.fireworkParticles.push({
+        x: ox, y: oy,
+        vx: Math.cos(shootAngle) * speed,
+        vy: Math.sin(shootAngle) * speed,
+        life: 1.0,
+        decay: 1.1 + Math.random() * 1.9,
+        size: 1.8 + Math.random() * 3.2,
+        color,
+      });
+    }
+    if (this.fireworkParticles.length > CameraBorder3.MAX_FIREWORK_PARTICLES)
+      this.fireworkParticles.splice(0, this.fireworkParticles.length - CameraBorder3.MAX_FIREWORK_PARTICLES);
+  }
+
+  private spawnElectricSpikes(): void {
+    const burstAngle = Math.random() * Math.PI * 2;
+    const count = 5 + Math.floor(Math.random() * 7);
+    const r = this.baseRadius;
+    const color = randomPalette();
+    for (let i = 0; i < count; i++) {
+      const a = burstAngle + (Math.random() - 0.5) * 1.1;
+      const length = 20 + Math.random() * 65;
+      const sx = Math.cos(a) * r, sy = Math.sin(a) * r;
+      const ex = Math.cos(a) * (r + length), ey = Math.sin(a) * (r + length);
+      const dx = ex - sx, dy = ey - sy;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const px = -dy / len, py = dx / len;
+      const segs = 3 + Math.floor(Math.random() * 4);
+      const pts: Array<[number, number]> = [[sx, sy]];
+      for (let j = 1; j < segs; j++) {
+        const t = j / segs;
+        const off = (Math.random() - 0.5) * 15;
+        pts.push([sx + dx * t + px * off, sy + dy * t + py * off]);
+      }
+      pts.push([ex, ey]);
+      this.electricSpikes.push({
+        points: pts,
+        alpha: 0.9 + Math.random() * 0.1,
+        decay: 4.0 + Math.random() * 6.0,
+        color,
+        width: 0.7 + Math.random() * 1.3,
+      });
+    }
+    if (this.electricSpikes.length > CameraBorder3.MAX_SPIKES)
+      this.electricSpikes.splice(0, this.electricSpikes.length - CameraBorder3.MAX_SPIKES);
+  }
+
+  private spawnPaintSplash(): void {
+    const angle = Math.random() * Math.PI * 2;
+    const r = this.baseRadius + (Math.random() - 0.5) * 22;
+    const ox = Math.cos(angle) * r;
+    const oy = Math.sin(angle) * r;
+    const color = randomPalette();
+    const count = 14 + Math.floor(Math.random() * 12);
+    for (let i = 0; i < count; i++) {
+      const shootAngle = angle + (Math.random() - 0.5) * Math.PI * 0.85;
+      const speed = 35 + Math.random() * 105;
+      this.splashDroplets.push({
+        x: ox, y: oy,
+        vx: Math.cos(shootAngle) * speed,
+        vy: Math.sin(shootAngle) * speed,
+        life: 1.0,
+        decay: 1.4 + Math.random() * 2.6,
+        size: 1.4 + Math.random() * 4.0,
+        color,
+      });
+    }
+    if (this.splashDroplets.length > CameraBorder3.MAX_SPLASH_DROPLETS)
+      this.splashDroplets.splice(0, this.splashDroplets.length - CameraBorder3.MAX_SPLASH_DROPLETS);
+  }
+
+  private drawFireworks(): void {
+    for (const p of this.fireworkParticles) {
+      this.effectGfx.circle(p.x, p.y, p.size * 3.2).fill({ color: p.color, alpha: p.life * 0.14 });
+      this.effectGfx.circle(p.x, p.y, p.size).fill({ color: p.color, alpha: p.life });
+      this.effectGfx.circle(p.x, p.y, p.size * 0.4).fill({ color: 0xffffff, alpha: p.life * 0.65 });
+    }
+  }
+
+  private drawElectricSpikes(): void {
+    for (const s of this.electricSpikes) {
+      const pts = s.points;
+      // Outer glow
+      this.effectGfx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) this.effectGfx.lineTo(pts[i][0], pts[i][1]);
+      this.effectGfx.stroke({ color: s.color, alpha: s.alpha * 0.14, width: s.width * 9, cap: "round", join: "round" });
+      // Mid glow
+      this.effectGfx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) this.effectGfx.lineTo(pts[i][0], pts[i][1]);
+      this.effectGfx.stroke({ color: s.color, alpha: s.alpha * 0.42, width: s.width * 3, cap: "round", join: "round" });
+      // Core
+      this.effectGfx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) this.effectGfx.lineTo(pts[i][0], pts[i][1]);
+      this.effectGfx.stroke({ color: s.color, alpha: s.alpha, width: s.width, cap: "round", join: "round" });
+      // Bright tip
+      const tip = pts[pts.length - 1];
+      this.effectGfx.circle(tip[0], tip[1], s.width * 2.2).fill({ color: s.color, alpha: s.alpha });
+      this.effectGfx.circle(tip[0], tip[1], s.width * 1.1).fill({ color: 0xffffff, alpha: s.alpha * 0.8 });
+    }
+  }
+
+  private drawSplashDroplets(): void {
+    for (const d of this.splashDroplets) {
+      this.effectGfx.circle(d.x, d.y, d.size * 2.4).fill({ color: d.color, alpha: d.life * 0.12 });
+      this.effectGfx.circle(d.x, d.y, d.size).fill({ color: d.color, alpha: d.life * 0.88 });
+    }
+  }
+
   // ── Main draw ──────────────────────────────────────────────────────────────
 
   private drawFrame(dt: number): void {
@@ -1313,9 +1430,6 @@ export class CameraBorder extends Container {
     // ── Brush strokes ────────────────────────────────────────────────────────
     this.brushGfx.clear();
     for (const s of this.brushStrokes) this.drawBrushStroke(s, breathe);
-
-    // ── Floating symbols ──────────────────────────────────────────────────────
-    this.updateFloatingSymbols(breathe);
 
     // ── TrapNation wave rings ─────────────────────────────────────────────────
     this.waveGfx.clear();
@@ -1347,20 +1461,22 @@ export class CameraBorder extends Container {
     this.glitchGfx.clear();
     if (this.glitchActive) this.drawGlitchEffect(breathe);
 
-    // ── Graffiti marks + tags ─────────────────────────────────────────────────
+    // ── Graffiti marks ────────────────────────────────────────────────────────
     this.graffGfx.clear();
     this.drawGraffMarks(breathe);
-    this.updateGraffitiTags(breathe);
 
     // ── Surface black lines ───────────────────────────────────────────────────
     this.surfaceGfx.clear();
     this.drawSurfaceLines();
 
-    // ── Effects: sparkles, sparks, lightning ──────────────────────────────────
+    // ── Effects: sparkles, sparks, lightning, fireworks, spikes, splashes ────
     this.effectGfx.clear();
     this.drawSparkles();
     this.drawSparks();
     this.drawLightning();
+    this.drawFireworks();
+    this.drawElectricSpikes();
+    this.drawSplashDroplets();
 
     // ── Orbiting particles ────────────────────────────────────────────────────
     this.particleGfx.clear();
@@ -1385,11 +1501,16 @@ export class CameraBorder extends Container {
     // ── Fluid stains ──────────────────────────────────────────────────────────
     this.drawFluidStains(breathe);
 
+    // ── Asteroid debris ───────────────────────────────────────────────────────
+    this.beltEffectGfx.clear();
+    for (const d of this.debrisParticles) {
+      const t = d.life / d.maxLife;
+      this.beltEffectGfx.circle(d.x, d.y, d.r * t).fill({ color: d.color, alpha: t * 0.85 });
+    }
+
     // ── Logo badge ────────────────────────────────────────────────────────────
     if (this.logoSprite && this.logoGfx) this.animateLogo();
 
-    // ── Graffiti orbit sprites ────────────────────────────────────────────────
-    if (this.splatSprites.length > 0) this.animateSplatSprites(breathe);
   }
 
   // ── Brush stroke ───────────────────────────────────────────────────────────
@@ -1505,20 +1626,6 @@ export class CameraBorder extends Container {
       gfx
         .circle(dx, dy, 1.5 + Math.sin(this.time + i) * 0.8)
         .fill({ color: col, alpha: a });
-    }
-  }
-
-  private updateGraffitiTags(breathe: number): void {
-    for (const tag of this.graffitiTags) {
-      const alpha =
-        tag.alphaMin +
-        (tag.alphaMax - tag.alphaMin) *
-          (0.5 + 0.5 * Math.sin(this.time * tag.alphaSpeed + tag.alphaPhase));
-      const bob =
-        Math.sin(this.time * tag.bobSpeed + tag.bobPhase) * tag.bobAmp;
-      tag.node.alpha = alpha;
-      tag.node.x = tag.baseX * breathe;
-      tag.node.y = tag.baseY * breathe + bob;
     }
   }
 
@@ -1837,114 +1944,6 @@ export class CameraBorder extends Container {
     }
   }
 
-  // ── Floating symbols ─────────────────────────────────────────────────────
-
-  private initFloatingSymbols(): void {
-    // Nerd Font tech/dev/IT codepoints only (SymbolsNF font required)
-    const ALL_SYMS = [
-      '\uF121', // </>  code
-      '\uF126', // git-branch
-      '\uF09B', // github octocat
-      '\uF120', // terminal / bash prompt
-      '\uF013', // cog / settings
-      '\uF135', // rocket deploy
-      '\uF0E7', // bolt / lightning
-      '\uF259', // atom (React)
-      '\uF292', // shield / security
-      '\uF188', // bug
-      '\uF1C0', // database
-      '\uF233', // server
-      '\uF109', // laptop
-      '\uF11C', // keyboard
-      '\uF17C', // linux tux
-      '\uF179', // apple
-      '\uF0AD', // wrench / tool
-      '\uF0C3', // flask / science
-      '\uF1EB', // wifi
-      '\uF108', // desktop monitor
-      '\uF200', // pie-chart
-      '\uF201', // line-chart / analytics
-      '\uF11B', // gamepad / controller
-      '\uF1B2', // cube / package
-      '\uF1C9', // code file
-      '\uF023', // lock
-      '\uF09C', // lock-open
-      '\uF0DB', // columns / layout
-      '\uF304', // pen / edit
-      '\uE0B0', // powerline solid arrow
-      '\uE0B2', // powerline solid arrow left
-      '\uF296', // percent
-      '\uF0C9', // hamburger menu / bars
-      '\uF1D0', // circle-o-notch / spinner
-      '\uF245', // mouse pointer
-      '\uF0E4', // dashboard / speedometer
-      '\uF07C', // folder open
-      '\uF07B', // folder
-      '\uF015', // home
-    ];
-
-    // All symbols use SymbolsNF; same style factory for every glyph
-    const makeStyle = (color: number): TextStyle =>
-      new TextStyle({
-        fontFamily: "'SymbolsNF', monospace",
-        fontSize:   20 + Math.floor(Math.random() * 14),   // 20–34 px
-        fill:       color,
-        padding:    20,  // prevents drop-shadow glow from being cropped on all sides
-        dropShadow: { color, blur: 14, distance: 0, alpha: 0.9, angle: 0 },
-      });
-
-    const count = ALL_SYMS.length;
-    for (let i = 0; i < count; i++) {
-      const sym   = ALL_SYMS[i];
-      const color = CATT_PALETTE[i % CATT_PALETTE.length];
-      const dir    = i % 2 === 0 ? 1 : -1;
-
-      const node = new Text({ text: sym, style: makeStyle(color) });
-      node.anchor.set(0.5);
-      node.alpha = 0;
-      this.symbolCont.addChild(node);
-
-      this.floatingSymbols.push({
-        node,
-        angle:       (i / count) * Math.PI * 2 + Math.random() * 0.3,
-        orbitSpeed:  dir * (0.08 + Math.random() * 0.22),
-        orbitRadius: this.baseRadius + 22 + Math.random() * 65, // strictly outside ring
-        vibeAmp:     0.12 + Math.random() * 0.22,  // ±12–34 % scale oscillation
-        vibeSpeed:   8  + Math.random() * 18,       // 8–26 rad/s → 1.3–4 Hz
-        vibePhase:   Math.random() * Math.PI * 2,
-        alphaBase:   0.55 + Math.random() * 0.35,
-        alphaAmp:    0.30 + Math.random() * 0.25,
-        alphaSpeed:  0.8 + Math.random() * 1.8,
-        alphaPhase:  Math.random() * Math.PI * 2,
-        jitterAmp:   2 + Math.random() * 5,
-        jitterPhase: Math.random() * Math.PI * 2,
-        baseScale:   1.0,
-      });
-    }
-  }
-
-  private updateFloatingSymbols(breathe: number): void {
-    const beatBoost = 1 + (this.beatAmplitude - 1) * 0.40;
-
-    for (const s of this.floatingSymbols) {
-      const r  = s.orbitRadius * breathe;
-      const jx = Math.sin(s.jitterPhase * 1.3) * s.jitterAmp;
-      const jy = Math.cos(s.jitterPhase * 0.9) * s.jitterAmp;
-
-      s.node.x = Math.cos(s.angle) * r + jx;
-      s.node.y = Math.sin(s.angle) * r + jy;
-
-      // Scale vibrates rapidly — multiplied by beat boost on kicks
-      const vibeScale = 1 + s.vibeAmp * Math.sin(s.vibePhase) * beatBoost;
-      s.node.scale.set(s.baseScale * vibeScale);
-
-      // Alpha breathes slowly, flares on beat
-      const baseA  = s.alphaBase + s.alphaAmp * Math.sin(s.alphaPhase);
-      const beatA  = Math.min(1.0, baseA + (this.beatAmplitude - 1) * 0.25);
-      s.node.alpha = Math.max(0, beatA);
-    }
-  }
-
   // ── Fluid stains ──────────────────────────────────────────────────────────
 
   /**
@@ -2008,14 +2007,18 @@ export class CameraBorder extends Container {
   // ── Logo badge animation ───────────────────────────────────────────────────
 
   private animateLogo(): void {
+    const dt = 1 / 60;
     const sprite = this.logoSprite!;
     const gfx = this.logoGfx!;
-    const x = CameraBorder.LOGO_X;
-    const baseY = CameraBorder.LOGO_Y;
-    const float = Math.sin(this.time * 0.5) * 7;
-    const y = baseY + float;
 
-    // Slow breathe + persistent high-freq tremor (no beat punch)
+    // Advance orbit
+    this.logoOrbitAngle += CameraBorder3.LOGO_ORBIT_SPEED * dt;
+    const globalBreathe = 1 + 0.03 * Math.sin(this.time * 0.7);
+    const orbitR = CameraBorder3.LOGO_ORBIT_RADIUS * globalBreathe;
+    const x = Math.cos(this.logoOrbitAngle) * orbitR;
+    const y = Math.sin(this.logoOrbitAngle) * orbitR;
+
+    // Slow breathe + persistent high-freq tremor
     const breathe = 1 + 0.055 * Math.sin(this.time * 0.6);
     const tremor =
       1 +
@@ -2029,7 +2032,7 @@ export class CameraBorder extends Container {
       Math.sin(this.time * 17.3) * 1.8 + Math.sin(this.time * 31.1) * 1.0;
     const qy =
       Math.cos(this.time * 23.7) * 1.4 + Math.cos(this.time * 37.9) * 0.8;
-    sprite.x = CameraBorder.LOGO_X + qx;
+    sprite.x = x + qx;
     sprite.y = y + qy;
     sprite.alpha = 0.9 + Math.sin(this.time * 0.75) * 0.1;
 
@@ -2053,5 +2056,88 @@ export class CameraBorder extends Container {
       .moveTo(x + Math.cos(a1) * r1, y + Math.sin(a1) * r1)
       .arc(x, y, r1, a1, a1 + Math.PI * 0.8)
       .stroke({ color: LOL_VIOLET, alpha: 0.65, width: 1.0, cap: "round" });
+  }
+
+  // ── Asteroid belt ────────────────────────────────────────────────────────
+
+  private initAsteroidBelt(): void {
+    for (let i = 0; i < 60; i++) this.spawnAsteroid(true);
+  }
+
+  private spawnAsteroid(instant = false): void {
+    const BASE_A   = this.baseRadius + 92; // semi-major axis centre
+    const bodyR    = 4 + Math.random() * 10;
+    const semiMajor     = BASE_A + (Math.random() - 0.5) * 24;
+    const eccentricity  = 0.18 + Math.random() * 0.52;          // 0.18–0.70
+    const semiMinor     = semiMajor * Math.sqrt(1 - eccentricity * eccentricity);
+    const orbitTilt     = Math.random() * Math.PI * 2;
+    const precessionSpd = (Math.random() - 0.5) * 0.06;         // slow, both directions
+    const orbitSpd      = (-0.28 + (Math.random() - 0.5) * 0.10);
+    const selfRot       = (Math.random() - 0.5) * 0.9;
+
+    const cont = new Container();
+    const gfx  = new Graphics();
+    cont.addChild(gfx);
+    paintAsteroid(gfx, bodyR);
+    this.beltCont.addChild(cont);
+
+    const alpha = instant ? 1 : 0;
+    cont.alpha = alpha;
+
+    this.asteroidBelt.push({
+      cont,
+      orbitAngle:       Math.random() * Math.PI * 2,
+      orbitSpeed:       orbitSpd,
+      semiMajor, semiMinor,
+      orbitTilt,
+      precessionSpeed:  precessionSpd,
+      selfRotSpeed:     selfRot,
+      alpha,
+      dying:            false,
+      dyingTimer:       0,
+    });
+  }
+
+  private spawnDebris(wx: number, wy: number): void {
+    const COLORS = [0x909098, 0x706860, 0x5a5a62, 0x9898a0, 0x484850];
+    const count  = 6 + Math.floor(Math.random() * 8);
+    for (let i = 0; i < count; i++) {
+      const a    = Math.random() * Math.PI * 2;
+      const spd  = 25 + Math.random() * 75;
+      const life = 0.35 + Math.random() * 0.55;
+      this.debrisParticles.push({
+        x: wx, y: wy,
+        vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
+        r: 1.2 + Math.random() * 3.0,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        life, maxLife: life,
+      });
+    }
+  }
+
+  // ── Natural satellites ────────────────────────────────────────────────────
+
+  private initNaturalSatellites(): void {
+    // Moon, Europa, Io — each on a distinct orbit, drawn once, slowly self-rotating
+    const defs = [
+      { kind: 0, r: this.baseRadius + 32,  orbitSpd:  0.16, bodyR: 26, selfRot:  0.018 }, // Moon
+      { kind: 1, r: this.baseRadius + 60,  orbitSpd: -0.11, bodyR: 22, selfRot: -0.024 }, // Europa
+      { kind: 2, r: this.baseRadius + 85,  orbitSpd:  0.20, bodyR: 20, selfRot:  0.030 }, // Io
+    ];
+    for (const d of defs) {
+      const cont = new Container();
+      const gfx  = new Graphics();
+      cont.addChild(gfx);
+      paintNatSatellite(gfx, d.kind, d.bodyR);
+      this.natSatCont.addChild(cont);
+      this.naturalSatellites.push({
+        cont,
+        orbitAngle:   Math.random() * Math.PI * 2,
+        orbitSpeed:   d.orbitSpd,
+        orbitRadius:  d.r,
+        selfRotSpeed: d.selfRot,
+        kind: d.kind,
+      });
+    }
   }
 }
