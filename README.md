@@ -23,7 +23,7 @@ The dev server starts at **http://localhost:8080**
 Each screen has its own URL — navigate to one directly:
 
 ```
-http://localhost:8080/webcam-border-1.html
+http://localhost:8080/main-web-cam-border.html
 http://localhost:8080/planet.html
 http://localhost:8080/rain.html
 # etc.
@@ -45,7 +45,7 @@ Output goes to `dist/`. You can then serve it with any static file server and po
 
 | URL | Description |
 |-----|-------------|
-| `/webcam-border-1.html` | Animated border with logo, graffiti splatters, and decorative geometry |
+| `/main-web-cam-border.html` | Animated border with logo, graffiti splatters, and decorative geometry |
 | `/wavecam.html` | Wave/ripple distortion flowing around the webcam frame |
 | `/hexcam.html` | Hexagonal cells forming concentric rings around the camera |
 | `/hexgridcam.html` | Dense hex grid tessellation with animated color cycling |
@@ -74,7 +74,7 @@ Output goes to `dist/`. You can then serve it with any static file server and po
 | `/music-break.html` | Music visualizer / audio-reactive break screen |
 | `/confidential.html` | Classified / redacted information display |
 | `/title-powerline.html` | Scrolling news ticker with green band and audio symbols |
-| `/placeholder-1.html` | Generic placeholder for layout testing |
+| `/starting-soon.html` | Generic placeholder for layout testing |
 
 ---
 
@@ -90,7 +90,7 @@ Output goes to `dist/`. You can then serve it with any static file server and po
 
 | Setting | Value |
 |---------|-------|
-| **URL** | `http://localhost:8080/webcam-border-1.html` (or whichever screen) |
+| **URL** | `http://localhost:8080/main-web-cam-border.html` (or whichever screen) |
 | **Width** | Match your canvas resolution (e.g. `1920`) |
 | **Height** | Match your canvas resolution (e.g. `1080`) |
 | **Custom CSS** | Leave blank — transparency is built in |
@@ -133,7 +133,7 @@ You can create one quickly in any image editor (GIMP, Photoshop, Figma) — draw
 ### Aligning the Circular Feed with a Camera Border Screen
 
 - Use the **Edit Transform** dialog (right-click → Transform → Edit Transform) to position and scale the webcam source.
-- The camera border screens (e.g. `webcam-border-1.html`, `hexcam.html`) are centered and sized relative to the full canvas — position your circular webcam in the center of the scene at roughly `400×400` to `600×600` px depending on the border design.
+- The camera border screens (e.g. `main-web-cam-border.html`, `hexcam.html`) are centered and sized relative to the full canvas — position your circular webcam in the center of the scene at roughly `400×400` to `600×600` px depending on the border design.
 - Toggle the browser source visibility while adjusting to see the frame alignment.
 
 ---

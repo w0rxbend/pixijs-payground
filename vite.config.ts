@@ -9,23 +9,23 @@ export default defineConfig({
   plugins: [assetpackPlugin()],
   server: {
     port: 8080,
-    open: "/webcam-border-1.html",
+    open: "/main-web-cam-border.html",
   },
   build: {
     rollupOptions: {
       input: {
-        webcamBorder1: resolve(__dirname, "webcam-border-1.html"),
-        webcamBorder3: resolve(__dirname, "camera-border-3.html"),
+        mainWebCamBorder: resolve(__dirname, "main-web-cam-border.html"),
+        planetCircleWebcamBorder: resolve(__dirname, "planet-circle-webcam-border.html"),
         titlePowerline: resolve(__dirname, "title-powerline.html"),
         logo: resolve(__dirname, "logo.html"),
         background: resolve(__dirname, "background.html"),
-        placeholder1: resolve(__dirname, "placeholder-1.html"),
+        startingSoon: resolve(__dirname, "starting-soon.html"),
         musicBreak: resolve(__dirname, "music-break.html"),
         break: resolve(__dirname, "break.html"),
         planet: resolve(__dirname, "planet.html"),
         aquarium: resolve(__dirname, "aquarium.html"),
         atom: resolve(__dirname, "atom.html"),
-        webcamBorder2: resolve(__dirname, "webcam-border-2.html"),
+        simpleWebCamBorder: resolve(__dirname, "simple-web-cam-border.html"),
         matrixDots: resolve(__dirname, "matrix-dots.html"),
         waveCam: resolve(__dirname, "wavecam.html"),
         trapCam: resolve(__dirname, "trapcam.html"),
