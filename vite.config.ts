@@ -70,6 +70,7 @@ export default defineConfig({
         boids: resolve(__dirname, "boids.html"),
         verletCloth: resolve(__dirname, "verlet-cloth.html"),
         sph: resolve(__dirname, "sph.html"),
+        wireframeSphereCam: resolve(__dirname, "wireframe-sphere-cam.html"),
       },
     },
   },
