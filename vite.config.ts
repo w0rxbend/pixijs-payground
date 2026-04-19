@@ -71,6 +71,7 @@ export default defineConfig({
         verletCloth: resolve(__dirname, "verlet-cloth.html"),
         sph: resolve(__dirname, "sph.html"),
         wireframeSphereCam: resolve(__dirname, "wireframe-sphere-cam.html"),
+        cosmicPortal: resolve(__dirname, "cosmic-portal.html"),
       },
     },
   },
