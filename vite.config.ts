@@ -15,7 +15,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         mainWebCamBorder: resolve(__dirname, "main-web-cam-border.html"),
-        planetCircleWebcamBorder: resolve(__dirname, "planet-circle-webcam-border.html"),
+        planetCircleWebcamBorder: resolve(
+          __dirname,
+          "planet-circle-webcam-border.html",
+        ),
         titlePowerline: resolve(__dirname, "title-powerline.html"),
         logo: resolve(__dirname, "logo.html"),
         background: resolve(__dirname, "background.html"),
@@ -42,6 +45,12 @@ export default defineConfig({
         maurerRose: resolve(__dirname, "maurer-rose.html"),
         collatz: resolve(__dirname, "collatz.html"),
         perlinBlobs: resolve(__dirname, "perlin-blobs.html"),
+        planetHologram: resolve(__dirname, "planet-hologram.html"),
+        particleSplash: resolve(__dirname, "particle-splash.html"),
+        plexusConstellation: resolve(__dirname, "plexus-constellation.html"),
+        flowField: resolve(__dirname, "flow-field.html"),
+        gravitySphere: resolve(__dirname, "gravity-sphere.html"),
+        magneticField: resolve(__dirname, "magnetic-field.html"),
       },
     },
   },
