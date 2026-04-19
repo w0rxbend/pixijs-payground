@@ -3,82 +3,216 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Site Map — OBS Effects</title>
+  <title>OBS Effects — Preview Grid</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:32px;color:#0b0b0b}
-    h1{font-size:28px;margin-bottom:8px}
-    ul{line-height:1.65}
-    a{color:#0b5fff;text-decoration:none}
-    a:hover{text-decoration:underline}
-    .note{color:#555;margin-bottom:16px}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d0d;
+      color: #cdd6f4;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 24px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #cba6f7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid #313244;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #1e1e2e;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .card:hover {
+      border-color: #cba6f7;
+      box-shadow: 0 0 0 1px #cba6f7;
+    }
+
+    .preview {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      overflow: hidden;
+      background: #11111b;
+      cursor: pointer;
+    }
+
+    .preview iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      border: none;
+      pointer-events: none;
+      transform-origin: top left;
+    }
+
+    .preview .placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #45475a;
+      font-size: 13px;
+    }
+
+    .label {
+      padding: 7px 11px;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-top: 1px solid #313244;
+      color: #a6adc8;
+    }
   </style>
 </head>
 <body>
-  <h1>OBS Effects — Site Map</h1>
-  <p class="note">Click a link to open the screen. These are the available HTML entry pages in this project.</p>
-  <ul>
-    <li><a href="/index.html">Index</a></li>
-    <li><a href="/main-web-cam-border.html">Main Web Cam Border</a></li>
-    <li><a href="/simple-web-cam-border.html">Simple Web Cam Border</a></li>
-    <li><a href="/planet-circle-webcam-border.html">Planet Circle Webcam Border</a></li>
-    <li><a href="/black-hole-cam.html">Black Hole Cam</a></li>
-    <li><a href="/planet.html">Planet</a></li>
-    <li><a href="/aquarium.html">Aquarium</a></li>
-    <li><a href="/atom.html">Atom</a></li>
-    <li><a href="/background.html">Background</a></li>
-    <li><a href="/break.html">Break</a></li>
-    <li><a href="/confidential.html">Confidential</a></li>
-    <li><a href="/generative.html">Generative</a></li>
-    <li><a href="/graph-bg.html">Graph Bg</a></li>
-    <li><a href="/maurer-rose.html">Maurer Rose</a></li>
-    <li><a href="/collatz.html">Collatz Conjecture</a></li>
-    <li><a href="/perlin-blobs.html">Fluid Blobs (Stam)</a></li>
-    <li><a href="/planet-hologram.html">Planet Hologram</a></li>
-    <li><a href="/particle-splash.html">Particle Splash</a></li>
-    <li><a href="/plexus-constellation.html">Plexus Constellation</a></li>
-    <li><a href="/flow-field.html">Flow Field</a></li>
-    <li><a href="/gravity-sphere.html">Gravity Sphere</a></li>
-    <li><a href="/lissajous.html">Lissajous Interference</a></li>
-    <li><a href="/nbody.html">N-Body Gravity — Stellar Cluster Formation</a></li>
-    <li><a href="/orbital-mechanics.html">Orbital Mechanics — Keplerian Ellipses</a></li>
-    <li><a href="/solar-wind.html">Solar Wind — Magnetic Deflection</a></li>
-    <li><a href="/shock-wave.html">Shock Wave — Supernova Expansion</a></li>
-    <li><a href="/boids.html">Boids — Comet Swarm Flocking</a></li>
-    <li><a href="/verlet-cloth.html">Verlet Cloth — Gas Filaments</a></li>
-    <li><a href="/sph.html">SPH — Gas Cloud Collision</a></li>
-    <li><a href="/tunnel-vortex.html">Tunnel Vortex</a></li>
-    <li><a href="/spiral-pull.html">Spiral Pull</a></li>
-    <li><a href="/plasma-wave.html">Plasma Wave</a></li>
-    <li><a href="/grass.html">Grass</a></li>
-    <li><a href="/flight-simulation.html">Flight Simulation</a></li>
-    <li><a href="/magnetic-field.html">Magnetic Field Lines (Iron Filings)</a></li>
-    <li><a href="/life.html">Particle Life — Emergence of Life (WebGPU)</a></li>
-    <li><a href="/particle-globe.html">Particle Globe — Wireframe Globe (Catppuccin)</a></li>
-    <li><a href="/aurora-borealis.html">Aurora Borealis — Curtain Waves</a></li>
-    <li><a href="/fourier-epicycles.html">Fourier Epicycles — Drawing with Circles</a></li>
-    <li><a href="/hex-ripple.html">Hex Ripple — Hexagonal Grid Wave Propagation</a></li>
-    <li><a href="/wireframe-icosphere.html">Wireframe Icosphere — Rotating Geodesic Globe (Catppuccin)</a></li>
-    <li><a href="/nebula.html">Nebula — Layered Perlin fBm Gas Tendrils (Catppuccin)</a></li>
-    <li><a href="/matrix-dots.html">Matrix Dots</a></li>
-    <li><a href="/music-break.html">Music Break</a></li>
-    <li><a href="/rain.html">Rain</a></li>
-    <li><a href="/triangulation.html">Triangulation</a></li>
-    <li><a href="/trapcam.html">Trap Cam</a></li>
-    <li><a href="/wavecam.html">Wave Cam</a></li>
-    <li><a href="/hexcam.html">Hex Cam</a></li>
-    <li><a href="/hexgridcam.html">Hex Grid Cam</a></li>
-    <li><a href="/hexlayercam.html">Hex Layer Cam</a></li>
-    <li><a href="/title-powerline.html">Title Powerline</a></li>
-    <li><a href="/logo.html">Logo</a></li>
-    <li><a href="/starting-soon.html">Starting Soon</a></li>
-    <li><a href="/wireframe-sphere-cam.html">Wireframe Sphere Cam — Gradient Lat/Lon Sphere Overlay (Catppuccin)</a></li>
-    <li><a href="/smoke-bar.html">Smoke Bar — NFS Unbound Tire Smoke Powerline Status Bar</a></li>
-    <li><a href="/cam-frame-overlay.html">Cam Frame Overlay — Catppuccin Mocha Pulsar Ring (800×800 OBS)</a></li>
-    <li><a href="/smoke-ring-cam.html">Smoke Ring Cam — Dark Vaping Smoke Ring Overlay (800×800 OBS)</a></li>
-    <li><a href="/elastic-rings.html">Elastic Rings — Soft Body Physics Ring Overlay (800×800 OBS)</a></li>
-    <li><a href="/galaxy-bg.html">Galaxy Background — Living Galaxy Simulation (1920×1080 OBS)</a></li>
-    <li><a href="/pcb-bg.html">PCB Background — Animated Circuit Board with Electron Flow (1920×1080 OBS)</a></li>
-    <li><a href="/main-web-cam-border.html">Webcam Border (legacy)</a></li>
-  </ul>
+  <h1>OBS Effects — Preview Grid</h1>
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const pages = [
+      { href: 'index.html',                    label: 'Index' },
+      { href: 'main-web-cam-border.html',      label: 'Main Web Cam Border' },
+      { href: 'simple-web-cam-border.html',    label: 'Simple Web Cam Border' },
+      { href: 'planet-circle-webcam-border.html', label: 'Planet Circle Webcam Border' },
+      { href: 'black-hole-cam.html',           label: 'Black Hole Cam' },
+      { href: 'planet.html',                   label: 'Planet' },
+      { href: 'aquarium.html',                 label: 'Aquarium' },
+      { href: 'atom.html',                     label: 'Atom' },
+      { href: 'background.html',               label: 'Background' },
+      { href: 'break.html',                    label: 'Break' },
+      { href: 'confidential.html',             label: 'Confidential' },
+      { href: 'generative.html',               label: 'Generative' },
+      { href: 'graph-bg.html',                 label: 'Graph Bg' },
+      { href: 'maurer-rose.html',              label: 'Maurer Rose' },
+      { href: 'collatz.html',                  label: 'Collatz Conjecture' },
+      { href: 'perlin-blobs.html',             label: 'Fluid Blobs (Stam)' },
+      { href: 'planet-hologram.html',          label: 'Planet Hologram' },
+      { href: 'particle-splash.html',          label: 'Particle Splash' },
+      { href: 'plexus-constellation.html',     label: 'Plexus Constellation' },
+      { href: 'flow-field.html',               label: 'Flow Field' },
+      { href: 'gravity-sphere.html',           label: 'Gravity Sphere' },
+      { href: 'lissajous.html',                label: 'Lissajous Interference' },
+      { href: 'nbody.html',                    label: 'N-Body Gravity — Stellar Cluster Formation' },
+      { href: 'orbital-mechanics.html',        label: 'Orbital Mechanics — Keplerian Ellipses' },
+      { href: 'solar-wind.html',               label: 'Solar Wind — Magnetic Deflection' },
+      { href: 'shock-wave.html',               label: 'Shock Wave — Supernova Expansion' },
+      { href: 'boids.html',                    label: 'Boids — Comet Swarm Flocking' },
+      { href: 'verlet-cloth.html',             label: 'Verlet Cloth — Gas Filaments' },
+      { href: 'sph.html',                      label: 'SPH — Gas Cloud Collision' },
+      { href: 'tunnel-vortex.html',            label: 'Tunnel Vortex' },
+      { href: 'spiral-pull.html',              label: 'Spiral Pull' },
+      { href: 'plasma-wave.html',              label: 'Plasma Wave' },
+      { href: 'grass.html',                    label: 'Grass' },
+      { href: 'flight-simulation.html',        label: 'Flight Simulation' },
+      { href: 'magnetic-field.html',           label: 'Magnetic Field Lines (Iron Filings)' },
+      { href: 'life.html',                     label: 'Particle Life — Emergence (WebGPU)' },
+      { href: 'particle-globe.html',           label: 'Particle Globe — Wireframe Globe' },
+      { href: 'aurora-borealis.html',          label: 'Aurora Borealis — Curtain Waves' },
+      { href: 'fourier-epicycles.html',        label: 'Fourier Epicycles — Drawing with Circles' },
+      { href: 'hex-ripple.html',               label: 'Hex Ripple — Grid Wave Propagation' },
+      { href: 'wireframe-icosphere.html',      label: 'Wireframe Icosphere — Geodesic Globe' },
+      { href: 'nebula.html',                   label: 'Nebula — Perlin fBm Gas Tendrils' },
+      { href: 'matrix-dots.html',              label: 'Matrix Dots' },
+      { href: 'music-break.html',              label: 'Music Break' },
+      { href: 'rain.html',                     label: 'Rain' },
+      { href: 'triangulation.html',            label: 'Triangulation' },
+      { href: 'trapcam.html',                  label: 'Trap Cam' },
+      { href: 'wavecam.html',                  label: 'Wave Cam' },
+      { href: 'hexcam.html',                   label: 'Hex Cam' },
+      { href: 'hexgridcam.html',               label: 'Hex Grid Cam' },
+      { href: 'hexlayercam.html',              label: 'Hex Layer Cam' },
+      { href: 'title-powerline.html',          label: 'Title Powerline' },
+      { href: 'logo.html',                     label: 'Logo' },
+      { href: 'starting-soon.html',            label: 'Starting Soon' },
+      { href: 'wireframe-sphere-cam.html',     label: 'Wireframe Sphere Cam' },
+      { href: 'smoke-bar.html',                label: 'Smoke Bar' },
+      { href: 'cam-frame-overlay.html',        label: 'Cam Frame Overlay' },
+      { href: 'smoke-ring-cam.html',           label: 'Smoke Ring Cam' },
+      { href: 'elastic-rings.html',            label: 'Elastic Rings' },
+      { href: 'galaxy-bg.html',                label: 'Galaxy Background' },
+      { href: 'pcb-bg.html',                   label: 'PCB Background' },
+    ];
+
+    const grid = document.getElementById('grid');
+
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const preview = entry.target;
+        const iframe = preview.querySelector('iframe');
+        if (iframe) {
+          const scale = entry.contentRect.width / 1920;
+          iframe.style.transform = `scale(${scale})`;
+        }
+      }
+    });
+
+    const io = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const preview = entry.target;
+        const iframe = preview.querySelector('iframe');
+        if (iframe && iframe.dataset.src) {
+          iframe.src = iframe.dataset.src;
+          delete iframe.dataset.src;
+        }
+        const ph = preview.querySelector('.placeholder');
+        if (ph) ph.remove();
+        io.unobserve(preview);
+      }
+    }, { rootMargin: '300px' });
+
+    for (const { href, label } of pages) {
+      const card = document.createElement('a');
+      card.className = 'card';
+      card.href = href;
+      card.target = '_blank';
+      card.rel = 'noopener';
+
+      const preview = document.createElement('div');
+      preview.className = 'preview';
+
+      const ph = document.createElement('div');
+      ph.className = 'placeholder';
+      ph.textContent = 'Loading…';
+      preview.appendChild(ph);
+
+      const iframe = document.createElement('iframe');
+      iframe.dataset.src = href;
+      iframe.title = label;
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      preview.appendChild(iframe);
+
+      const labelEl = document.createElement('div');
+      labelEl.className = 'label';
+      labelEl.textContent = label;
+
+      card.appendChild(preview);
+      card.appendChild(labelEl);
+      grid.appendChild(card);
+
+      ro.observe(preview);
+      io.observe(preview);
+    }
+  </script>
 </body>
 </html>
