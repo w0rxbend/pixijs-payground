@@ -40,17 +40,3 @@ jobs:
           push: true
           # Adjust the image name if you want it to be named differently
           tags: ${{ secrets.DOCKER_USERNAME }}/obs-effects:latest
-
-      - name: Send Telegram notification on success
-        if: success()
-        run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d text="✅ Docker image ${{ secrets.DOCKER_USERNAME }}/obs-effects:latest pushed successfully to Docker Hub"
-
-      - name: Send Telegram notification on failure
-        if: failure()
-        run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d text="❌ Failed to build and push Docker image for obs-effects"
