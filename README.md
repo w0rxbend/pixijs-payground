@@ -45,38 +45,38 @@ Output goes to `dist/`. You can then serve it with any static file server and po
 
 ### Camera Borders (Webcam Overlays)
 
-| URL | Description |
-|-----|-------------|
+| URL                         | Description                                                            |
+| --------------------------- | ---------------------------------------------------------------------- |
 | `/main-web-cam-border.html` | Animated border with logo, graffiti splatters, and decorative geometry |
-| `/wavecam.html` | Wave/ripple distortion flowing around the webcam frame |
-| `/hexcam.html` | Hexagonal cells forming concentric rings around the camera |
-| `/hexgridcam.html` | Dense hex grid tessellation with animated color cycling |
-| `/hexlayercam.html` | Multi-layer independently-rotating hex rings |
-| `/trapcam.html` | Trapezoidal geometric frame with warping distortion |
+| `/wavecam.html`             | Wave/ripple distortion flowing around the webcam frame                 |
+| `/hexcam.html`              | Hexagonal cells forming concentric rings around the camera             |
+| `/hexgridcam.html`          | Dense hex grid tessellation with animated color cycling                |
+| `/hexlayercam.html`         | Multi-layer independently-rotating hex rings                           |
+| `/trapcam.html`             | Trapezoidal geometric frame with warping distortion                    |
 
 ### Background / Full-Scene Overlays
 
-| URL | Description |
-|-----|-------------|
-| `/background.html` | Tech-symbol boids flocking with comets and ambient particles |
-| `/matrix-dots.html` | Catppuccin grid dots repelled by particles, with connection lines |
-| `/generative.html` | Sinusoidal phase-trail dots drawing colorful procedural paths |
-| `/triangulation.html` | Delaunay-style triangulation network with flowing geometry |
-| `/rain.html` | Water ripple/splash effects with expanding circles |
-| `/atom.html` | Atomic model — nucleus, electron orbits, quantum particle effects |
-| `/planet.html` | Planetary orbital simulation with gravitational dynamics |
-| `/aquarium.html` | Ambient aquarium-style particle visualization |
+| URL                   | Description                                                       |
+| --------------------- | ----------------------------------------------------------------- |
+| `/background.html`    | Tech-symbol boids flocking with comets and ambient particles      |
+| `/matrix-dots.html`   | Catppuccin grid dots repelled by particles, with connection lines |
+| `/generative.html`    | Sinusoidal phase-trail dots drawing colorful procedural paths     |
+| `/triangulation.html` | Delaunay-style triangulation network with flowing geometry        |
+| `/rain.html`          | Water ripple/splash effects with expanding circles                |
+| `/atom.html`          | Atomic model — nucleus, electron orbits, quantum particle effects |
+| `/planet.html`        | Planetary orbital simulation with gravitational dynamics          |
+| `/aquarium.html`      | Ambient aquarium-style particle visualization                     |
 
 ### Branding / Transition Screens
 
-| URL | Description |
-|-----|-------------|
-| `/logo.html` | Heartbeat ECG + orbiting dots + LIVE indicator |
-| `/break.html` | "Breaking news"-style overlay with animated symbol glyphs |
-| `/music-break.html` | Music visualizer / audio-reactive break screen |
-| `/confidential.html` | Classified / redacted information display |
-| `/title-powerline.html` | Scrolling news ticker with green band and audio symbols |
-| `/starting-soon.html` | Generic placeholder for layout testing |
+| URL                     | Description                                               |
+| ----------------------- | --------------------------------------------------------- |
+| `/logo.html`            | Heartbeat ECG + orbiting dots + LIVE indicator            |
+| `/break.html`           | "Breaking news"-style overlay with animated symbol glyphs |
+| `/music-break.html`     | Music visualizer / audio-reactive break screen            |
+| `/confidential.html`    | Classified / redacted information display                 |
+| `/title-powerline.html` | Scrolling news ticker with green band and audio symbols   |
+| `/starting-soon.html`   | Generic placeholder for layout testing                    |
 
 ---
 
@@ -90,14 +90,14 @@ Output goes to `dist/`. You can then serve it with any static file server and po
 
 ### Step 2 — Configure the Browser Source
 
-| Setting | Value |
-|---------|-------|
-| **URL** | `http://localhost:8080/main-web-cam-border.html` (or whichever screen) |
-| **Width** | Match your canvas resolution (e.g. `1920`) |
-| **Height** | Match your canvas resolution (e.g. `1080`) |
-| **Custom CSS** | Leave blank — transparency is built in |
-| **Shutdown source when not visible** | Optional — saves GPU when scene is hidden |
-| **Refresh browser when scene becomes active** | Recommended for animated screens |
+| Setting                                       | Value                                                                  |
+| --------------------------------------------- | ---------------------------------------------------------------------- |
+| **URL**                                       | `http://localhost:8080/main-web-cam-border.html` (or whichever screen) |
+| **Width**                                     | Match your canvas resolution (e.g. `1920`)                             |
+| **Height**                                    | Match your canvas resolution (e.g. `1080`)                             |
+| **Custom CSS**                                | Leave blank — transparency is built in                                 |
+| **Shutdown source when not visible**          | Optional — saves GPU when scene is hidden                              |
+| **Refresh browser when scene becomes active** | Recommended for animated screens                                       |
 
 > All screens already set `background: transparent` and `backgroundAlpha: 0` in PixiJS, so you do **not** need to enable "Allow transparency" separately in OBS — it works automatically with browser sources.
 
