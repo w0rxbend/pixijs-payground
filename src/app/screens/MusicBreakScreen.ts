@@ -435,6 +435,7 @@ export class MusicBreakScreen extends Container {
     this.graffitiCyan = makeGhost(0x00ffee);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public update(_ticker: Ticker): void {
     const dt = 1 / 60;
     this.time += dt;

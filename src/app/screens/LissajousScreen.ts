@@ -119,7 +119,7 @@ export class LissajousScreen extends Container {
     }
 
     // Subtle vignette
-    drawVignette(g, cx, cy, this.w, this.h);
+    drawVignette(g, cx, cy);
   }
 
   // ─── Morph state machine: hold → morph → hold → … ────────────────────────
@@ -189,13 +189,7 @@ function tracePath(g: Graphics, pts: Float32Array): void {
   }
 }
 
-function drawVignette(
-  g: Graphics,
-  cx: number,
-  cy: number,
-  w: number,
-  h: number,
-): void {
+function drawVignette(g: Graphics, cx: number, cy: number): void {
   const r = Math.hypot(cx, cy) * 1.1;
   for (let i = 0; i < 6; i++) {
     const t = i / 6;

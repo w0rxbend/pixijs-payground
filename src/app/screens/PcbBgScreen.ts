@@ -106,6 +106,7 @@ export class PcbBgScreen extends Container {
   }
   public async hide(): Promise<void> {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public resize(_w: number, _h: number): void {
     this.bgGfx.clear();
     this.eGfx.clear();

@@ -116,6 +116,7 @@ export class LogoScreen extends Container {
     this.addChild(this.liveText);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public update(_ticker: Ticker): void {
     this.time += 1 / 60;
     this.animateLogo();

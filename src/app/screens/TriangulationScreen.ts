@@ -49,7 +49,6 @@ const accentColor = (t: number) => lerpGrad(ACCENT, t);
 const COLS = 38;
 const ROWS = 24;
 const JITTER = 0.38;
-const WAVE_AMP = 26;
 const WAVE_SPEED = 0.55;
 const DOT_R = 2.2;
 

@@ -4,10 +4,7 @@ import { Container, Graphics } from "pixi.js";
 // ── Catppuccin Crust / Mocha palette ─────────────────────────────────────────
 const C_CRUST = 0x11111b;
 const C_MANTLE = 0x181825;
-const C_BASE = 0x1e1e2e;
-const C_SURFACE0 = 0x313244;
 const C_OVERLAY0 = 0x6c7086;
-const C_SUBTEXT = 0xa6adc8;
 
 const C_ROSEWATER = 0xf5e0dc;
 const C_FLAMINGO = 0xf2cdcd;

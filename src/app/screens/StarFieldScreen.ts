@@ -3,7 +3,6 @@ import { Container, Graphics } from "pixi.js";
 
 // Catppuccin Mocha
 const C_BASE = 0x1e1e2e;
-const C_CRUST = 0x11111b;
 
 const ACCENT_COLORS = [
   0xcba6f7, // mauve
@@ -19,7 +18,6 @@ const ACCENT_COLORS = [
 const STAR_COUNT = 600;
 const SPEED_BASE = 0.4; // base radial speed (fraction of half-diagonal per second)
 const SPEED_ACCEL = 2.8; // speed multiplier applied as stars age (warp stretch factor)
-const TRAIL_ALPHA = 0.92; // how much of the trail is retained each frame (fade comet tail)
 const FADE_MARGIN = 0.08; // fraction of viewport where stars fade in/out at edge
 
 interface Star {
