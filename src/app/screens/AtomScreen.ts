@@ -2,26 +2,35 @@ import type { Ticker } from "pixi.js";
 import { Container, Graphics, Text, TextStyle } from "pixi.js";
 
 // ── Catppuccin Mocha ──────────────────────────────────────────────────────────
-const C_BASE      = 0x1e1e2e;
-const C_SURFACE0  = 0x313244;
-const C_OVERLAY0  = 0x6c7086;
-const C_TEXT      = 0xcdd6f4;
-const C_SUBTEXT   = 0xa6adc8;
+const C_BASE = 0x1e1e2e;
+const C_SURFACE0 = 0x313244;
+const C_OVERLAY0 = 0x6c7086;
+const C_TEXT = 0xcdd6f4;
+const C_SUBTEXT = 0xa6adc8;
 const C_ROSEWATER = 0xf5e0dc;
-const C_FLAMINGO  = 0xf2cdcd;
-const C_PINK      = 0xf5c2e7;
-const C_MAUVE     = 0xcba6f7;
-const C_RED       = 0xf38ba8;
-const C_PEACH     = 0xfab387;
-const C_YELLOW    = 0xf9e2af;
-const C_GREEN     = 0xa6e3a1;
-const C_TEAL      = 0x94e2d5;
-const C_SKY       = 0x89dceb;
-const C_SAPPHIRE  = 0x74c7ec;
-const C_BLUE      = 0x89b4fa;
-const C_LAVENDER  = 0xb4befe;
+const C_FLAMINGO = 0xf2cdcd;
+const C_PINK = 0xf5c2e7;
+const C_MAUVE = 0xcba6f7;
+const C_RED = 0xf38ba8;
+const C_PEACH = 0xfab387;
+const C_YELLOW = 0xf9e2af;
+const C_GREEN = 0xa6e3a1;
+const C_TEAL = 0x94e2d5;
+const C_SKY = 0x89dceb;
+const C_SAPPHIRE = 0x74c7ec;
+const C_BLUE = 0x89b4fa;
+const C_LAVENDER = 0xb4befe;
 
-const PARTICLE_COLORS = [C_YELLOW, C_PEACH, C_RED, C_MAUVE, C_BLUE, C_GREEN, C_TEAL, C_FLAMINGO];
+const PARTICLE_COLORS = [
+  C_YELLOW,
+  C_PEACH,
+  C_RED,
+  C_MAUVE,
+  C_BLUE,
+  C_GREEN,
+  C_TEAL,
+  C_FLAMINGO,
+];
 
 // ── Element definitions ───────────────────────────────────────────────────────
 interface ElementDef {
@@ -34,29 +43,116 @@ interface ElementDef {
 }
 
 const ELEMENT_TABLE: ElementDef[] = [
-  { symbol: "H",  name: "Hydrogen",    protons: 1,  neutrons: 0,   color: C_FLAMINGO,  electronColor: C_SKY      },
-  { symbol: "D",  name: "Deuterium",   protons: 1,  neutrons: 1,   color: C_FLAMINGO,  electronColor: C_SKY      },
-  { symbol: "T",  name: "Tritium",     protons: 1,  neutrons: 2,   color: C_PINK,      electronColor: C_MAUVE    },
-  { symbol: "He", name: "Helium",      protons: 2,  neutrons: 2,   color: C_YELLOW,    electronColor: C_PEACH    },
-  { symbol: "Li", name: "Lithium",     protons: 3,  neutrons: 4,   color: C_GREEN,     electronColor: C_TEAL     },
-  { symbol: "C",  name: "Carbon",      protons: 6,  neutrons: 6,   color: C_TEAL,      electronColor: C_BLUE     },
-  { symbol: "N",  name: "Nitrogen",    protons: 7,  neutrons: 7,   color: C_SKY,       electronColor: C_SAPPHIRE },
-  { symbol: "O",  name: "Oxygen",      protons: 8,  neutrons: 8,   color: C_BLUE,      electronColor: C_LAVENDER },
-  { symbol: "Fe", name: "Iron",        protons: 26, neutrons: 30,  color: C_PEACH,     electronColor: C_YELLOW   },
-  { symbol: "Kr", name: "Krypton",     protons: 36, neutrons: 48,  color: C_MAUVE,     electronColor: C_PINK     },
-  { symbol: "Ba", name: "Barium",      protons: 56, neutrons: 82,  color: C_ROSEWATER, electronColor: C_FLAMINGO },
-  { symbol: "U",  name: "Uranium-235", protons: 92, neutrons: 143, color: C_LAVENDER,  electronColor: C_MAUVE    },
+  {
+    symbol: "H",
+    name: "Hydrogen",
+    protons: 1,
+    neutrons: 0,
+    color: C_FLAMINGO,
+    electronColor: C_SKY,
+  },
+  {
+    symbol: "D",
+    name: "Deuterium",
+    protons: 1,
+    neutrons: 1,
+    color: C_FLAMINGO,
+    electronColor: C_SKY,
+  },
+  {
+    symbol: "T",
+    name: "Tritium",
+    protons: 1,
+    neutrons: 2,
+    color: C_PINK,
+    electronColor: C_MAUVE,
+  },
+  {
+    symbol: "He",
+    name: "Helium",
+    protons: 2,
+    neutrons: 2,
+    color: C_YELLOW,
+    electronColor: C_PEACH,
+  },
+  {
+    symbol: "Li",
+    name: "Lithium",
+    protons: 3,
+    neutrons: 4,
+    color: C_GREEN,
+    electronColor: C_TEAL,
+  },
+  {
+    symbol: "C",
+    name: "Carbon",
+    protons: 6,
+    neutrons: 6,
+    color: C_TEAL,
+    electronColor: C_BLUE,
+  },
+  {
+    symbol: "N",
+    name: "Nitrogen",
+    protons: 7,
+    neutrons: 7,
+    color: C_SKY,
+    electronColor: C_SAPPHIRE,
+  },
+  {
+    symbol: "O",
+    name: "Oxygen",
+    protons: 8,
+    neutrons: 8,
+    color: C_BLUE,
+    electronColor: C_LAVENDER,
+  },
+  {
+    symbol: "Fe",
+    name: "Iron",
+    protons: 26,
+    neutrons: 30,
+    color: C_PEACH,
+    electronColor: C_YELLOW,
+  },
+  {
+    symbol: "Kr",
+    name: "Krypton",
+    protons: 36,
+    neutrons: 48,
+    color: C_MAUVE,
+    electronColor: C_PINK,
+  },
+  {
+    symbol: "Ba",
+    name: "Barium",
+    protons: 56,
+    neutrons: 82,
+    color: C_ROSEWATER,
+    electronColor: C_FLAMINGO,
+  },
+  {
+    symbol: "U",
+    name: "Uranium-235",
+    protons: 92,
+    neutrons: 143,
+    color: C_LAVENDER,
+    electronColor: C_MAUVE,
+  },
 ];
 
 function elementByZ(z: number, n?: number): ElementDef {
-  const match = ELEMENT_TABLE.find(e => e.protons === z);
+  const match = ELEMENT_TABLE.find((e) => e.protons === z);
   if (match) {
     return { ...match, neutrons: n ?? match.neutrons };
   }
   return {
-    symbol: "X", name: "Unknown",
-    protons: z, neutrons: n ?? Math.round(z * 1.3),
-    color: C_SUBTEXT, electronColor: C_OVERLAY0,
+    symbol: "X",
+    name: "Unknown",
+    protons: z,
+    neutrons: n ?? Math.round(z * 1.3),
+    color: C_SUBTEXT,
+    electronColor: C_OVERLAY0,
   };
 }
 
@@ -87,8 +183,10 @@ interface Electron {
 
 interface Atom {
   id: number;
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   protons: number;
   neutrons: number;
   symbol: string;
@@ -105,42 +203,48 @@ interface Atom {
   reactColor: number;
   flickerPhase: number;
   // Bonding
-  bonds: number[];     // IDs of bonded atoms
-  maxBonds: number;    // valence (max bonds)
-  bondPhase: number;   // animation phase for bond glow
+  bonds: number[]; // IDs of bonded atoms
+  maxBonds: number; // valence (max bonds)
+  bondPhase: number; // animation phase for bond glow
 }
 
 function valenceFor(z: number): number {
   if (z === 2 || z === 10 || z === 18 || z === 36) return 0; // noble gases
-  if (z === 1) return 1;   // H
-  if (z === 3) return 1;   // Li
-  if (z === 6) return 4;   // C
-  if (z === 7) return 3;   // N
-  if (z === 8) return 2;   // O
-  if (z === 26) return 2;  // Fe
-  if (z === 56) return 2;  // Ba
-  if (z >= 40) return 0;   // heavy/radioactive — no stable bonds
+  if (z === 1) return 1; // H
+  if (z === 3) return 1; // Li
+  if (z === 6) return 4; // C
+  if (z === 7) return 3; // N
+  if (z === 8) return 2; // O
+  if (z === 26) return 2; // Fe
+  if (z === 56) return 2; // Ba
+  if (z >= 40) return 0; // heavy/radioactive — no stable bonds
   return Math.max(0, Math.min(4, 8 - (z % 8)));
 }
 
 interface Neutron {
   id: number;
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   life: number;
   maxLife: number;
 }
 
 interface Particle {
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   color: number;
 }
 
 interface LightningArc {
   id: number;
-  x1: number; y1: number;
-  x2: number; y2: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
   segments: Array<{ x: number; y: number }>;
   color: number;
   timer: number;
@@ -150,7 +254,8 @@ interface LightningArc {
 
 interface ReactionEffect {
   id: number;
-  x: number; y: number;
+  x: number;
+  y: number;
   type: "fission" | "fusion" | "scatter" | "absorb";
   timer: number;
   maxTimer: number;
@@ -194,16 +299,16 @@ export class AtomScreen extends Container {
 
   private spawnInitialAtoms(): void {
     const defs: ElementDef[] = [
-      { ...ELEMENT_TABLE[0] },  // H
-      { ...ELEMENT_TABLE[0] },  // H
-      { ...ELEMENT_TABLE[1] },  // D
-      { ...ELEMENT_TABLE[3] },  // He
-      { ...ELEMENT_TABLE[3] },  // He
-      { ...ELEMENT_TABLE[4] },  // Li
-      { ...ELEMENT_TABLE[5] },  // C
-      { ...ELEMENT_TABLE[7] },  // O
-      { ...ELEMENT_TABLE[8] },  // Fe
-      { ...ELEMENT_TABLE[9] },  // Kr
+      { ...ELEMENT_TABLE[0] }, // H
+      { ...ELEMENT_TABLE[0] }, // H
+      { ...ELEMENT_TABLE[1] }, // D
+      { ...ELEMENT_TABLE[3] }, // He
+      { ...ELEMENT_TABLE[3] }, // He
+      { ...ELEMENT_TABLE[4] }, // Li
+      { ...ELEMENT_TABLE[5] }, // C
+      { ...ELEMENT_TABLE[7] }, // O
+      { ...ELEMENT_TABLE[8] }, // Fe
+      { ...ELEMENT_TABLE[9] }, // Kr
       { ...ELEMENT_TABLE[10] }, // Ba
       { ...ELEMENT_TABLE[11] }, // U
     ];
@@ -221,7 +326,13 @@ export class AtomScreen extends Container {
     for (let i = 0; i < 6; i++) this.spawnNeutron();
   }
 
-  private createAtom(def: ElementDef, x: number, y: number, vx: number, vy: number): Atom {
+  private createAtom(
+    def: ElementDef,
+    x: number,
+    y: number,
+    vx: number,
+    vy: number,
+  ): Atom {
     const shells = electronsPerShell(def.protons);
     const electrons: Electron[] = [];
 
@@ -244,14 +355,21 @@ export class AtomScreen extends Container {
       }
     }
 
-    const nucleusR = Math.max(7, Math.min(24, 4 + Math.cbrt(def.protons + def.neutrons) * 3));
-    const maxOrbitR = electrons.length > 0
-      ? Math.max(...electrons.map(e => Math.max(e.orbitRx, e.orbitRy))) + 8
-      : nucleusR + 15;
+    const nucleusR = Math.max(
+      7,
+      Math.min(24, 4 + Math.cbrt(def.protons + def.neutrons) * 3),
+    );
+    const maxOrbitR =
+      electrons.length > 0
+        ? Math.max(...electrons.map((e) => Math.max(e.orbitRx, e.orbitRy))) + 8
+        : nucleusR + 15;
 
     const atom: Atom = {
       id: this.nextId++,
-      x, y, vx, vy,
+      x,
+      y,
+      vx,
+      vy,
       protons: def.protons,
       neutrons: def.neutrons,
       symbol: def.symbol,
@@ -290,7 +408,10 @@ export class AtomScreen extends Container {
       fill: C_SUBTEXT,
     });
     const sym = new Text({ text: atom.symbol, style: symStyle });
-    const info = new Text({ text: `Z=${atom.protons} N=${atom.neutrons}`, style: infoStyle });
+    const info = new Text({
+      text: `Z=${atom.protons} N=${atom.neutrons}`,
+      style: infoStyle,
+    });
     sym.anchor.set(0.5, 0);
     info.anchor.set(0.5, 0);
     this.addChild(sym);
@@ -312,21 +433,34 @@ export class AtomScreen extends Container {
   private spawnNeutron(fromX?: number, fromY?: number): void {
     let x: number, y: number;
     if (fromX !== undefined && fromY !== undefined) {
-      x = fromX; y = fromY;
+      x = fromX;
+      y = fromY;
     } else {
       const side = Math.floor(Math.random() * 4);
-      if      (side === 0) { x = Math.random() * this.w; y = -12; }
-      else if (side === 1) { x = this.w + 12; y = Math.random() * this.h; }
-      else if (side === 2) { x = Math.random() * this.w; y = this.h + 12; }
-      else                 { x = -12; y = Math.random() * this.h; }
+      if (side === 0) {
+        x = Math.random() * this.w;
+        y = -12;
+      } else if (side === 1) {
+        x = this.w + 12;
+        y = Math.random() * this.h;
+      } else if (side === 2) {
+        x = Math.random() * this.w;
+        y = this.h + 12;
+      } else {
+        x = -12;
+        y = Math.random() * this.h;
+      }
     }
 
-    const activeAtoms = this.atoms.filter(a => !a.dying);
+    const activeAtoms = this.atoms.filter((a) => !a.dying);
     // Bias toward heavy atoms (better targets)
-    const weighted = activeAtoms.flatMap(a => a.protons >= 30 ? [a, a] : [a]);
-    const target = weighted.length > 0
-      ? weighted[Math.floor(Math.random() * weighted.length)]
-      : { x: this.w * 0.5, y: this.h * 0.5 };
+    const weighted = activeAtoms.flatMap((a) =>
+      a.protons >= 30 ? [a, a] : [a],
+    );
+    const target =
+      weighted.length > 0
+        ? weighted[Math.floor(Math.random() * weighted.length)]
+        : { x: this.w * 0.5, y: this.h * 0.5 };
 
     const dx = target.x - x;
     const dy = target.y - y;
@@ -336,7 +470,8 @@ export class AtomScreen extends Container {
 
     this.neutrons.push({
       id: this.nextId++,
-      x, y,
+      x,
+      y,
       vx: (dx / d) * spd + (Math.random() - 0.5) * spd * spread,
       vy: (dy / d) * spd + (Math.random() - 0.5) * spd * spread,
       life: 0,
@@ -353,22 +488,31 @@ export class AtomScreen extends Container {
 
   // ── Effects ───────────────────────────────────────────────────────────────
 
-  private spawnEffect(x: number, y: number, type: ReactionEffect["type"], color: number): void {
+  private spawnEffect(
+    x: number,
+    y: number,
+    type: ReactionEffect["type"],
+    color: number,
+  ): void {
     const count = type === "fission" ? 18 : type === "fusion" ? 14 : 8;
     const particles: Particle[] = [];
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2 + Math.random() * 0.6;
       const spd = 70 + Math.random() * 130;
       particles.push({
-        x, y,
+        x,
+        y,
         vx: Math.cos(a) * spd,
         vy: Math.sin(a) * spd,
-        color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
+        color:
+          PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
       });
     }
     this.reactions.push({
       id: this.nextId++,
-      x, y, type,
+      x,
+      y,
+      type,
       timer: 0,
       maxTimer: type === "fission" ? 1.6 : type === "fusion" ? 1.3 : 0.7,
       color,
@@ -380,7 +524,10 @@ export class AtomScreen extends Container {
   // ── Reactions ─────────────────────────────────────────────────────────────
 
   private triggerFission(atom: Atom, neutron: Neutron): void {
-    const z1 = Math.max(1, Math.round(atom.protons * (0.38 + Math.random() * 0.24)));
+    const z1 = Math.max(
+      1,
+      Math.round(atom.protons * (0.38 + Math.random() * 0.24)),
+    );
     const z2 = atom.protons - z1;
     const totalN = atom.neutrons + 1;
     const emitted = 3 + Math.floor(Math.random() * 3); // 3-5 chain neutrons
@@ -394,7 +541,8 @@ export class AtomScreen extends Container {
     const splitAngle = Math.random() * Math.PI * 2;
     const spd1 = 55 + Math.random() * 45;
     const spd2 = 55 + Math.random() * 45;
-    const ax = atom.x; const ay = atom.y;
+    const ax = atom.x;
+    const ay = atom.y;
 
     // Emit neutrons immediately — chain reaction fuel
     for (let i = 0; i < emitted; i++) {
@@ -402,19 +550,31 @@ export class AtomScreen extends Container {
       const nspd = 200 + Math.random() * 200;
       this.neutrons.push({
         id: this.nextId++,
-        x: ax + Math.cos(na) * 8, y: ay + Math.sin(na) * 8,
+        x: ax + Math.cos(na) * 8,
+        y: ay + Math.sin(na) * 8,
         vx: Math.cos(na) * nspd,
         vy: Math.sin(na) * nspd,
-        life: 0, maxLife: 10,
+        life: 0,
+        maxLife: 10,
       });
     }
 
     setTimeout(() => {
       if (this.destroyed) return;
-      this.createAtom(elementByZ(z1, n1), ax + Math.cos(splitAngle) * 25, ay + Math.sin(splitAngle) * 25,
-        Math.cos(splitAngle) * spd1, Math.sin(splitAngle) * spd1);
-      this.createAtom(elementByZ(z2, n2), ax - Math.cos(splitAngle) * 25, ay - Math.sin(splitAngle) * 25,
-        -Math.cos(splitAngle) * spd2, -Math.sin(splitAngle) * spd2);
+      this.createAtom(
+        elementByZ(z1, n1),
+        ax + Math.cos(splitAngle) * 25,
+        ay + Math.sin(splitAngle) * 25,
+        Math.cos(splitAngle) * spd1,
+        Math.sin(splitAngle) * spd1,
+      );
+      this.createAtom(
+        elementByZ(z2, n2),
+        ax - Math.cos(splitAngle) * 25,
+        ay - Math.sin(splitAngle) * 25,
+        -Math.cos(splitAngle) * spd2,
+        -Math.sin(splitAngle) * spd2,
+      );
     }, 250);
   }
 
@@ -434,10 +594,12 @@ export class AtomScreen extends Container {
     if (z <= 2 && n > z) {
       this.neutrons.push({
         id: this.nextId++,
-        x: mx, y: my,
+        x: mx,
+        y: my,
         vx: (Math.random() - 0.5) * 300,
         vy: (Math.random() - 0.5) * 300,
-        life: 0, maxLife: 7,
+        life: 0,
+        maxLife: 7,
       });
     }
 
@@ -476,10 +638,22 @@ export class AtomScreen extends Container {
       atom.y += atom.vy * dt;
 
       const mg = atom.maxOrbitR + 15;
-      if (atom.x < mg) { atom.vx = Math.abs(atom.vx) + 2; atom.x = mg; }
-      if (atom.x > this.w - mg) { atom.vx = -Math.abs(atom.vx) - 2; atom.x = this.w - mg; }
-      if (atom.y < mg) { atom.vy = Math.abs(atom.vy) + 2; atom.y = mg; }
-      if (atom.y > this.h - mg) { atom.vy = -Math.abs(atom.vy) - 2; atom.y = this.h - mg; }
+      if (atom.x < mg) {
+        atom.vx = Math.abs(atom.vx) + 2;
+        atom.x = mg;
+      }
+      if (atom.x > this.w - mg) {
+        atom.vx = -Math.abs(atom.vx) - 2;
+        atom.x = this.w - mg;
+      }
+      if (atom.y < mg) {
+        atom.vy = Math.abs(atom.vy) + 2;
+        atom.y = mg;
+      }
+      if (atom.y > this.h - mg) {
+        atom.vy = -Math.abs(atom.vy) - 2;
+        atom.y = this.h - mg;
+      }
 
       // Bonded atoms experience heavy drag — they settle into slow co-motion
       const drag = atom.bonds.length > 0 ? 0.965 : 0.9985;
@@ -506,10 +680,13 @@ export class AtomScreen extends Container {
       n.y += n.vy * dt;
       n.life += dt;
     }
-    this.neutrons = this.neutrons.filter(n =>
-      n.life <= n.maxLife &&
-      n.x > -80 && n.x < this.w + 80 &&
-      n.y > -80 && n.y < this.h + 80
+    this.neutrons = this.neutrons.filter(
+      (n) =>
+        n.life <= n.maxLife &&
+        n.x > -80 &&
+        n.x < this.w + 80 &&
+        n.y > -80 &&
+        n.y < this.h + 80,
     );
   }
 
@@ -523,7 +700,7 @@ export class AtomScreen extends Container {
         p.vy *= 0.93;
       }
     }
-    this.reactions = this.reactions.filter(ef => ef.timer < ef.maxTimer);
+    this.reactions = this.reactions.filter((ef) => ef.timer < ef.maxTimer);
   }
 
   private checkNeutronCollisions(): void {
@@ -547,13 +724,19 @@ export class AtomScreen extends Container {
     } else if (atom.protons <= 3) {
       atom.neutrons += 1;
       this.spawnEffect(atom.x, atom.y, "absorb", atom.color);
-      atom.reacting = true; atom.reactTimer = 0; atom.reactDuration = 0.5; atom.reactColor = C_GREEN;
+      atom.reacting = true;
+      atom.reactTimer = 0;
+      atom.reactDuration = 0.5;
+      atom.reactColor = C_GREEN;
       n.life = n.maxLife + 1;
       // Heavy absorption may decay → spontaneous fission for medium atoms
       if (atom.neutrons > atom.protons * 2) this.triggerFission(atom, n);
     } else {
       this.spawnEffect(atom.x, atom.y, "scatter", C_SKY);
-      atom.reacting = true; atom.reactTimer = 0; atom.reactDuration = 0.4; atom.reactColor = C_SKY;
+      atom.reacting = true;
+      atom.reactTimer = 0;
+      atom.reactDuration = 0.4;
+      atom.reactColor = C_SKY;
       const ka = Math.atan2(n.y - atom.y, n.x - atom.x);
       const kick = 30 + Math.random() * 20;
       atom.vx += Math.cos(ka + Math.PI) * kick;
@@ -570,11 +753,13 @@ export class AtomScreen extends Container {
     if (this.fusionTimer > 0) return;
     this.fusionTimer = 0.06;
 
-    const alive = this.atoms.filter(a => !a.dying && !a.reacting);
+    const alive = this.atoms.filter((a) => !a.dying && !a.reacting);
     for (let i = 0; i < alive.length; i++) {
       for (let j = i + 1; j < alive.length; j++) {
-        const a1 = alive[i]; const a2 = alive[j];
-        const dx = a1.x - a2.x; const dy = a1.y - a2.y;
+        const a1 = alive[i];
+        const a2 = alive[j];
+        const dx = a1.x - a2.x;
+        const dy = a1.y - a2.y;
         const dist2 = dx * dx + dy * dy;
         // Collision when outer electron clouds touch
         const colDist = a1.maxOrbitR * 0.45 + a2.maxOrbitR * 0.45;
@@ -590,8 +775,24 @@ export class AtomScreen extends Container {
 
         // Heavy + heavy or heavy + medium → double fission cascade
         if (a1.protons >= 40 && a2.protons >= 40 && Math.random() < 0.6) {
-          const mockN1: Neutron = { id: -1, x: a1.x, y: a1.y, vx: a2.vx, vy: a2.vy, life: 0, maxLife: 0 };
-          const mockN2: Neutron = { id: -2, x: a2.x, y: a2.y, vx: a1.vx, vy: a1.vy, life: 0, maxLife: 0 };
+          const mockN1: Neutron = {
+            id: -1,
+            x: a1.x,
+            y: a1.y,
+            vx: a2.vx,
+            vy: a2.vy,
+            life: 0,
+            maxLife: 0,
+          };
+          const mockN2: Neutron = {
+            id: -2,
+            x: a2.x,
+            y: a2.y,
+            vx: a1.vx,
+            vy: a1.vy,
+            life: 0,
+            maxLife: 0,
+          };
           this.triggerFission(a1, mockN1);
           this.triggerFission(a2, mockN2);
           return;
@@ -601,7 +802,8 @@ export class AtomScreen extends Container {
         const m1 = a1.protons + a1.neutrons;
         const m2 = a2.protons + a2.neutrons;
         const totalM = m1 + m2;
-        const nx = dx / dist; const ny = dy / dist;
+        const nx = dx / dist;
+        const ny = dy / dist;
         const relV = (a1.vx - a2.vx) * nx + (a1.vy - a2.vy) * ny;
         if (relV < 0) continue; // Already separating
 
@@ -623,11 +825,17 @@ export class AtomScreen extends Container {
         // Visual reaction flash — scatter effect on both
         this.spawnEffect(a1.x, a1.y, "scatter", a1.color);
         this.spawnEffect(a2.x, a2.y, "scatter", a2.color);
-        a1.reacting = true; a1.reactTimer = 0; a1.reactDuration = 0.45; a1.reactColor = C_YELLOW;
-        a2.reacting = true; a2.reactTimer = 0; a2.reactDuration = 0.45; a2.reactColor = C_YELLOW;
+        a1.reacting = true;
+        a1.reactTimer = 0;
+        a1.reactDuration = 0.45;
+        a1.reactColor = C_YELLOW;
+        a2.reacting = true;
+        a2.reactTimer = 0;
+        a2.reactDuration = 0.45;
+        a2.reactColor = C_YELLOW;
 
         // Collision ejects a free neutron if heavy enough
-        if ((m1 + m2) > 50 && Math.random() < 0.5) {
+        if (m1 + m2 > 50 && Math.random() < 0.5) {
           const na = Math.random() * Math.PI * 2;
           this.spawnNeutron(
             (a1.x + a2.x) * 0.5 + Math.cos(na) * 10,
@@ -652,20 +860,21 @@ export class AtomScreen extends Container {
   }
 
   private pruneAndReplenish(): void {
-    const dying = this.atoms.filter(a => a.dying).map(a => a.id);
+    const dying = this.atoms.filter((a) => a.dying).map((a) => a.id);
     for (const id of dying) {
       this.removeLabel(id);
       // Break all bonds from this atom
       for (const atom of this.atoms) {
         if (atom.bonds.includes(id)) {
-          atom.bonds = atom.bonds.filter(bid => bid !== id);
+          atom.bonds = atom.bonds.filter((bid) => bid !== id);
         }
       }
     }
-    this.atoms = this.atoms.filter(a => !a.dying);
+    this.atoms = this.atoms.filter((a) => !a.dying);
 
     while (this.atoms.length < 6) {
-      const pick = ELEMENT_TABLE[Math.floor(Math.random() * ELEMENT_TABLE.length)];
+      const pick =
+        ELEMENT_TABLE[Math.floor(Math.random() * ELEMENT_TABLE.length)];
       const mg = 140;
       this.createAtom(
         { ...pick },
@@ -688,14 +897,19 @@ export class AtomScreen extends Container {
     if (this.bondCheckTimer > 0) return;
     this.bondCheckTimer = 0.12;
 
-    const alive = this.atoms.filter(a => !a.dying && !a.reacting && a.maxBonds > 0);
+    const alive = this.atoms.filter(
+      (a) => !a.dying && !a.reacting && a.maxBonds > 0,
+    );
     for (let i = 0; i < alive.length; i++) {
       for (let j = i + 1; j < alive.length; j++) {
-        const a1 = alive[i]; const a2 = alive[j];
+        const a1 = alive[i];
+        const a2 = alive[j];
         if (a1.bonds.includes(a2.id) || a2.bonds.includes(a1.id)) continue;
-        if (a1.bonds.length >= a1.maxBonds || a2.bonds.length >= a2.maxBonds) continue;
+        if (a1.bonds.length >= a1.maxBonds || a2.bonds.length >= a2.maxBonds)
+          continue;
 
-        const dx = a1.x - a2.x; const dy = a1.y - a2.y;
+        const dx = a1.x - a2.x;
+        const dy = a1.y - a2.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const bondRange = (a1.maxOrbitR + a2.maxOrbitR) * 0.55;
 
@@ -712,8 +926,10 @@ export class AtomScreen extends Container {
           // Bond formation arc
           this.createLightningArc(a1.x, a1.y, a2.x, a2.y, C_GREEN, 0.4, 1.8);
           this.spawnEffect(
-            (a1.x + a2.x) * 0.5, (a1.y + a2.y) * 0.5,
-            "absorb", C_GREEN,
+            (a1.x + a2.x) * 0.5,
+            (a1.y + a2.y) * 0.5,
+            "absorb",
+            C_GREEN,
           );
         }
       }
@@ -726,23 +942,32 @@ export class AtomScreen extends Container {
       a1.bondPhase += dt * 3.5;
 
       for (const bid of [...a1.bonds]) {
-        const a2 = this.atoms.find(a => a.id === bid);
+        const a2 = this.atoms.find((a) => a.id === bid);
         if (!a2 || a2.dying) {
           // Partner gone — break bond
-          a1.bonds = a1.bonds.filter(id => id !== bid);
-          this.createLightningArc(a1.x, a1.y, a1.x + (Math.random() - 0.5) * 60, a1.y + (Math.random() - 0.5) * 60, C_RED, 0.25, 1.5);
+          a1.bonds = a1.bonds.filter((id) => id !== bid);
+          this.createLightningArc(
+            a1.x,
+            a1.y,
+            a1.x + (Math.random() - 0.5) * 60,
+            a1.y + (Math.random() - 0.5) * 60,
+            C_RED,
+            0.25,
+            1.5,
+          );
           continue;
         }
 
-        const dx = a2.x - a1.x; const dy = a2.y - a1.y;
+        const dx = a2.x - a1.x;
+        const dy = a2.y - a1.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const eqDist = (a1.maxOrbitR + a2.maxOrbitR) * 0.65;
         const maxDist = eqDist * 2.5;
 
         if (dist > maxDist) {
           // Bond breaks — too far
-          a1.bonds = a1.bonds.filter(id => id !== a2.id);
-          a2.bonds = a2.bonds.filter(id => id !== a1.id);
+          a1.bonds = a1.bonds.filter((id) => id !== a2.id);
+          a2.bonds = a2.bonds.filter((id) => id !== a1.id);
           this.createLightningArc(a1.x, a1.y, a2.x, a2.y, C_RED, 0.2, 2.5);
           continue;
         }
@@ -771,13 +996,21 @@ export class AtomScreen extends Container {
   // ── Lightning ─────────────────────────────────────────────────────────────
 
   private createLightningArc(
-    x1: number, y1: number, x2: number, y2: number,
-    color: number, maxTimer: number, width: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    color: number,
+    maxTimer: number,
+    width: number,
   ): void {
     const segments = this.buildLightningPath(x1, y1, x2, y2, 6);
     this.lightningArcs.push({
       id: this.nextId++,
-      x1, y1, x2, y2,
+      x1,
+      y1,
+      x2,
+      y2,
       segments,
       color,
       timer: 0,
@@ -787,10 +1020,15 @@ export class AtomScreen extends Container {
   }
 
   private buildLightningPath(
-    x1: number, y1: number, x2: number, y2: number, splits: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    splits: number,
   ): Array<{ x: number; y: number }> {
     const pts: Array<{ x: number; y: number }> = [{ x: x1, y: y1 }];
-    const dx = x2 - x1; const dy = y2 - y1;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
     const len = Math.sqrt(dx * dx + dy * dy);
     const perp = { x: -dy / len, y: dx / len };
 
@@ -811,10 +1049,16 @@ export class AtomScreen extends Container {
       arc.timer += dt;
       // Regenerate path for flickering
       if (arc.timer < arc.maxTimer * 0.6 && Math.random() < 0.4) {
-        arc.segments = this.buildLightningPath(arc.x1, arc.y1, arc.x2, arc.y2, 6);
+        arc.segments = this.buildLightningPath(
+          arc.x1,
+          arc.y1,
+          arc.x2,
+          arc.y2,
+          6,
+        );
       }
     }
-    this.lightningArcs = this.lightningArcs.filter(a => a.timer < a.maxTimer);
+    this.lightningArcs = this.lightningArcs.filter((a) => a.timer < a.maxTimer);
   }
 
   private spawnAmbientLightning(dt: number): void {
@@ -822,7 +1066,7 @@ export class AtomScreen extends Container {
     if (this.lightningTimer > 0) return;
     this.lightningTimer = 0.4 + Math.random() * 0.8;
 
-    const alive = this.atoms.filter(a => !a.dying);
+    const alive = this.atoms.filter((a) => !a.dying);
     if (alive.length < 2) return;
 
     // Random close pair — arc between them
@@ -830,12 +1074,21 @@ export class AtomScreen extends Container {
       const a1 = alive[Math.floor(Math.random() * alive.length)];
       const a2 = alive[Math.floor(Math.random() * alive.length)];
       if (a1 === a2) continue;
-      const dx = a1.x - a2.x; const dy = a1.y - a2.y;
+      const dx = a1.x - a2.x;
+      const dy = a1.y - a2.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < (a1.maxOrbitR + a2.maxOrbitR) * 1.3) {
         const colors = [C_SKY, C_LAVENDER, C_MAUVE, C_TEAL];
         const col = colors[Math.floor(Math.random() * colors.length)];
-        this.createLightningArc(a1.x, a1.y, a2.x, a2.y, col, 0.18 + Math.random() * 0.22, 1.2);
+        this.createLightningArc(
+          a1.x,
+          a1.y,
+          a2.x,
+          a2.y,
+          col,
+          0.18 + Math.random() * 0.22,
+          1.2,
+        );
         break;
       }
     }
@@ -868,11 +1121,12 @@ export class AtomScreen extends Container {
         if (drawn.has(key)) continue;
         drawn.add(key);
 
-        const a2 = this.atoms.find(a => a.id === bid);
+        const a2 = this.atoms.find((a) => a.id === bid);
         if (!a2 || a2.dying) continue;
 
         const pulse = 0.5 + 0.5 * Math.sin(a1.bondPhase);
-        const dx = a2.x - a1.x; const dy = a2.y - a1.y;
+        const dx = a2.x - a1.x;
+        const dy = a2.y - a1.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const steps = 14;
 
@@ -901,10 +1155,13 @@ export class AtomScreen extends Container {
 
         // Bond energy dots along the bond
         for (let i = 1; i < 4; i++) {
-          const t = (i / 4) + Math.sin(this.time * 2 + i) * 0.05;
+          const t = i / 4 + Math.sin(this.time * 2 + i) * 0.05;
           const bx = a1.x + dx * t;
           const by = a1.y + dy * t;
-          g.circle(bx, by, 2.5).fill({ color: C_GREEN, alpha: 0.6 + pulse * 0.3 });
+          g.circle(bx, by, 2.5).fill({
+            color: C_GREEN,
+            alpha: 0.6 + pulse * 0.3,
+          });
         }
       }
     }
@@ -920,7 +1177,11 @@ export class AtomScreen extends Container {
       for (let i = 0; i < pts.length - 1; i++) {
         g.moveTo(pts[i].x, pts[i].y)
           .lineTo(pts[i + 1].x, pts[i + 1].y)
-          .stroke({ width: arc.width * 3, color: arc.color, alpha: alpha * 0.15 });
+          .stroke({
+            width: arc.width * 3,
+            color: arc.color,
+            alpha: alpha * 0.15,
+          });
       }
       // Core
       for (let i = 0; i < pts.length - 1; i++) {
@@ -932,7 +1193,11 @@ export class AtomScreen extends Container {
       for (let i = 0; i < pts.length - 1; i++) {
         g.moveTo(pts[i].x, pts[i].y)
           .lineTo(pts[i + 1].x, pts[i + 1].y)
-          .stroke({ width: arc.width * 0.35, color: 0xffffff, alpha: alpha * 0.6 });
+          .stroke({
+            width: arc.width * 0.35,
+            color: 0xffffff,
+            alpha: alpha * 0.6,
+          });
       }
     }
   }
@@ -945,7 +1210,10 @@ export class AtomScreen extends Container {
       const prog = ef.timer / ef.maxTimer;
       if (prog < 0.6) {
         const r = prog * Math.min(this.w, this.h) * 0.7;
-        g.circle(ef.x, ef.y, r).fill({ color: ef.color, alpha: (0.6 - prog) * 0.03 });
+        g.circle(ef.x, ef.y, r).fill({
+          color: ef.color,
+          alpha: (0.6 - prog) * 0.03,
+        });
       }
     }
 
@@ -958,7 +1226,8 @@ export class AtomScreen extends Container {
     ];
     for (const b of blobDefs) {
       const bx = b.ox * this.w + Math.sin(t * 0.12 + b.phase) * this.w * 0.08;
-      const by = b.oy * this.h + Math.cos(t * 0.09 + b.phase * 1.3) * this.h * 0.07;
+      const by =
+        b.oy * this.h + Math.cos(t * 0.09 + b.phase * 1.3) * this.h * 0.07;
       const br = 80 + 40 * Math.sin(t * 0.15 + b.phase);
       const ba = 0.03 + 0.015 * Math.sin(t * 0.2 + b.phase);
       g.circle(bx, by, br * 2).fill({ color: b.color, alpha: ba * 0.4 });
@@ -968,20 +1237,28 @@ export class AtomScreen extends Container {
     // Grid
     const sp = 55;
     for (let x = 0; x < this.w; x += sp) {
-      g.moveTo(x, 0).lineTo(x, this.h).stroke({ width: 0.35, color: C_SURFACE0, alpha: 0.55 });
+      g.moveTo(x, 0)
+        .lineTo(x, this.h)
+        .stroke({ width: 0.35, color: C_SURFACE0, alpha: 0.55 });
     }
     for (let y = 0; y < this.h; y += sp) {
-      g.moveTo(0, y).lineTo(this.w, y).stroke({ width: 0.35, color: C_SURFACE0, alpha: 0.55 });
+      g.moveTo(0, y)
+        .lineTo(this.w, y)
+        .stroke({ width: 0.35, color: C_SURFACE0, alpha: 0.55 });
     }
 
     // Grid intersection dots — shimmer based on time
     for (let xi = 0; xi * sp < this.w; xi++) {
       for (let yi = 0; yi * sp < this.h; yi++) {
-        const px = xi * sp; const py = yi * sp;
+        const px = xi * sp;
+        const py = yi * sp;
         const phase = Math.sin(t * 0.6 + xi * 0.4 + yi * 0.5);
         const dotA = 0.15 + phase * 0.12;
         const dotR = 0.7 + phase * 0.4;
-        g.circle(px, py, dotR).fill({ color: C_SUBTEXT, alpha: Math.max(0.05, dotA) });
+        g.circle(px, py, dotR).fill({
+          color: C_SUBTEXT,
+          alpha: Math.max(0.05, dotA),
+        });
       }
     }
 
@@ -998,9 +1275,13 @@ export class AtomScreen extends Container {
           const y1 = ef.y + Math.sin(baseA) * r;
           const x2 = ef.x + Math.cos(baseA + arc) * r;
           const y2 = ef.y + Math.sin(baseA + arc) * r;
-          g.moveTo(x1, y1).lineTo(x2, y2).stroke({
-            width: 0.8, color: ef.color, alpha: (1 - prog) * 0.35,
-          });
+          g.moveTo(x1, y1)
+            .lineTo(x2, y2)
+            .stroke({
+              width: 0.8,
+              color: ef.color,
+              alpha: (1 - prog) * 0.35,
+            });
         }
       }
     }
@@ -1036,35 +1317,50 @@ export class AtomScreen extends Container {
     const vibAmp = (atom.bonds.length > 0 ? 1.8 : 0.5) + rp * 3;
     const vx = Math.sin(this.time * 18 + atom.id * 1.7) * vibAmp;
     const vy = Math.cos(this.time * 21 + atom.id * 2.3) * vibAmp;
-    const ax = atom.x + vx; const ay = atom.y + vy;
+    const ax = atom.x + vx;
+    const ay = atom.y + vy;
 
     // Orbital ellipses (one per shell) — drawn at vibrated position
-    const shownShells = new Set(atom.electrons.map(e => e.shell));
+    const shownShells = new Set(atom.electrons.map((e) => e.shell));
     for (const si of shownShells) {
-      const el = atom.electrons.find(e => e.shell === si);
+      const el = atom.electrons.find((e) => e.shell === si);
       if (!el) continue;
-      this.strokeEllipse(g, ax, ay, el.orbitRx, el.orbitRy, el.tilt,
-        { width: 0.7, color: atom.electronColor, alpha: 0.12 + rp * 0.12 });
+      this.strokeEllipse(g, ax, ay, el.orbitRx, el.orbitRy, el.tilt, {
+        width: 0.7,
+        color: atom.electronColor,
+        alpha: 0.12 + rp * 0.12,
+      });
     }
 
     // Electrons
     for (const e of atom.electrons) {
-      const ex = ax
-        + Math.cos(e.angle) * e.orbitRx * Math.cos(e.tilt)
-        - Math.sin(e.angle) * e.orbitRy * Math.sin(e.tilt);
-      const ey = ay
-        + Math.cos(e.angle) * e.orbitRx * Math.sin(e.tilt)
-        + Math.sin(e.angle) * e.orbitRy * Math.cos(e.tilt);
+      const ex =
+        ax +
+        Math.cos(e.angle) * e.orbitRx * Math.cos(e.tilt) -
+        Math.sin(e.angle) * e.orbitRy * Math.sin(e.tilt);
+      const ey =
+        ay +
+        Math.cos(e.angle) * e.orbitRx * Math.sin(e.tilt) +
+        Math.sin(e.angle) * e.orbitRy * Math.cos(e.tilt);
       const ea = 0.55 + rp * 0.35 + flicker * 0.1;
-      g.circle(ex, ey, 5.5).fill({ color: atom.electronColor, alpha: ea * 0.25 });
+      g.circle(ex, ey, 5.5).fill({
+        color: atom.electronColor,
+        alpha: ea * 0.25,
+      });
       g.circle(ex, ey, 3).fill({ color: atom.electronColor, alpha: ea * 0.85 });
       g.circle(ex, ey, 1.4).fill({ color: 0xffffff, alpha: ea * 0.7 });
     }
 
     // Nucleus outer glow
     const glowAlpha = 0.07 + rp * 0.12 + flicker * 0.03;
-    g.circle(ax, ay, atom.nucleusR * 2.8 + rp * 6).fill({ color: atom.color, alpha: glowAlpha });
-    g.circle(ax, ay, atom.nucleusR * 1.6 + rp * 3).fill({ color: atom.color, alpha: glowAlpha * 2.5 });
+    g.circle(ax, ay, atom.nucleusR * 2.8 + rp * 6).fill({
+      color: atom.color,
+      alpha: glowAlpha,
+    });
+    g.circle(ax, ay, atom.nucleusR * 1.6 + rp * 3).fill({
+      color: atom.color,
+      alpha: glowAlpha * 2.5,
+    });
 
     if (atom.protons <= 10) {
       this.drawDetailedNucleus(g, ax, ay, atom, rp);
@@ -1073,17 +1369,25 @@ export class AtomScreen extends Container {
     }
   }
 
-  private drawDetailedNucleus(g: Graphics, cx: number, cy: number, atom: Atom, rp: number): void {
+  private drawDetailedNucleus(
+    g: Graphics,
+    cx: number,
+    cy: number,
+    atom: Atom,
+    rp: number,
+  ): void {
     const r = atom.nucleusR;
     const total = Math.min(atom.protons + atom.neutrons, 20);
     const t = this.time * 0.4;
 
     for (let i = 0; i < total; i++) {
       const isProton = i < atom.protons;
-      let nx: number; let ny: number;
+      let nx: number;
+      let ny: number;
 
       if (i === 0) {
-        nx = cx; ny = cy;
+        nx = cx;
+        ny = cy;
       } else if (i < 5) {
         const a = (i / 4) * Math.PI * 2 + t;
         nx = cx + Math.cos(a) * r * 0.45;
@@ -1098,20 +1402,45 @@ export class AtomScreen extends Container {
       const dr = 3.2 + rp * 1.5;
       g.circle(nx, ny, dr + 1.5).fill({ color, alpha: 0.3 });
       g.circle(nx, ny, dr).fill({ color, alpha: 0.95 });
-      if (isProton) g.circle(nx, ny, 1.5).fill({ color: 0xffffff, alpha: 0.35 });
+      if (isProton)
+        g.circle(nx, ny, 1.5).fill({ color: 0xffffff, alpha: 0.35 });
     }
 
-    g.circle(cx, cy, r + rp * 2).stroke({ width: 1.2, color: atom.color, alpha: 0.45 + rp * 0.4 });
+    g.circle(cx, cy, r + rp * 2).stroke({
+      width: 1.2,
+      color: atom.color,
+      alpha: 0.45 + rp * 0.4,
+    });
   }
 
-  private drawSimpleNucleus(g: Graphics, cx: number, cy: number, atom: Atom, rp: number, flicker: number): void {
+  private drawSimpleNucleus(
+    g: Graphics,
+    cx: number,
+    cy: number,
+    atom: Atom,
+    rp: number,
+    flicker: number,
+  ): void {
     const r = atom.nucleusR;
     const pulse = 1 + rp * 0.18 + flicker * 0.04;
 
-    g.circle(cx, cy, r * pulse * 1.35).fill({ color: atom.color, alpha: 0.22 + rp * 0.18 });
-    g.circle(cx, cy, r * pulse).fill({ color: atom.color, alpha: 0.78 + rp * 0.18 });
-    g.circle(cx, cy, r * pulse * 0.55).fill({ color: 0xffffff, alpha: 0.28 + rp * 0.22 });
-    g.circle(cx, cy, r * pulse).stroke({ width: 1.8, color: 0xffffff, alpha: 0.18 + rp * 0.28 });
+    g.circle(cx, cy, r * pulse * 1.35).fill({
+      color: atom.color,
+      alpha: 0.22 + rp * 0.18,
+    });
+    g.circle(cx, cy, r * pulse).fill({
+      color: atom.color,
+      alpha: 0.78 + rp * 0.18,
+    });
+    g.circle(cx, cy, r * pulse * 0.55).fill({
+      color: 0xffffff,
+      alpha: 0.28 + rp * 0.22,
+    });
+    g.circle(cx, cy, r * pulse).stroke({
+      width: 1.8,
+      color: 0xffffff,
+      alpha: 0.18 + rp * 0.28,
+    });
 
     // Decorative spin lines inside nucleus for large atoms
     if (atom.protons >= 26) {
@@ -1127,16 +1456,24 @@ export class AtomScreen extends Container {
 
   private strokeEllipse(
     g: Graphics,
-    cx: number, cy: number,
-    rx: number, ry: number,
+    cx: number,
+    cy: number,
+    rx: number,
+    ry: number,
     tilt: number,
     style: { width: number; color: number; alpha: number },
   ): void {
     const steps = 48;
     for (let i = 0; i <= steps; i++) {
       const a = (i / steps) * Math.PI * 2;
-      const x = cx + Math.cos(a) * rx * Math.cos(tilt) - Math.sin(a) * ry * Math.sin(tilt);
-      const y = cy + Math.cos(a) * rx * Math.sin(tilt) + Math.sin(a) * ry * Math.cos(tilt);
+      const x =
+        cx +
+        Math.cos(a) * rx * Math.cos(tilt) -
+        Math.sin(a) * ry * Math.sin(tilt);
+      const y =
+        cy +
+        Math.cos(a) * rx * Math.sin(tilt) +
+        Math.sin(a) * ry * Math.cos(tilt);
       if (i === 0) g.moveTo(x, y);
       else g.lineTo(x, y);
     }
@@ -1152,12 +1489,19 @@ export class AtomScreen extends Container {
       for (let ri = 0; ri < ef.rings; ri++) {
         const rr = (prog + ri * 0.22) * 130;
         const ra = alpha * (1 - ri * 0.28);
-        g.circle(ef.x, ef.y, rr).stroke({ width: Math.max(0.5, 2.5 - prog * 2.5), color: ef.color, alpha: ra });
+        g.circle(ef.x, ef.y, rr).stroke({
+          width: Math.max(0.5, 2.5 - prog * 2.5),
+          color: ef.color,
+          alpha: ra,
+        });
       }
 
       // Particles
       for (const p of ef.particles) {
-        g.circle(p.x, p.y, 3.2 * (1 - prog * 0.6)).fill({ color: p.color, alpha: alpha * 0.85 });
+        g.circle(p.x, p.y, 3.2 * (1 - prog * 0.6)).fill({
+          color: p.color,
+          alpha: alpha * 0.85,
+        });
       }
 
       // Central flash
@@ -1169,7 +1513,14 @@ export class AtomScreen extends Container {
 
       // Reaction type label flash
       if (prog < 0.5) {
-        const label = ef.type === "fission" ? "FISSION" : ef.type === "fusion" ? "FUSION" : ef.type === "absorb" ? "ABSORB" : "SCATTER";
+        const label =
+          ef.type === "fission"
+            ? "FISSION"
+            : ef.type === "fusion"
+              ? "FUSION"
+              : ef.type === "absorb"
+                ? "ABSORB"
+                : "SCATTER";
         void label; // rendered via Text separately - this is a placeholder
       }
     }

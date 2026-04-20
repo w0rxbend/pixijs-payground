@@ -3,48 +3,66 @@ import { Container, Graphics } from "pixi.js";
 
 // ── Catppuccin Mocha ──────────────────────────────────────────────────────────
 const CATT_ROSEWATER = 0xf5e0dc;
-const CATT_FLAMINGO  = 0xf2cdcd;
-const CATT_PINK      = 0xf5c2e7;
-const CATT_MAUVE     = 0xcba6f7;
-const CATT_RED       = 0xf38ba8;
-const CATT_MAROON    = 0xeba0ac;
-const CATT_PEACH     = 0xfab387;
-const CATT_YELLOW    = 0xf9e2af;
-const CATT_GREEN     = 0xa6e3a1;
-const CATT_TEAL      = 0x94e2d5;
-const CATT_SKY       = 0x89dceb;
-const CATT_SAPPHIRE  = 0x74c7ec;
-const CATT_BLUE      = 0x89b4fa;
-const CATT_LAVENDER  = 0xb4befe;
-const CATT_TEXT      = 0xcdd6f4;
+const CATT_FLAMINGO = 0xf2cdcd;
+const CATT_PINK = 0xf5c2e7;
+const CATT_MAUVE = 0xcba6f7;
+const CATT_RED = 0xf38ba8;
+const CATT_MAROON = 0xeba0ac;
+const CATT_PEACH = 0xfab387;
+const CATT_YELLOW = 0xf9e2af;
+const CATT_GREEN = 0xa6e3a1;
+const CATT_TEAL = 0x94e2d5;
+const CATT_SKY = 0x89dceb;
+const CATT_SAPPHIRE = 0x74c7ec;
+const CATT_BLUE = 0x89b4fa;
+const CATT_LAVENDER = 0xb4befe;
+const CATT_TEXT = 0xcdd6f4;
 
 const PALETTE = [
-  CATT_ROSEWATER, CATT_FLAMINGO, CATT_PINK, CATT_MAUVE, CATT_RED,
-  CATT_MAROON, CATT_PEACH, CATT_YELLOW, CATT_GREEN, CATT_TEAL,
-  CATT_SKY, CATT_SAPPHIRE, CATT_BLUE, CATT_LAVENDER,
+  CATT_ROSEWATER,
+  CATT_FLAMINGO,
+  CATT_PINK,
+  CATT_MAUVE,
+  CATT_RED,
+  CATT_MAROON,
+  CATT_PEACH,
+  CATT_YELLOW,
+  CATT_GREEN,
+  CATT_TEAL,
+  CATT_SKY,
+  CATT_SAPPHIRE,
+  CATT_BLUE,
+  CATT_LAVENDER,
 ] as const;
 
-function palColor(i: number): number { return PALETTE[Math.abs(Math.floor(i)) % PALETTE.length]; }
+function palColor(i: number): number {
+  return PALETTE[Math.abs(Math.floor(i)) % PALETTE.length];
+}
 
 // ── Geometry ──────────────────────────────────────────────────────────────────
 const WEBCAM_R = 200;
 
 // Layer definitions: orbit radius, hex count, hex size, ring rotation offset, palette start
 const LAYERS = [
-  { r: WEBCAM_R + 14,  n: 20, size: 14, offset: 0,                  ci: 0  },
-  { r: WEBCAM_R + 30,  n: 20, size: 16, offset: Math.PI / 20,       ci: 4  },
-  { r: WEBCAM_R + 50,  n: 22, size: 17, offset: Math.PI / 11,       ci: 8  },
-  { r: WEBCAM_R + 72,  n: 22, size: 16, offset: Math.PI / 22 * 1.5, ci: 2  },
-  { r: WEBCAM_R + 94,  n: 18, size: 15, offset: Math.PI / 9,        ci: 6  },
+  { r: WEBCAM_R + 14, n: 20, size: 14, offset: 0, ci: 0 },
+  { r: WEBCAM_R + 30, n: 20, size: 16, offset: Math.PI / 20, ci: 4 },
+  { r: WEBCAM_R + 50, n: 22, size: 17, offset: Math.PI / 11, ci: 8 },
+  { r: WEBCAM_R + 72, n: 22, size: 16, offset: (Math.PI / 22) * 1.5, ci: 2 },
+  { r: WEBCAM_R + 94, n: 18, size: 15, offset: Math.PI / 9, ci: 6 },
 ] as const;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface HexNode {
-  x: number; y: number;
-  vx: number; vy: number;
-  homeX: number; homeY: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  homeX: number;
+  homeY: number;
   homeAngle: number;
-  rot: number; rotV: number; homeRot: number;
+  rot: number;
+  rotV: number;
+  homeRot: number;
   size: number;
   color: number;
   colorTimer: number;
@@ -53,26 +71,28 @@ interface HexNode {
 }
 
 interface Shockwave {
-  r: number; alpha: number; color: number;
+  r: number;
+  alpha: number;
+  color: number;
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 export class HexCamScreen extends Container {
   public static assetBundles: string[] = [];
 
-  private readonly world:    Container;
+  private readonly world: Container;
   private readonly shockGfx: Graphics;
-  private readonly hexGfx:   Graphics;
-  private readonly rimGfx:   Graphics;
+  private readonly hexGfx: Graphics;
+  private readonly rimGfx: Graphics;
 
-  private hexagons:   HexNode[]   = [];
+  private hexagons: HexNode[] = [];
   private shockwaves: Shockwave[] = [];
 
-  private time         = 0;
-  private beatTimer    = 0;
+  private time = 0;
+  private beatTimer = 0;
   private beatInterval = 135;
-  private beatPhase    = 0;
-  private beatColor    = CATT_BLUE;
+  private beatPhase = 0;
+  private beatColor = CATT_BLUE;
 
   constructor() {
     super();
@@ -81,8 +101,8 @@ export class HexCamScreen extends Container {
     this.addChild(this.world);
 
     this.shockGfx = new Graphics();
-    this.hexGfx   = new Graphics();
-    this.rimGfx   = new Graphics();
+    this.hexGfx = new Graphics();
+    this.rimGfx = new Graphics();
     this.world.addChild(this.shockGfx);
     this.world.addChild(this.hexGfx);
     this.world.addChild(this.rimGfx);
@@ -96,23 +116,26 @@ export class HexCamScreen extends Container {
     for (let li = 0; li < LAYERS.length; li++) {
       const lay = LAYERS[li];
       for (let i = 0; i < lay.n; i++) {
-        const angle   = (i / lay.n) * Math.PI * 2 + lay.offset;
-        const hx      = Math.cos(angle) * lay.r;
-        const hy      = Math.sin(angle) * lay.r;
+        const angle = (i / lay.n) * Math.PI * 2 + lay.offset;
+        const hx = Math.cos(angle) * lay.r;
+        const hy = Math.sin(angle) * lay.r;
         // Home rotation: point one flat edge toward center + tiny random offset
         const homeRot = angle + Math.PI / 6 + (Math.random() - 0.5) * 0.25;
 
         this.hexagons.push({
-          x: hx, y: hy,
-          vx: 0, vy: 0,
-          homeX: hx, homeY: hy,
+          x: hx,
+          y: hy,
+          vx: 0,
+          vy: 0,
+          homeX: hx,
+          homeY: hy,
           homeAngle: angle,
           rot: homeRot + (Math.random() - 0.5) * 0.5,
           rotV: 0,
           homeRot,
           size: lay.size + (Math.random() - 0.5) * 3,
           color: palColor(lay.ci + i),
-          colorTimer:    Math.random() * 180,
+          colorTimer: Math.random() * 180,
           colorInterval: 160 + Math.random() * 220,
           layer: li,
         });
@@ -131,12 +154,16 @@ export class HexCamScreen extends Container {
       const len = Math.sqrt(h.homeX * h.homeX + h.homeY * h.homeY) || 1;
       // Outer layers get kicked harder so the frame "blooms" outward
       const layerBoost = 0.6 + h.layer * 0.2;
-      h.vx   += (h.homeX / len) * mag * layerBoost * (0.5 + Math.random() * 0.8);
-      h.vy   += (h.homeY / len) * mag * layerBoost * (0.5 + Math.random() * 0.8);
+      h.vx += (h.homeX / len) * mag * layerBoost * (0.5 + Math.random() * 0.8);
+      h.vy += (h.homeY / len) * mag * layerBoost * (0.5 + Math.random() * 0.8);
       h.rotV += (Math.random() - 0.5) * 0.35;
     }
 
-    this.shockwaves.push({ r: WEBCAM_R + 5, alpha: 0.75, color: this.beatColor });
+    this.shockwaves.push({
+      r: WEBCAM_R + 5,
+      alpha: 0.75,
+      color: this.beatColor,
+    });
   }
 
   // ── Update ────────────────────────────────────────────────────────────────
@@ -157,11 +184,11 @@ export class HexCamScreen extends Container {
   }
 
   private _updateHexagons(dt: number): void {
-    const homeK   = 0.048;
-    const rotK    = 0.055;
+    const homeK = 0.048;
+    const rotK = 0.055;
     const posDamp = 0.84;
     const rotDamp = 0.87;
-    const dts     = dt * 0.5;
+    const dts = dt * 0.5;
 
     for (const h of this.hexagons) {
       // Radial spring back to home position
@@ -169,29 +196,31 @@ export class HexCamScreen extends Container {
       h.vy += (h.homeY - h.y) * homeK;
 
       // Breathing sine wave — each layer breathes at a different phase
-      const breath = Math.sin(this.time * 2.0 + h.homeAngle * 3 + h.layer * 0.8) * 0.07;
+      const breath =
+        Math.sin(this.time * 2.0 + h.homeAngle * 3 + h.layer * 0.8) * 0.07;
       h.vx += -Math.sin(h.homeAngle) * breath;
-      h.vy +=  Math.cos(h.homeAngle) * breath;
+      h.vy += Math.cos(h.homeAngle) * breath;
 
       // Constant low turbulence for vibration feel
-      h.vx += (Math.random() - 0.5) * 0.20;
-      h.vy += (Math.random() - 0.5) * 0.20;
+      h.vx += (Math.random() - 0.5) * 0.2;
+      h.vy += (Math.random() - 0.5) * 0.2;
 
-      h.vx *= posDamp; h.vy *= posDamp;
-      h.x  += h.vx * dts;
-      h.y  += h.vy * dts;
+      h.vx *= posDamp;
+      h.vy *= posDamp;
+      h.x += h.vx * dts;
+      h.y += h.vy * dts;
 
       // Rotation spring
       h.rotV += (h.homeRot - h.rot) * rotK;
-      h.rotV += (Math.random() - 0.5) * 0.010;
+      h.rotV += (Math.random() - 0.5) * 0.01;
       h.rotV *= rotDamp;
-      h.rot  += h.rotV * dts;
+      h.rot += h.rotV * dts;
 
       // Slowly cycle color
       h.colorTimer += dt;
       if (h.colorTimer >= h.colorInterval) {
         h.colorTimer = 0;
-        h.color      = palColor(Math.floor(Math.random() * PALETTE.length));
+        h.color = palColor(Math.floor(Math.random() * PALETTE.length));
       }
     }
   }
@@ -206,12 +235,15 @@ export class HexCamScreen extends Container {
     sg.clear();
     for (let i = this.shockwaves.length - 1; i >= 0; i--) {
       const sw = this.shockwaves[i];
-      sw.r    += 3.0;
+      sw.r += 3.0;
       sw.alpha = Math.max(0, sw.alpha - 0.024);
-      if (sw.alpha <= 0) { this.shockwaves.splice(i, 1); continue; }
+      if (sw.alpha <= 0) {
+        this.shockwaves.splice(i, 1);
+        continue;
+      }
 
       sg.circle(0, 0, sw.r + 7);
-      sg.stroke({ color: sw.color, width: 16, alpha: sw.alpha * 0.10 });
+      sg.stroke({ color: sw.color, width: 16, alpha: sw.alpha * 0.1 });
       sg.circle(0, 0, sw.r);
       sg.stroke({ color: sw.color, width: 2.5, alpha: sw.alpha * 0.65 });
     }
@@ -222,12 +254,22 @@ export class HexCamScreen extends Container {
 
     for (const h of this.hexagons) {
       // Deeper layers are more transparent so stacking reads clearly
-      const depthFade  = 0.5 + h.layer * 0.12;
-      const fillAlpha  = (0.18 + beat * 0.10) * depthFade;
-      const strokeAlpha = (0.70 + beat * 0.30) * depthFade;
-      const strokeW    = 1.2 + h.layer * 0.2 + beat * 0.8;
+      const depthFade = 0.5 + h.layer * 0.12;
+      const fillAlpha = (0.18 + beat * 0.1) * depthFade;
+      const strokeAlpha = (0.7 + beat * 0.3) * depthFade;
+      const strokeW = 1.2 + h.layer * 0.2 + beat * 0.8;
 
-      this._drawHex(g, h.x, h.y, h.size, h.rot, h.color, fillAlpha, strokeAlpha, strokeW);
+      this._drawHex(
+        g,
+        h.x,
+        h.y,
+        h.size,
+        h.rot,
+        h.color,
+        fillAlpha,
+        strokeAlpha,
+        strokeW,
+      );
     }
 
     // ── Camera rim ───────────────────────────────────────────────────────────
@@ -244,22 +286,22 @@ export class HexCamScreen extends Container {
   }
 
   private _drawHex(
-    g:           Graphics,
-    cx:          number,
-    cy:          number,
-    size:        number,
-    rot:         number,
-    color:       number,
-    fillAlpha:   number,
+    g: Graphics,
+    cx: number,
+    cy: number,
+    size: number,
+    rot: number,
+    color: number,
+    fillAlpha: number,
     strokeAlpha: number,
-    strokeW:     number,
+    strokeW: number,
   ): void {
     for (let i = 0; i <= 6; i++) {
       const a = rot + (i / 6) * Math.PI * 2;
       const x = cx + Math.cos(a) * size;
       const y = cy + Math.sin(a) * size;
       if (i === 0) g.moveTo(x, y);
-      else         g.lineTo(x, y);
+      else g.lineTo(x, y);
     }
     g.fill({ color, alpha: fillAlpha });
 
@@ -268,7 +310,7 @@ export class HexCamScreen extends Container {
       const x = cx + Math.cos(a) * size;
       const y = cy + Math.sin(a) * size;
       if (i === 0) g.moveTo(x, y);
-      else         g.lineTo(x, y);
+      else g.lineTo(x, y);
     }
     g.stroke({ color, width: strokeW, alpha: strokeAlpha });
   }
@@ -276,7 +318,7 @@ export class HexCamScreen extends Container {
   // ── Layout ────────────────────────────────────────────────────────────────
 
   public resize(width: number, height: number): void {
-    this.world.x = width  * 0.5;
+    this.world.x = width * 0.5;
     this.world.y = height * 0.5;
   }
 }

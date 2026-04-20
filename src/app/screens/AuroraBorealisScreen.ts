@@ -6,19 +6,26 @@ const TAU = Math.PI * 2;
 
 const BAND_DEFS = [
   { cx: 0.12, color: 0xa6e3a1, coreW: 18, glowW: 120 }, // Green
-  { cx: 0.30, color: 0x94e2d5, coreW: 22, glowW: 150 }, // Teal
+  { cx: 0.3, color: 0x94e2d5, coreW: 22, glowW: 150 }, // Teal
   { cx: 0.52, color: 0x89dceb, coreW: 28, glowW: 190 }, // Sky   (center, widest)
   { cx: 0.72, color: 0x74c7ec, coreW: 20, glowW: 140 }, // Sapphire
   { cx: 0.88, color: 0xcba6f7, coreW: 16, glowW: 110 }, // Mauve
 ] as const;
 
-const SCAN_STEP   = 4;
-const STAR_COUNT  = 100;
-const RISE_COUNT  = 20; // rising streamer particles per band
+const SCAN_STEP = 4;
+const STAR_COUNT = 100;
+const RISE_COUNT = 20; // rising streamer particles per band
 
-function rand(a: number, b: number) { return a + Math.random() * (b - a); }
+function rand(a: number, b: number) {
+  return a + Math.random() * (b - a);
+}
 
-interface SineComp { freq: number; amp: number; phase: number; speed: number; }
+interface SineComp {
+  freq: number;
+  amp: number;
+  phase: number;
+  speed: number;
+}
 
 interface Band {
   cx: number;
@@ -39,7 +46,13 @@ interface Streamer {
   alpha: number;
 }
 
-interface Star { x: number; y: number; size: number; phase: number; speed: number; }
+interface Star {
+  x: number;
+  y: number;
+  size: number;
+  phase: number;
+  speed: number;
+}
 
 export class AuroraBorealisScreen extends Container {
   public static assetBundles: string[] = [];
@@ -57,7 +70,7 @@ export class AuroraBorealisScreen extends Container {
   }
 
   public async show(): Promise<void> {
-    this.w = window.innerWidth  || 1920;
+    this.w = window.innerWidth || 1920;
     this.h = window.innerHeight || 1080;
     this.init();
   }
@@ -65,7 +78,8 @@ export class AuroraBorealisScreen extends Container {
   public async hide(): Promise<void> {}
 
   public resize(w: number, h: number): void {
-    this.w = w; this.h = h;
+    this.w = w;
+    this.h = h;
     this.init();
   }
 
@@ -74,9 +88,24 @@ export class AuroraBorealisScreen extends Container {
     this.bands = BAND_DEFS.map((def) => ({
       ...def,
       comps: [
-        { freq: 0.0040, amp: W * 0.058, phase: rand(0, TAU), speed: rand(0.12, 0.35) },
-        { freq: 0.0100, amp: W * 0.028, phase: rand(0, TAU), speed: rand(0.28, 0.70) },
-        { freq: 0.0230, amp: W * 0.012, phase: rand(0, TAU), speed: rand(0.55, 1.20) },
+        {
+          freq: 0.004,
+          amp: W * 0.058,
+          phase: rand(0, TAU),
+          speed: rand(0.12, 0.35),
+        },
+        {
+          freq: 0.01,
+          amp: W * 0.028,
+          phase: rand(0, TAU),
+          speed: rand(0.28, 0.7),
+        },
+        {
+          freq: 0.023,
+          amp: W * 0.012,
+          phase: rand(0, TAU),
+          speed: rand(0.55, 1.2),
+        },
       ],
       shimmer: 0.8,
       shimmerSpd: rand(0.35, 1.1),
@@ -119,7 +148,10 @@ export class AuroraBorealisScreen extends Container {
 
     for (const band of this.bands) {
       for (const c of band.comps) c.phase += c.speed * dt;
-      band.shimmer = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(this.time * band.shimmerSpd + band.shimmerPh));
+      band.shimmer =
+        0.45 +
+        0.55 *
+          (0.5 + 0.5 * Math.sin(this.time * band.shimmerSpd + band.shimmerPh));
     }
 
     this.drawStars(g, dt);
@@ -142,14 +174,17 @@ export class AuroraBorealisScreen extends Container {
         if (env < 0.012) continue;
         const cx = this.bandX(band, y);
 
-        g.moveTo(cx - band.glowW, y).lineTo(cx + band.glowW, y)
+        g.moveTo(cx - band.glowW, y)
+          .lineTo(cx + band.glowW, y)
           .stroke({ width: SCAN_STEP, color: band.color, alpha: env * 0.042 });
 
-        g.moveTo(cx - band.coreW, y).lineTo(cx + band.coreW, y)
-          .stroke({ width: SCAN_STEP, color: band.color, alpha: env * 0.60 });
+        g.moveTo(cx - band.coreW, y)
+          .lineTo(cx + band.coreW, y)
+          .stroke({ width: SCAN_STEP, color: band.color, alpha: env * 0.6 });
 
         // Bright center thread
-        g.moveTo(cx - 3, y).lineTo(cx + 3, y)
+        g.moveTo(cx - 3, y)
+          .lineTo(cx + 3, y)
           .stroke({ width: SCAN_STEP, color: band.color, alpha: env * 0.88 });
       }
     }
@@ -168,8 +203,14 @@ export class AuroraBorealisScreen extends Container {
         const env = this.envelope(yr) * band.shimmer;
         if (env < 0.02) continue;
         const cx = this.bandX(band, s.y);
-        g.circle(cx, s.y, s.size * 2.5).fill({ color: band.color, alpha: env * s.alpha * 0.14 });
-        g.circle(cx, s.y, s.size).fill({ color: band.color, alpha: env * s.alpha });
+        g.circle(cx, s.y, s.size * 2.5).fill({
+          color: band.color,
+          alpha: env * s.alpha * 0.14,
+        });
+        g.circle(cx, s.y, s.size).fill({
+          color: band.color,
+          alpha: env * s.alpha,
+        });
       }
     }
   }

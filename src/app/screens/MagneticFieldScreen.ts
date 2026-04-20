@@ -4,7 +4,7 @@ import { Container, Graphics } from "pixi.js";
 const BG = 0x050508;
 
 const GRID_SPACING = 24;
-const LINE_HALF    = 10;
+const LINE_HALF = 10;
 
 // Magnet strength constant — tuned so fillings near a magnet are nearly vertical
 // and far ones near-horizontal relative to the field line
@@ -33,12 +33,14 @@ export class MagneticFieldScreen extends Container {
   }
 
   public async show(): Promise<void> {
-    this.w = window.innerWidth  || 1920;
+    this.w = window.innerWidth || 1920;
     this.h = window.innerHeight || 1080;
     this.buildGrid();
   }
 
-  public async hide(): Promise<void> { /* nothing to clean up */ }
+  public async hide(): Promise<void> {
+    /* nothing to clean up */
+  }
 
   public resize(width: number, height: number): void {
     this.w = width;
@@ -51,8 +53,8 @@ export class MagneticFieldScreen extends Container {
     // Centre the grid so fillings are symmetric on any resolution
     const offX = ((this.w % GRID_SPACING) / 2) | 0;
     const offY = ((this.h % GRID_SPACING) / 2) | 0;
-    const cols  = Math.ceil(this.w / GRID_SPACING) + 1;
-    const rows  = Math.ceil(this.h / GRID_SPACING) + 1;
+    const cols = Math.ceil(this.w / GRID_SPACING) + 1;
+    const rows = Math.ceil(this.h / GRID_SPACING) + 1;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         this.gridPts.push({
@@ -71,28 +73,40 @@ export class MagneticFieldScreen extends Container {
     // Three magnets on independent Lissajous paths — irrational frequency ratios
     // ensure they never exactly repeat, keeping the field perpetually evolving
     const cx = this.w * 0.5;
-    const cy = this.h  * 0.5;
+    const cy = this.h * 0.5;
     this.magnets = [
       {
-        x:      cx + Math.cos(t * 0.211)                    * this.w * 0.32
-                   + Math.cos(t * 0.073 + 1.1)              * this.w * 0.08,
-        y:      cy + Math.sin(t * 0.167)                    * this.h  * 0.34
-                   + Math.sin(t * 0.091 + 0.7)              * this.h  * 0.07,
-        charge:  1,
+        x:
+          cx +
+          Math.cos(t * 0.211) * this.w * 0.32 +
+          Math.cos(t * 0.073 + 1.1) * this.w * 0.08,
+        y:
+          cy +
+          Math.sin(t * 0.167) * this.h * 0.34 +
+          Math.sin(t * 0.091 + 0.7) * this.h * 0.07,
+        charge: 1,
       },
       {
-        x:      cx + Math.cos(t * 0.163 + 2.09)             * this.w * 0.28
-                   + Math.cos(t * 0.059 + 3.4)              * this.w * 0.10,
-        y:      cy + Math.sin(t * 0.229 + 1.26)             * this.h  * 0.30
-                   + Math.sin(t * 0.081 + 2.1)              * this.h  * 0.09,
+        x:
+          cx +
+          Math.cos(t * 0.163 + 2.09) * this.w * 0.28 +
+          Math.cos(t * 0.059 + 3.4) * this.w * 0.1,
+        y:
+          cy +
+          Math.sin(t * 0.229 + 1.26) * this.h * 0.3 +
+          Math.sin(t * 0.081 + 2.1) * this.h * 0.09,
         charge: -1,
       },
       {
-        x:      cx + Math.cos(t * 0.131 + 4.19)             * this.w * 0.22
-                   + Math.cos(t * 0.047 + 5.8)              * this.w * 0.12,
-        y:      cy + Math.sin(t * 0.109 + 2.83)             * this.h  * 0.24
-                   + Math.sin(t * 0.063 + 4.5)              * this.h  * 0.11,
-        charge:  1,
+        x:
+          cx +
+          Math.cos(t * 0.131 + 4.19) * this.w * 0.22 +
+          Math.cos(t * 0.047 + 5.8) * this.w * 0.12,
+        y:
+          cy +
+          Math.sin(t * 0.109 + 2.83) * this.h * 0.24 +
+          Math.sin(t * 0.063 + 4.5) * this.h * 0.11,
+        charge: 1,
       },
     ];
 
@@ -109,13 +123,13 @@ export class MagneticFieldScreen extends Container {
         const dx = pt.x - mag.x;
         const dy = pt.y - mag.y;
         const r2 = dx * dx + dy * dy + 1; // +1 prevents div-by-zero
-        const r  = Math.sqrt(r2);
-        const f  = mag.charge * K / r2;
+        const r = Math.sqrt(r2);
+        const f = (mag.charge * K) / r2;
         bx += (dx / r) * f;
         by += (dy / r) * f;
       }
 
-      const bMag  = Math.sqrt(bx * bx + by * by);
+      const bMag = Math.sqrt(bx * bx + by * by);
       const angle = Math.atan2(by, bx);
 
       // Map field magnitude to a 0-1 intensity on a log scale
@@ -151,7 +165,7 @@ export class MagneticFieldScreen extends Container {
       const c = mag.charge > 0 ? 0xf38ba8 : 0x89b4fa; // rose=N, blue=S
       g.circle(mag.x, mag.y, 40).fill({ color: c, alpha: 0.04 });
       g.circle(mag.x, mag.y, 14).fill({ color: c, alpha: 0.12 });
-      g.circle(mag.x, mag.y,  4).fill({ color: c, alpha: 0.70 });
+      g.circle(mag.x, mag.y, 4).fill({ color: c, alpha: 0.7 });
     }
   }
 }

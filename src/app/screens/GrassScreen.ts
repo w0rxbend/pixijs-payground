@@ -20,13 +20,20 @@ const SEPARATOR = "  //  ";
 const SCROLL_SPEED = 0.14;
 
 // ── Catppuccin Mocha ──────────────────────────────────────────────────────────
-const COLOR_TEXT   = 0x162e1c; // темний ліс — текст у траві
+const COLOR_TEXT = 0x162e1c; // темний ліс — текст у траві
 const COLOR_STROKE = 0x4a9a52; // середній зелений — тонкий контур
 
 // ── Grass palette – back to front ─────────────────────────────────────────────
-const BACK_COLORS  = [0x0f2415, 0x162e1c, 0x1a3320, 0x22422a, 0x2a5232, 0x2d5536] as const;
-const MID_COLORS   = [0x306838, 0x3a7a42, 0x42884a, 0x4a9a52, 0x52a85a, 0x5db868, 0x68c473] as const;
-const FRONT_COLORS = [0x78cc7e, 0x8ed88a, 0xa6e3a1, 0xb8ebb5, 0x94e2d5, 0x7fd8c8, 0x6db476, 0x82c97f, 0x9ed99b] as const;
+const BACK_COLORS = [
+  0x0f2415, 0x162e1c, 0x1a3320, 0x22422a, 0x2a5232, 0x2d5536,
+] as const;
+const MID_COLORS = [
+  0x306838, 0x3a7a42, 0x42884a, 0x4a9a52, 0x52a85a, 0x5db868, 0x68c473,
+] as const;
+const FRONT_COLORS = [
+  0x78cc7e, 0x8ed88a, 0xa6e3a1, 0xb8ebb5, 0x94e2d5, 0x7fd8c8, 0x6db476,
+  0x82c97f, 0x9ed99b,
+] as const;
 
 const TICKER_STYLE = new TextStyle({
   fontFamily: "'Bangers', cursive",
@@ -66,23 +73,23 @@ function pick<T>(arr: readonly T[]): T {
 export class GrassScreen extends Container {
   public static assetBundles: string[] = [];
 
-  private readonly gfxBack     = new Graphics(); // ground + layer 0 + layer 1
-  private readonly scrollCont  = new Container();
-  private readonly gfxFront    = new Graphics(); // layer 2 — поверх тексту
+  private readonly gfxBack = new Graphics(); // ground + layer 0 + layer 1
+  private readonly scrollCont = new Container();
+  private readonly gfxFront = new Graphics(); // layer 2 — поверх тексту
 
-  private blades:  Blade[]      = [];
-  private items:   TickerItem[] = [];
-  private msgIdx   = 0;
+  private blades: Blade[] = [];
+  private items: TickerItem[] = [];
+  private msgIdx = 0;
 
   private time = 0;
-  private W    = 1920;
-  private H    = 1080;
+  private W = 1920;
+  private H = 1080;
 
   constructor() {
     super();
     this.addChild(this.gfxBack);
     this.addChild(this.scrollCont);
-    this.addChild(this.gfxFront);  // рендер поверх ticker
+    this.addChild(this.gfxFront); // рендер поверх ticker
   }
 
   public async show(): Promise<void> {
@@ -118,9 +125,9 @@ export class GrassScreen extends Container {
       }
     };
 
-    spawn(750, 0, 0.20, 0.55, 2,  4,  BACK_COLORS);
-    spawn(620, 1, 0.40, 0.78, 3,  7,  MID_COLORS);
-    spawn(100, 2, 0.60, 1.00, 4,  10, FRONT_COLORS);
+    spawn(750, 0, 0.2, 0.55, 2, 4, BACK_COLORS);
+    spawn(620, 1, 0.4, 0.78, 3, 7, MID_COLORS);
+    spawn(100, 2, 0.6, 1.0, 4, 10, FRONT_COLORS);
 
     this.blades.sort((a, b) => a.layer - b.layer);
   }
@@ -135,19 +142,20 @@ export class GrassScreen extends Container {
   }
 
   private drawBlade(g: Graphics, blade: Blade): void {
-    const baseY        = this.H;
+    const baseY = this.H;
     const personalWind = this.windAt(blade.x + blade.phase * 80, blade.layer);
 
     const tipX = blade.x + personalWind + blade.lean * blade.height * 0.25;
-    const tipY = baseY   - blade.height;
-    const cpX  = blade.x + personalWind * 0.45 + blade.lean * blade.height * 0.12;
-    const cpY  = baseY   - blade.height * 0.65;
+    const tipY = baseY - blade.height;
+    const cpX =
+      blade.x + personalWind * 0.45 + blade.lean * blade.height * 0.12;
+    const cpY = baseY - blade.height * 0.65;
     const half = blade.width * 0.5;
 
     g.moveTo(blade.x - half, baseY)
-     .quadraticCurveTo(cpX - half * 0.4, cpY, tipX, tipY)
-     .quadraticCurveTo(cpX + half * 0.6, cpY, blade.x + half, baseY)
-     .fill({ color: blade.color, alpha: 0.82 + blade.layer * 0.06 });
+      .quadraticCurveTo(cpX - half * 0.4, cpY, tipX, tipY)
+      .quadraticCurveTo(cpX + half * 0.6, cpY, blade.x + half, baseY)
+      .fill({ color: blade.color, alpha: 0.82 + blade.layer * 0.06 });
   }
 
   // ── Ticker ─────────────────────────────────────────────────────────────────
@@ -229,11 +237,13 @@ export class GrassScreen extends Container {
     this.gfxFront.clear();
 
     // Земля — найнижчий шар
-    this.gfxBack.rect(0, this.H - 12, this.W, 12).fill({ color: 0x0f2415, alpha: 1 });
+    this.gfxBack
+      .rect(0, this.H - 12, this.W, 12)
+      .fill({ color: 0x0f2415, alpha: 1 });
 
     for (const blade of this.blades) {
       if (blade.layer < 2) {
-        this.drawBlade(this.gfxBack, blade);  // за текстом
+        this.drawBlade(this.gfxBack, blade); // за текстом
       } else {
         this.drawBlade(this.gfxFront, blade); // перед текстом
       }

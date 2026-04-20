@@ -2,10 +2,10 @@ import type { Ticker } from "pixi.js";
 import { Container, Graphics, Sprite, Text, TextStyle, Texture } from "pixi.js";
 
 // ── Palette ────────────────────────────────────────────────────────────────────
-const RAZER_GREEN   = 0x00ff41;
-const LOL_VIOLET    = 0xc050ff;
+const RAZER_GREEN = 0x00ff41;
+const LOL_VIOLET = 0xc050ff;
 const CATT_TEAL_CAT = 0x94e2d5;
-const TOXIC_GREEN   = 0x39ff14;
+const TOXIC_GREEN = 0x39ff14;
 
 // ── Catppuccin orbit-dot palette ───────────────────────────────────────────────
 const CATT_PALETTE = [
@@ -25,10 +25,10 @@ function randomCatt(): number {
 
 // ── Orbit-dot type ─────────────────────────────────────────────────────────────
 interface OrbitDot {
-  angle: number;        // current angular position (radians)
-  speed: number;        // rad/s, signed
-  radius: number;       // orbit radius in px
-  size: number;         // dot radius in px
+  angle: number; // current angular position (radians)
+  speed: number; // rad/s, signed
+  radius: number; // orbit radius in px
+  size: number; // dot radius in px
   color: number;
   alphaPhase: number;
   alphaSpeed: number;
@@ -40,7 +40,7 @@ const LOGO_SIZE = 200;
 
 // ── Heartbeat constants ────────────────────────────────────────────────────────
 /** Length of one full heartbeat cycle in seconds (~70 BPM). */
-const BEAT_INTERVAL   = 0.857;
+const BEAT_INTERVAL = 0.857;
 /** Phase (0‥1) within the cycle where the "dub" secondary beat fires. */
 const DUB_PHASE_RATIO = 0.28;
 
@@ -48,7 +48,7 @@ const DUB_PHASE_RATIO = 0.28;
 /** Seconds of history shown per horizontal pixel. */
 const ECG_SCROLL = 0.007;
 /** Peak deflection of the R-spike in pixels. */
-const ECG_AMP    = 50;
+const ECG_AMP = 50;
 
 /**
  * Standalone animated logo overlay with heartbeat animation and ECG background.
@@ -73,16 +73,16 @@ export class LogoScreen extends Container {
 
   // ── State ──────────────────────────────────────────────────────────────────
   private logoBaseScale = 1.0;
-  private time          = 0;
+  private time = 0;
   /** 0‥1 — spikes to 1 on each beat, decays to 0. Drives logo scale punch. */
-  private beatDecay     = 0;
+  private beatDecay = 0;
   private readonly orbitDots: OrbitDot[] = [];
 
   constructor() {
     super();
     // z-order bottom → top: ecgGfx, auraGfx, orbitDotGfx, logo (show), liveDot (show), liveText (show)
-    this.ecgGfx      = new Graphics();
-    this.auraGfx     = new Graphics();
+    this.ecgGfx = new Graphics();
+    this.auraGfx = new Graphics();
     this.orbitDotGfx = new Graphics();
     this.addChild(this.ecgGfx);
     this.addChild(this.auraGfx);
@@ -93,7 +93,7 @@ export class LogoScreen extends Container {
   public async show(): Promise<void> {
     const sprite = new Sprite(Texture.from("worxbend-logo.png"));
     sprite.anchor.set(0.5);
-    sprite.width  = LOGO_SIZE;
+    sprite.width = LOGO_SIZE;
     sprite.scale.y = sprite.scale.x;
     this.logoBaseScale = sprite.scale.x;
     this.addChild(sprite);
@@ -122,7 +122,7 @@ export class LogoScreen extends Container {
   }
 
   public resize(width: number, height: number): void {
-    this.x = width  * 0.5;
+    this.x = width * 0.5;
     this.y = height * 0.5;
   }
 
@@ -136,11 +136,11 @@ export class LogoScreen extends Container {
     const phase = ((t % BEAT_INTERVAL) + BEAT_INTERVAL) % BEAT_INTERVAL;
     const n = phase / BEAT_INTERVAL; // 0..1
 
-    const p  =  0.18 * Math.exp(-((n - 0.080) ** 2) / 0.004);   // P wave
-    const q  = -0.08 * Math.exp(-((n - 0.148) ** 2) / 0.0008);  // Q dip
-    const r  =  1.00 * Math.exp(-((n - 0.175) ** 2) / 0.001);   // R spike
-    const s  = -0.18 * Math.exp(-((n - 0.210) ** 2) / 0.001);   // S dip
-    const tw =  0.35 * Math.exp(-((n - 0.420) ** 2) / 0.008);   // T wave
+    const p = 0.18 * Math.exp(-((n - 0.08) ** 2) / 0.004); // P wave
+    const q = -0.08 * Math.exp(-((n - 0.148) ** 2) / 0.0008); // Q dip
+    const r = 1.0 * Math.exp(-((n - 0.175) ** 2) / 0.001); // R spike
+    const s = -0.18 * Math.exp(-((n - 0.21) ** 2) / 0.001); // S dip
+    const tw = 0.35 * Math.exp(-((n - 0.42) ** 2) / 0.008); // T wave
 
     return p + q + r + s + tw;
   }
@@ -152,9 +152,9 @@ export class LogoScreen extends Container {
     if (!sprite) return;
 
     // ── Lub-dub beat detection ────────────────────────────────────────────────
-    const prevPhase   = (this.time - 1 / 60) % BEAT_INTERVAL;
-    const currPhase   = this.time % BEAT_INTERVAL;
-    const dubPhase    = BEAT_INTERVAL * DUB_PHASE_RATIO;
+    const prevPhase = (this.time - 1 / 60) % BEAT_INTERVAL;
+    const currPhase = this.time % BEAT_INTERVAL;
+    const dubPhase = BEAT_INTERVAL * DUB_PHASE_RATIO;
 
     if (currPhase < prevPhase) {
       // Phase wrapped → "lub" (main beat)
@@ -170,8 +170,8 @@ export class LogoScreen extends Container {
     const float = Math.sin(this.time * 0.5) * 9;
 
     // ── Logo scale: breathe + tremor + heartbeat punch ─────────────────────────
-    const breathe   = 1 + 0.06  * Math.sin(this.time * 0.6);
-    const tremor    =
+    const breathe = 1 + 0.06 * Math.sin(this.time * 0.6);
+    const tremor =
       1 +
       0.013 * Math.sin(this.time * 19.4) +
       0.009 * Math.sin(this.time * 27.1) +
@@ -180,21 +180,29 @@ export class LogoScreen extends Container {
     sprite.scale.set(this.logoBaseScale * breathe * tremor * beatPunch);
 
     // ── Micro position quake ──────────────────────────────────────────────────
-    const qx = Math.sin(this.time * 17.3) * 1.8 + Math.sin(this.time * 31.1) * 1.0;
-    const qy = Math.cos(this.time * 23.7) * 1.4 + Math.cos(this.time * 37.9) * 0.8;
-    sprite.x     = qx;
-    sprite.y     = float + qy;
+    const qx =
+      Math.sin(this.time * 17.3) * 1.8 + Math.sin(this.time * 31.1) * 1.0;
+    const qy =
+      Math.cos(this.time * 23.7) * 1.4 + Math.cos(this.time * 37.9) * 0.8;
+    sprite.x = qx;
+    sprite.y = float + qy;
     sprite.alpha = 0.9 + Math.sin(this.time * 0.75) * 0.1;
 
     // ── Aura glow ─────────────────────────────────────────────────────────────
-    const cy   = float;
+    const cy = float;
     const aura = 72 + 8 * Math.sin(this.time * 0.5);
 
     this.auraGfx.clear();
 
-    this.auraGfx.circle(0, cy, aura * 2.4).fill({ color: RAZER_GREEN,   alpha: 0.04 });
-    this.auraGfx.circle(0, cy, aura * 1.6).fill({ color: RAZER_GREEN,   alpha: 0.08 });
-    this.auraGfx.circle(0, cy, aura * 1.0).fill({ color: LOL_VIOLET,    alpha: 0.06 });
+    this.auraGfx
+      .circle(0, cy, aura * 2.4)
+      .fill({ color: RAZER_GREEN, alpha: 0.04 });
+    this.auraGfx
+      .circle(0, cy, aura * 1.6)
+      .fill({ color: RAZER_GREEN, alpha: 0.08 });
+    this.auraGfx
+      .circle(0, cy, aura * 1.0)
+      .fill({ color: LOL_VIOLET, alpha: 0.06 });
 
     // Orbiting arc 1 — green, slow clockwise
     const r0 = aura + 8;
@@ -233,10 +241,10 @@ export class LogoScreen extends Container {
   // ── ECG drawing ─────────────────────────────────────────────────────────────
 
   private drawECG(cx: number, cy: number): void {
-    const gfx   = this.ecgGfx;
+    const gfx = this.ecgGfx;
     const yBase = cy;
     // Span 2× the logo diameter, centred on the logo's current position
-    const half    = LOGO_SIZE;
+    const half = LOGO_SIZE;
     const SAMPLES = half * 2;
 
     gfx.clear();
@@ -244,12 +252,12 @@ export class LogoScreen extends Container {
     /** Traces the P-QRS-T waveform centred under the logo. */
     const buildPath = () => {
       for (let i = 0; i <= SAMPLES; i++) {
-        const t   = this.time - (SAMPLES - i) * ECG_SCROLL;
+        const t = this.time - (SAMPLES - i) * ECG_SCROLL;
         const val = this.ecgSample(t) * ECG_AMP;
-        const x   = cx - half + (i / SAMPLES) * (half * 2);
-        const y   = yBase - val; // peaks go upward (negative y)
+        const x = cx - half + (i / SAMPLES) * (half * 2);
+        const y = yBase - val; // peaks go upward (negative y)
         if (i === 0) gfx.moveTo(x, y);
-        else         gfx.lineTo(x, y);
+        else gfx.lineTo(x, y);
       }
     };
 
@@ -268,24 +276,48 @@ export class LogoScreen extends Container {
 
   private initOrbitDots(): void {
     // Three concentric rings of dots with distinct radii and speeds.
-    const rings: Array<{ count: number; radius: number; speedBase: number; dir: number; sizeBase: number }> = [
-      { count: 8,  radius: LOGO_SIZE * 0.62, speedBase: 0.55, dir:  1, sizeBase: 3.5 },
-      { count: 12, radius: LOGO_SIZE * 0.78, speedBase: 0.32, dir: -1, sizeBase: 2.5 },
-      { count: 6,  radius: LOGO_SIZE * 0.95, speedBase: 0.18, dir:  1, sizeBase: 5.0 },
+    const rings: Array<{
+      count: number;
+      radius: number;
+      speedBase: number;
+      dir: number;
+      sizeBase: number;
+    }> = [
+      {
+        count: 8,
+        radius: LOGO_SIZE * 0.62,
+        speedBase: 0.55,
+        dir: 1,
+        sizeBase: 3.5,
+      },
+      {
+        count: 12,
+        radius: LOGO_SIZE * 0.78,
+        speedBase: 0.32,
+        dir: -1,
+        sizeBase: 2.5,
+      },
+      {
+        count: 6,
+        radius: LOGO_SIZE * 0.95,
+        speedBase: 0.18,
+        dir: 1,
+        sizeBase: 5.0,
+      },
     ];
 
     for (const ring of rings) {
       for (let i = 0; i < ring.count; i++) {
         const beacon = i % Math.ceil(ring.count / 2) === 0;
         this.orbitDots.push({
-          angle:      (i / ring.count) * Math.PI * 2,
-          speed:      ring.dir * (ring.speedBase + Math.random() * 0.15),
-          radius:     ring.radius + (Math.random() - 0.5) * 10,
-          size:       ring.sizeBase * (beacon ? 1.5 : 0.8 + Math.random() * 0.5),
-          color:      randomCatt(),
+          angle: (i / ring.count) * Math.PI * 2,
+          speed: ring.dir * (ring.speedBase + Math.random() * 0.15),
+          radius: ring.radius + (Math.random() - 0.5) * 10,
+          size: ring.sizeBase * (beacon ? 1.5 : 0.8 + Math.random() * 0.5),
+          color: randomCatt(),
           alphaPhase: Math.random() * Math.PI * 2,
           alphaSpeed: 0.5 + Math.random() * 1.5,
-          glowAlpha:  beacon ? 0.25 : 0.12,
+          glowAlpha: beacon ? 0.25 : 0.12,
         });
       }
     }
@@ -302,14 +334,19 @@ export class LogoScreen extends Container {
       const x = Math.cos(dot.angle) * dot.radius;
       const y = floatY + Math.sin(dot.angle) * dot.radius;
 
-      const baseAlpha = 0.5 + 0.5 * Math.sin(this.time * dot.alphaSpeed + dot.alphaPhase);
-      const alpha     = Math.min(1.0, baseAlpha + this.beatDecay * 0.4);
-      const size      = dot.size * (1 + this.beatDecay * 0.3);
+      const baseAlpha =
+        0.5 + 0.5 * Math.sin(this.time * dot.alphaSpeed + dot.alphaPhase);
+      const alpha = Math.min(1.0, baseAlpha + this.beatDecay * 0.4);
+      const size = dot.size * (1 + this.beatDecay * 0.3);
 
       // Outer glow
-      this.orbitDotGfx.circle(x, y, size * 3.5).fill({ color: dot.color, alpha: dot.glowAlpha * alpha });
+      this.orbitDotGfx
+        .circle(x, y, size * 3.5)
+        .fill({ color: dot.color, alpha: dot.glowAlpha * alpha });
       // Mid bloom
-      this.orbitDotGfx.circle(x, y, size * 1.8).fill({ color: dot.color, alpha: alpha * 0.4 });
+      this.orbitDotGfx
+        .circle(x, y, size * 1.8)
+        .fill({ color: dot.color, alpha: alpha * 0.4 });
       // Bright core
       this.orbitDotGfx.circle(x, y, size).fill({ color: dot.color, alpha });
     }
@@ -321,12 +358,12 @@ export class LogoScreen extends Container {
     if (!this.liveDot || !this.liveText) return;
 
     // Dot radius scaled to logo — core ~10 % of LOGO_SIZE
-    const DOT_R = LOGO_SIZE * 0.10;
+    const DOT_R = LOGO_SIZE * 0.1;
 
     // Attach to the right edge of the logo, vertically centred on it
     const dotX = cx + LOGO_SIZE * 0.5 + DOT_R * 2.5;
-    this.liveDot.x  = dotX;
-    this.liveDot.y  = cy;
+    this.liveDot.x = dotX;
+    this.liveDot.y = cy;
     this.liveText.x = dotX + DOT_R * 2.2;
     this.liveText.y = cy;
 
@@ -336,7 +373,9 @@ export class LogoScreen extends Container {
 
     this.liveDot.clear();
     this.liveDot.circle(0, 0, DOT_R).fill({ color: 0xff3333, alpha });
-    this.liveDot.circle(0, 0, DOT_R * 2).fill({ color: 0xff3333, alpha: alpha * 0.22 });
+    this.liveDot
+      .circle(0, 0, DOT_R * 2)
+      .fill({ color: 0xff3333, alpha: alpha * 0.22 });
 
     // Text: tied to the same pulse for a subtle breathing effect
     this.liveText.alpha = 0.65 + 0.35 * pulse;

@@ -3,24 +3,35 @@ import { Container, Graphics } from "pixi.js";
 
 // ── Catppuccin Mocha Palette ──────────────────────────────────────────────────
 const CATT_ROSEWATER = 0xf5e0dc;
-const CATT_FLAMINGO  = 0xf2cdcd;
-const CATT_PINK      = 0xf5c2e7;
-const CATT_MAUVE     = 0xcba6f7;
-const CATT_RED       = 0xf38ba8;
-const CATT_MAROON    = 0xeba0ac;
-const CATT_PEACH     = 0xfab387;
-const CATT_YELLOW    = 0xf9e2af;
-const CATT_GREEN     = 0xa6e3a1;
-const CATT_TEAL      = 0x94e2d5;
-const CATT_SKY       = 0x89dceb;
-const CATT_SAPPHIRE  = 0x74c7ec;
-const CATT_BLUE      = 0x89b4fa;
-const CATT_LAVENDER  = 0xb4befe;
+const CATT_FLAMINGO = 0xf2cdcd;
+const CATT_PINK = 0xf5c2e7;
+const CATT_MAUVE = 0xcba6f7;
+const CATT_RED = 0xf38ba8;
+const CATT_MAROON = 0xeba0ac;
+const CATT_PEACH = 0xfab387;
+const CATT_YELLOW = 0xf9e2af;
+const CATT_GREEN = 0xa6e3a1;
+const CATT_TEAL = 0x94e2d5;
+const CATT_SKY = 0x89dceb;
+const CATT_SAPPHIRE = 0x74c7ec;
+const CATT_BLUE = 0x89b4fa;
+const CATT_LAVENDER = 0xb4befe;
 
 const PALETTE = [
-  CATT_ROSEWATER, CATT_FLAMINGO, CATT_PINK, CATT_MAUVE, CATT_RED,
-  CATT_MAROON, CATT_PEACH, CATT_YELLOW, CATT_GREEN, CATT_TEAL,
-  CATT_SKY, CATT_SAPPHIRE, CATT_BLUE, CATT_LAVENDER,
+  CATT_ROSEWATER,
+  CATT_FLAMINGO,
+  CATT_PINK,
+  CATT_MAUVE,
+  CATT_RED,
+  CATT_MAROON,
+  CATT_PEACH,
+  CATT_YELLOW,
+  CATT_GREEN,
+  CATT_TEAL,
+  CATT_SKY,
+  CATT_SAPPHIRE,
+  CATT_BLUE,
+  CATT_LAVENDER,
 ] as const;
 
 type CattColor = (typeof PALETTE)[number];
@@ -30,18 +41,20 @@ function randColor(): CattColor {
 }
 
 // ── Geometry constants ────────────────────────────────────────────────────────
-const WEBCAM_R  = 200;
-const BORDER_R  = WEBCAM_R + 3;
-const ORBIT_R   = WEBCAM_R + 38;  // inner orbit ring
-const ORBIT_R2  = WEBCAM_R + 20;  // outer orbit ring (closer to border)
-const PHYS_R    = WEBCAM_R + 62;
+const WEBCAM_R = 200;
+const BORDER_R = WEBCAM_R + 3;
+const ORBIT_R = WEBCAM_R + 38; // inner orbit ring
+const ORBIT_R2 = WEBCAM_R + 20; // outer orbit ring (closer to border)
+const PHYS_R = WEBCAM_R + 62;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type CrystalShape = "hexagon" | "diamond" | "triangle" | "star" | "pentagon";
 
 interface Crystal {
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   rotation: number;
   rotSpeed: number;
   size: number;
@@ -72,15 +85,20 @@ interface OrbitDot {
 }
 
 interface PhysParticle {
-  x: number; y: number;
-  vx: number; vy: number;
-  homeX: number; homeY: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  homeX: number;
+  homeY: number;
 }
 
 /** Particle on the fluid orbit ring — pinned softly to orbit path */
 interface FluidNode {
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   homeAngle: number; // angle on the orbit circle
 }
 
@@ -88,19 +106,19 @@ interface FluidNode {
 export class CrystalCamScreen extends Container {
   public static assetBundles: string[] = [];
 
-  private readonly world:         Container;
-  private readonly borderGfx:     Graphics;
+  private readonly world: Container;
+  private readonly borderGfx: Graphics;
   private readonly connectionGfx: Graphics;
-  private readonly physGfx:       Graphics;
+  private readonly physGfx: Graphics;
 
-  private crystals:       Crystal[]      = [];
-  private fireballs:      Fireball[]     = [];
-  private orbitDots:      OrbitDot[]     = []; // inner ring
-  private orbitDots2:     OrbitDot[]     = []; // outer ring
-  private physParticles:  PhysParticle[] = [];
-  private fluidNodes:     FluidNode[]    = [];
-  private fluidGfx!:      Graphics;
-  private fluidColor:     CattColor      = CATT_SKY;
+  private crystals: Crystal[] = [];
+  private fireballs: Fireball[] = [];
+  private orbitDots: OrbitDot[] = []; // inner ring
+  private orbitDots2: OrbitDot[] = []; // outer ring
+  private physParticles: PhysParticle[] = [];
+  private fluidNodes: FluidNode[] = [];
+  private fluidGfx!: Graphics;
+  private fluidColor: CattColor = CATT_SKY;
   private fluidColorTimer = 0;
 
   private time = 0;
@@ -134,12 +152,18 @@ export class CrystalCamScreen extends Container {
   // ── Init helpers ──────────────────────────────────────────────────────────
 
   private _initCrystals(): void {
-    const shapes: CrystalShape[] = ["hexagon", "diamond", "triangle", "star", "pentagon"];
+    const shapes: CrystalShape[] = [
+      "hexagon",
+      "diamond",
+      "triangle",
+      "star",
+      "pentagon",
+    ];
     for (let i = 0; i < 22; i++) {
-      const gfx   = new Graphics();
+      const gfx = new Graphics();
       this.world.addChild(gfx);
       const angle = Math.random() * Math.PI * 2;
-      const dist  = WEBCAM_R + 70 + Math.random() * 200;
+      const dist = WEBCAM_R + 70 + Math.random() * 200;
       this.crystals.push({
         x: Math.cos(angle) * dist,
         y: Math.sin(angle) * dist,
@@ -162,11 +186,12 @@ export class CrystalCamScreen extends Container {
       const gfx = new Graphics();
       this.world.addChild(gfx);
       this.fireballs.push({
-        angle:       (i / 6) * Math.PI * 2,
+        angle: (i / 6) * Math.PI * 2,
         orbitRadius: WEBCAM_R + 55 + Math.random() * 90,
-        orbitSpeed:  (0.006 + Math.random() * 0.009) * (Math.random() > 0.4 ? 1 : -1),
-        size:        9 + Math.random() * 13,
-        trail:       [],
+        orbitSpeed:
+          (0.006 + Math.random() * 0.009) * (Math.random() > 0.4 ? 1 : -1),
+        size: 9 + Math.random() * 13,
+        trail: [],
         gfx,
       });
     }
@@ -179,7 +204,7 @@ export class CrystalCamScreen extends Container {
       this.orbitDots.push({
         angle: (i / 24) * Math.PI * 2,
         speed: (0.01 + Math.random() * 0.009) * (Math.random() > 0.5 ? 1 : -1),
-        size:  3 + Math.random() * 4,
+        size: 3 + Math.random() * 4,
         color: randColor(),
         gfx,
         x: 0,
@@ -196,7 +221,7 @@ export class CrystalCamScreen extends Container {
         angle: (i / 16) * Math.PI * 2 + Math.PI / 16,
         // opposite direction to inner ring for more cross-connections
         speed: (0.014 + Math.random() * 0.008) * (Math.random() > 0.5 ? -1 : 1),
-        size:  2.5 + Math.random() * 3,
+        size: 2.5 + Math.random() * 3,
         color: randColor(),
         gfx,
         x: 0,
@@ -213,7 +238,8 @@ export class CrystalCamScreen extends Container {
       this.fluidNodes.push({
         x: Math.cos(a) * ORBIT_R,
         y: Math.sin(a) * ORBIT_R,
-        vx: 0, vy: 0,
+        vx: 0,
+        vy: 0,
         homeAngle: a,
       });
     }
@@ -224,8 +250,10 @@ export class CrystalCamScreen extends Container {
     for (let i = 0; i < N; i++) {
       const a = (i / N) * Math.PI * 2;
       this.physParticles.push({
-        x: Math.cos(a) * PHYS_R,  y: Math.sin(a) * PHYS_R,
-        vx: 0, vy: 0,
+        x: Math.cos(a) * PHYS_R,
+        y: Math.sin(a) * PHYS_R,
+        vx: 0,
+        vy: 0,
         homeX: Math.cos(a) * PHYS_R,
         homeY: Math.sin(a) * PHYS_R,
       });
@@ -252,16 +280,16 @@ export class CrystalCamScreen extends Container {
     const g = this.borderGfx;
     g.clear();
 
-    const SEGS   = 28;
+    const SEGS = 28;
     const segArc = (Math.PI * 2) / SEGS;
-    const spin   = this.time * 0.25;
+    const spin = this.time * 0.25;
 
     for (let i = 0; i < SEGS; i++) {
       const progress = ((i + spin) / SEGS) % 1;
-      const palIdx   = Math.floor(progress * PALETTE.length) % PALETTE.length;
-      const color    = PALETTE[palIdx];
-      const startA   = i * segArc + spin * 0.6;
-      const endA     = startA + segArc * 0.92;
+      const palIdx = Math.floor(progress * PALETTE.length) % PALETTE.length;
+      const color = PALETTE[palIdx];
+      const startA = i * segArc + spin * 0.6;
+      const endA = startA + segArc * 0.92;
 
       g.arc(0, 0, BORDER_R + 6, startA, endA);
       g.stroke({ color, width: 16, alpha: 0.08 });
@@ -286,19 +314,30 @@ export class CrystalCamScreen extends Container {
       const dist = Math.sqrt(c.x * c.x + c.y * c.y);
 
       if (dist > outerBound) {
-        const nx = c.x / dist; const ny = c.y / dist;
-        c.vx -= nx * 0.025;    c.vy -= ny * 0.025;
+        const nx = c.x / dist;
+        const ny = c.y / dist;
+        c.vx -= nx * 0.025;
+        c.vy -= ny * 0.025;
       }
       if (dist < WEBCAM_R + 50) {
-        const nx = c.x / (dist || 1); const ny = c.y / (dist || 1);
-        c.vx += nx * 0.06;             c.vy += ny * 0.06;
+        const nx = c.x / (dist || 1);
+        const ny = c.y / (dist || 1);
+        c.vx += nx * 0.06;
+        c.vy += ny * 0.06;
       }
 
-      c.vx *= 0.995; c.vy *= 0.995;
+      c.vx *= 0.995;
+      c.vy *= 0.995;
 
       c.alpha += c.alphaDir * 0.004 * dt;
-      if (c.alpha > 0.92) { c.alpha = 0.92; c.alphaDir = -1; }
-      if (c.alpha < 0.15) { c.alpha = 0.15; c.alphaDir = 1; }
+      if (c.alpha > 0.92) {
+        c.alpha = 0.92;
+        c.alphaDir = -1;
+      }
+      if (c.alpha < 0.15) {
+        c.alpha = 0.15;
+        c.alphaDir = 1;
+      }
 
       if (Math.random() < 0.0007) c.color = randColor();
 
@@ -308,13 +347,19 @@ export class CrystalCamScreen extends Container {
       g.fill({ color: c.color, alpha: c.alpha * 0.35 });
       this._drawShape(g, c.shape, c.size);
       g.stroke({ color: c.color, width: 1.5, alpha: c.alpha });
-      g.x = c.x; g.y = c.y; g.rotation = c.rotation;
+      g.x = c.x;
+      g.y = c.y;
+      g.rotation = c.rotation;
     }
   }
 
   // Catppuccin reds: hot core → warm mid → cool edge, all from the palette
   private static readonly FIREBALL_TRAIL = [
-    CATT_RED, CATT_MAROON, CATT_FLAMINGO, CATT_ROSEWATER, CATT_PEACH,
+    CATT_RED,
+    CATT_MAROON,
+    CATT_FLAMINGO,
+    CATT_ROSEWATER,
+    CATT_PEACH,
   ] as const;
 
   private _updateFireballs(dt: number): void {
@@ -327,14 +372,17 @@ export class CrystalCamScreen extends Container {
       if (fb.trail.length > 22) fb.trail.pop();
       for (const tp of fb.trail) tp.alpha *= 0.87;
 
-      const g     = fb.gfx;
+      const g = fb.gfx;
       const trail = CrystalCamScreen.FIREBALL_TRAIL;
       g.clear();
 
       for (let i = 0; i < fb.trail.length; i++) {
-        const tp     = fb.trail[i];
+        const tp = fb.trail[i];
         const trailR = fb.size * (1 - i / fb.trail.length) * 0.75;
-        const ci     = Math.min(Math.floor((i / fb.trail.length) * trail.length), trail.length - 1);
+        const ci = Math.min(
+          Math.floor((i / fb.trail.length) * trail.length),
+          trail.length - 1,
+        );
         g.circle(tp.x, tp.y, trailR);
         g.fill({ color: trail[ci], alpha: tp.alpha * 0.45 });
       }
@@ -389,11 +437,11 @@ export class CrystalCamScreen extends Container {
   }
 
   private _updateFluidRing(dt: number): void {
-    const N          = this.fluidNodes.length;
-    const radialK    = 0.055;  // spring back to orbit radius
-    const neighborK  = 0.12;   // spring to adjacent node (maintains arc spacing)
-    const damping    = 0.82;
-    const dts        = dt * 0.5;
+    const N = this.fluidNodes.length;
+    const radialK = 0.055; // spring back to orbit radius
+    const neighborK = 0.12; // spring to adjacent node (maintains arc spacing)
+    const damping = 0.82;
+    const dts = dt * 0.5;
 
     // Slowly rotate color
     this.fluidColorTimer += dt * 0.008;
@@ -403,7 +451,7 @@ export class CrystalCamScreen extends Container {
     }
 
     for (let i = 0; i < N; i++) {
-      const n    = this.fluidNodes[i];
+      const n = this.fluidNodes[i];
       const prev = this.fluidNodes[(i - 1 + N) % N];
       const next = this.fluidNodes[(i + 1) % N];
 
@@ -415,12 +463,12 @@ export class CrystalCamScreen extends Container {
 
       // Neighbor springs — keep arc length consistent (fluid tension)
       for (const nb of [prev, next]) {
-        const dx    = nb.x - n.x;
-        const dy    = nb.y - n.y;
-        const dist  = Math.sqrt(dx * dx + dy * dy) || 0.001;
+        const dx = nb.x - n.x;
+        const dy = nb.y - n.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
         // rest length = chord between two adjacent nodes on the orbit circle
         const restL = 2 * ORBIT_R * Math.sin(Math.PI / N);
-        const err   = dist - restL;
+        const err = dist - restL;
         n.vx += (dx / dist) * err * neighborK;
         n.vy += (dy / dist) * err * neighborK;
       }
@@ -432,57 +480,70 @@ export class CrystalCamScreen extends Container {
       // Travelling wave disturbance — sinusoidal push tangent to orbit
       const wave = Math.sin(this.time * 3.5 + n.homeAngle * 4) * 0.18;
       n.vx += -Math.sin(n.homeAngle) * wave;
-      n.vy +=  Math.cos(n.homeAngle) * wave;
+      n.vy += Math.cos(n.homeAngle) * wave;
 
-      n.vx *= damping; n.vy *= damping;
-      n.x  += n.vx * dts;
-      n.y  += n.vy * dts;
+      n.vx *= damping;
+      n.vy *= damping;
+      n.x += n.vx * dts;
+      n.y += n.vy * dts;
     }
 
     // Draw fluid ring
-    const g   = this.fluidGfx;
+    const g = this.fluidGfx;
     const col = this.fluidColor;
     g.clear();
 
     // Outer glow
     g.moveTo(this.fluidNodes[0].x, this.fluidNodes[0].y);
-    for (let i = 1; i <= N; i++) g.lineTo(this.fluidNodes[i % N].x, this.fluidNodes[i % N].y);
+    for (let i = 1; i <= N; i++)
+      g.lineTo(this.fluidNodes[i % N].x, this.fluidNodes[i % N].y);
     g.stroke({ color: col, width: 10, alpha: 0.07 });
 
     // Mid glow
     g.moveTo(this.fluidNodes[0].x, this.fluidNodes[0].y);
-    for (let i = 1; i <= N; i++) g.lineTo(this.fluidNodes[i % N].x, this.fluidNodes[i % N].y);
+    for (let i = 1; i <= N; i++)
+      g.lineTo(this.fluidNodes[i % N].x, this.fluidNodes[i % N].y);
     g.stroke({ color: col, width: 4, alpha: 0.18 });
 
     // Core line
     g.moveTo(this.fluidNodes[0].x, this.fluidNodes[0].y);
-    for (let i = 1; i <= N; i++) g.lineTo(this.fluidNodes[i % N].x, this.fluidNodes[i % N].y);
+    for (let i = 1; i <= N; i++)
+      g.lineTo(this.fluidNodes[i % N].x, this.fluidNodes[i % N].y);
     g.stroke({ color: col, width: 1.5, alpha: 0.7 });
   }
 
   /** Minimum distance from origin to the line segment (x1,y1)→(x2,y2) */
-  private _chordClearance(x1: number, y1: number, x2: number, y2: number): number {
-    const dx    = x2 - x1; const dy = y2 - y1;
+  private _chordClearance(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+  ): number {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
     const lenSq = dx * dx + dy * dy;
     if (lenSq === 0) return Math.sqrt(x1 * x1 + y1 * y1);
-    const t     = Math.max(0, Math.min(1, (-x1 * dx - y1 * dy) / lenSq));
-    const cx    = x1 + t * dx; const cy = y1 + t * dy;
+    const t = Math.max(0, Math.min(1, (-x1 * dx - y1 * dy) / lenSq));
+    const cx = x1 + t * dx;
+    const cy = y1 + t * dy;
     return Math.sqrt(cx * cx + cy * cy);
   }
 
   private _drawConnections(): void {
-    const g       = this.connectionGfx;
+    const g = this.connectionGfx;
     g.clear();
     const maxDist = 120;
-    const zapDist = 70;  // closer threshold triggers electric arcs
+    const zapDist = 70; // closer threshold triggers electric arcs
     const minClear = WEBCAM_R + 8; // chord must stay outside the camera circle
-    const dots    = [...this.orbitDots, ...this.orbitDots2];
+    const dots = [...this.orbitDots, ...this.orbitDots2];
 
     for (let i = 0; i < dots.length; i++) {
       for (let j = i + 1; j < dots.length; j++) {
-        const a  = dots[i]; const b = dots[j];
-        const dx = a.x - b.x; const dy = a.y - b.y;
-        const d  = Math.sqrt(dx * dx + dy * dy);
+        const a = dots[i];
+        const b = dots[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
         if (d >= maxDist) continue;
 
         // Skip connections whose chord cuts through the camera area
@@ -497,8 +558,8 @@ export class CrystalCamScreen extends Container {
 
         // Electric arc when very close
         if (d < zapDist) {
-          const t      = 1 - d / zapDist; // 0→1 as dots approach
-          const zaps   = Math.floor(1 + t * 3); // 1–4 arc segments
+          const t = 1 - d / zapDist; // 0→1 as dots approach
+          const zaps = Math.floor(1 + t * 3); // 1–4 arc segments
 
           for (let z = 0; z < zaps; z++) {
             this._drawLightningArc(g, a.x, a.y, b.x, b.y, a.color, t * 0.9);
@@ -517,23 +578,25 @@ export class CrystalCamScreen extends Container {
   /** Draw a jagged lightning arc between two points */
   private _drawLightningArc(
     g: Graphics,
-    x1: number, y1: number,
-    x2: number, y2: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
     color: CattColor,
     intensity: number,
   ): void {
-    const SEGS    = 6 + Math.floor(Math.random() * 5);
-    const dx      = x2 - x1;
-    const dy      = y2 - y1;
-    const perp    = { x: -dy, y: dx }; // perpendicular direction
+    const SEGS = 6 + Math.floor(Math.random() * 5);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const perp = { x: -dy, y: dx }; // perpendicular direction
     const perpLen = Math.sqrt(perp.x * perp.x + perp.y * perp.y) || 1;
-    const pnx     = perp.x / perpLen;
-    const pny     = perp.y / perpLen;
-    const jitter  = 12 * intensity;
+    const pnx = perp.x / perpLen;
+    const pny = perp.y / perpLen;
+    const jitter = 12 * intensity;
 
     const pts: Array<{ x: number; y: number }> = [{ x: x1, y: y1 }];
     for (let s = 1; s < SEGS; s++) {
-      const t      = s / SEGS;
+      const t = s / SEGS;
       const offset = (Math.random() - 0.5) * 2 * jitter;
       pts.push({
         x: x1 + dx * t + pnx * offset,
@@ -561,14 +624,14 @@ export class CrystalCamScreen extends Container {
   }
 
   private _updatePhysicsRing(dt: number): void {
-    const N             = this.physParticles.length;
-    const homeStiff     = 0.038;
+    const N = this.physParticles.length;
+    const homeStiff = 0.038;
     const neighborStiff = 0.055;
-    const damping       = 0.87;
-    const perturbAmp    = 0.35;
+    const damping = 0.87;
+    const perturbAmp = 0.35;
 
     for (let i = 0; i < N; i++) {
-      const p    = this.physParticles[i];
+      const p = this.physParticles[i];
       const prev = this.physParticles[(i - 1 + N) % N];
       const next = this.physParticles[(i + 1) % N];
 
@@ -583,21 +646,24 @@ export class CrystalCamScreen extends Container {
       p.vx += (Math.random() - 0.5) * perturbAmp;
       p.vy += (Math.random() - 0.5) * perturbAmp;
 
-      p.vx *= damping; p.vy *= damping;
-      p.x  += p.vx * dt * 0.5;
-      p.y  += p.vy * dt * 0.5;
+      p.vx *= damping;
+      p.vy *= damping;
+      p.x += p.vx * dt * 0.5;
+      p.y += p.vy * dt * 0.5;
     }
 
-    const g         = this.physGfx;
+    const g = this.physGfx;
     g.clear();
     const ringColor = PALETTE[Math.floor(this.time * 0.5) % PALETTE.length];
 
     g.moveTo(this.physParticles[0].x, this.physParticles[0].y);
-    for (let i = 1; i <= N; i++) g.lineTo(this.physParticles[i % N].x, this.physParticles[i % N].y);
+    for (let i = 1; i <= N; i++)
+      g.lineTo(this.physParticles[i % N].x, this.physParticles[i % N].y);
     g.stroke({ color: ringColor, width: 8, alpha: 0.1 });
 
     g.moveTo(this.physParticles[0].x, this.physParticles[0].y);
-    for (let i = 1; i <= N; i++) g.lineTo(this.physParticles[i % N].x, this.physParticles[i % N].y);
+    for (let i = 1; i <= N; i++)
+      g.lineTo(this.physParticles[i % N].x, this.physParticles[i % N].y);
     g.stroke({ color: ringColor, width: 2, alpha: 0.55 });
   }
 
@@ -605,9 +671,15 @@ export class CrystalCamScreen extends Container {
 
   private _drawShape(g: Graphics, shape: CrystalShape, size: number): void {
     switch (shape) {
-      case "hexagon":  this._polygon(g, 6, size); break;
-      case "pentagon": this._polygon(g, 5, size); break;
-      case "triangle": this._polygon(g, 3, size); break;
+      case "hexagon":
+        this._polygon(g, 6, size);
+        break;
+      case "pentagon":
+        this._polygon(g, 5, size);
+        break;
+      case "triangle":
+        this._polygon(g, 3, size);
+        break;
       case "diamond":
         g.moveTo(0, -size);
         g.lineTo(size * 0.55, 0);
@@ -615,7 +687,9 @@ export class CrystalCamScreen extends Container {
         g.lineTo(-size * 0.55, 0);
         g.closePath();
         break;
-      case "star": this._star(g, size, size * 0.42, 6); break;
+      case "star":
+        this._star(g, size, size * 0.42, 6);
+        break;
     }
   }
 
@@ -623,17 +697,22 @@ export class CrystalCamScreen extends Container {
     for (let i = 0; i < sides; i++) {
       const a = (i / sides) * Math.PI * 2 - Math.PI / 2;
       if (i === 0) g.moveTo(Math.cos(a) * r, Math.sin(a) * r);
-      else         g.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      else g.lineTo(Math.cos(a) * r, Math.sin(a) * r);
     }
     g.closePath();
   }
 
-  private _star(g: Graphics, outer: number, inner: number, points: number): void {
+  private _star(
+    g: Graphics,
+    outer: number,
+    inner: number,
+    points: number,
+  ): void {
     for (let i = 0; i < points * 2; i++) {
       const a = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
       const r = i % 2 === 0 ? outer : inner;
       if (i === 0) g.moveTo(Math.cos(a) * r, Math.sin(a) * r);
-      else         g.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      else g.lineTo(Math.cos(a) * r, Math.sin(a) * r);
     }
     g.closePath();
   }
@@ -641,7 +720,7 @@ export class CrystalCamScreen extends Container {
   // ── Layout ────────────────────────────────────────────────────────────────
 
   public resize(width: number, height: number): void {
-    this.world.x = width  * 0.5;
+    this.world.x = width * 0.5;
     this.world.y = height * 0.5;
   }
 }

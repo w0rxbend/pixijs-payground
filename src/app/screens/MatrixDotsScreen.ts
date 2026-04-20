@@ -2,47 +2,58 @@ import type { Ticker } from "pixi.js";
 import { Container, Graphics } from "pixi.js";
 
 // ── Catppuccin Crust / Mocha palette ─────────────────────────────────────────
-const C_CRUST     = 0x11111b;
-const C_MANTLE    = 0x181825;
-const C_BASE      = 0x1e1e2e;
-const C_SURFACE0  = 0x313244;
-const C_OVERLAY0  = 0x6c7086;
-const C_SUBTEXT   = 0xa6adc8;
+const C_CRUST = 0x11111b;
+const C_MANTLE = 0x181825;
+const C_BASE = 0x1e1e2e;
+const C_SURFACE0 = 0x313244;
+const C_OVERLAY0 = 0x6c7086;
+const C_SUBTEXT = 0xa6adc8;
 
 const C_ROSEWATER = 0xf5e0dc;
-const C_FLAMINGO  = 0xf2cdcd;
-const C_PINK      = 0xf5c2e7;
-const C_MAUVE     = 0xcba6f7;
-const C_RED       = 0xf38ba8;
-const C_PEACH     = 0xfab387;
-const C_YELLOW    = 0xf9e2af;
-const C_GREEN     = 0xa6e3a1;
-const C_TEAL      = 0x94e2d5;
-const C_SKY       = 0x89dceb;
-const C_SAPPHIRE  = 0x74c7ec;
-const C_BLUE      = 0x89b4fa;
-const C_LAVENDER  = 0xb4befe;
+const C_FLAMINGO = 0xf2cdcd;
+const C_PINK = 0xf5c2e7;
+const C_MAUVE = 0xcba6f7;
+const C_RED = 0xf38ba8;
+const C_PEACH = 0xfab387;
+const C_YELLOW = 0xf9e2af;
+const C_GREEN = 0xa6e3a1;
+const C_TEAL = 0x94e2d5;
+const C_SKY = 0x89dceb;
+const C_SAPPHIRE = 0x74c7ec;
+const C_BLUE = 0x89b4fa;
+const C_LAVENDER = 0xb4befe;
 
 const ACCENT_COLORS = [
-  C_ROSEWATER, C_FLAMINGO, C_PINK, C_MAUVE, C_RED,
-  C_PEACH, C_YELLOW, C_GREEN, C_TEAL, C_SKY, C_SAPPHIRE, C_BLUE, C_LAVENDER,
+  C_ROSEWATER,
+  C_FLAMINGO,
+  C_PINK,
+  C_MAUVE,
+  C_RED,
+  C_PEACH,
+  C_YELLOW,
+  C_GREEN,
+  C_TEAL,
+  C_SKY,
+  C_SAPPHIRE,
+  C_BLUE,
+  C_LAVENDER,
 ];
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const DOT_SPACING    = 28;
-const DOT_BASE_R     = 1.8;
-const DOT_LIT_R      = 3.8;
+const DOT_SPACING = 28;
+const DOT_BASE_R = 1.8;
+const DOT_LIT_R = 3.8;
 const DOT_BASE_ALPHA = 0.38;
 
-const PARTICLE_COUNT   = 22;
-const PARTICLE_SPEED   = 55;
-const PARTICLE_RADIUS  = 5;
-const REPEL_DIST       = 120;
-const REPEL_STRENGTH   = 3200;
+const PARTICLE_COUNT = 22;
+const PARTICLE_SPEED = 55;
+const PARTICLE_RADIUS = 5;
+const REPEL_DIST = 120;
+const REPEL_STRENGTH = 3200;
 
 const ACTIVATION_RADIUS = 90;
-const FADE_SPEED        = 1.4; // alpha units per second for decay
-const NEIGHBOR_SPREAD   = 0.55; // fraction of activation passed to neighbors
+const FADE_SPEED = 1.4; // alpha units per second for decay
+const NEIGHBOR_SPREAD = 0.55; // fraction of activation passed to neighbors
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Dot {
@@ -51,7 +62,7 @@ interface Dot {
   x: number;
   y: number;
   color: number;
-  alpha: number;   // 0..1, 0 = base grey state
+  alpha: number; // 0..1, 0 = base grey state
   targetAlpha: number;
 }
 
@@ -119,7 +130,8 @@ export class MatrixDotsScreen extends Container {
   }
 
   private dotIndex(col: number, row: number): number {
-    if (col < 0 || col >= this.dotCols || row < 0 || row >= this.dotRows) return -1;
+    if (col < 0 || col >= this.dotCols || row < 0 || row >= this.dotRows)
+      return -1;
     return row * this.dotCols + col;
   }
 
@@ -162,9 +174,9 @@ export class MatrixDotsScreen extends Container {
       p.y += p.vy * dt;
 
       // Wrap around canvas
-      if (p.x < -PARTICLE_RADIUS)  p.x += this.w + PARTICLE_RADIUS * 2;
+      if (p.x < -PARTICLE_RADIUS) p.x += this.w + PARTICLE_RADIUS * 2;
       if (p.x > this.w + PARTICLE_RADIUS) p.x -= this.w + PARTICLE_RADIUS * 2;
-      if (p.y < -PARTICLE_RADIUS)  p.y += this.h + PARTICLE_RADIUS * 2;
+      if (p.y < -PARTICLE_RADIUS) p.y += this.h + PARTICLE_RADIUS * 2;
       if (p.y > this.h + PARTICLE_RADIUS) p.y -= this.h + PARTICLE_RADIUS * 2;
     }
   }
@@ -194,9 +206,15 @@ export class MatrixDotsScreen extends Container {
         // Clamp speed to keep things from blowing up
         const maxSpd = PARTICLE_SPEED * 3.5;
         const asp = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
-        if (asp > maxSpd) { a.vx = (a.vx / asp) * maxSpd; a.vy = (a.vy / asp) * maxSpd; }
+        if (asp > maxSpd) {
+          a.vx = (a.vx / asp) * maxSpd;
+          a.vy = (a.vy / asp) * maxSpd;
+        }
         const bsp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-        if (bsp > maxSpd) { b.vx = (b.vx / bsp) * maxSpd; b.vy = (b.vy / bsp) * maxSpd; }
+        if (bsp > maxSpd) {
+          b.vx = (b.vx / bsp) * maxSpd;
+          b.vy = (b.vy / bsp) * maxSpd;
+        }
       }
     }
   }
@@ -296,10 +314,20 @@ export class MatrixDotsScreen extends Container {
         const t = i / 8;
         const alpha = (1 - t) * (1 - t) * 0.22;
         const thickness = vSize * (1 - t);
-        if (side === 0) g.rect(0, 0, thickness, this.h).fill({ color: C_MANTLE, alpha });
-        if (side === 1) g.rect(this.w - thickness, 0, thickness, this.h).fill({ color: C_MANTLE, alpha });
-        if (side === 2) g.rect(0, 0, this.w, thickness).fill({ color: C_MANTLE, alpha });
-        if (side === 3) g.rect(0, this.h - thickness, this.w, thickness).fill({ color: C_MANTLE, alpha });
+        if (side === 0)
+          g.rect(0, 0, thickness, this.h).fill({ color: C_MANTLE, alpha });
+        if (side === 1)
+          g.rect(this.w - thickness, 0, thickness, this.h).fill({
+            color: C_MANTLE,
+            alpha,
+          });
+        if (side === 2)
+          g.rect(0, 0, this.w, thickness).fill({ color: C_MANTLE, alpha });
+        if (side === 3)
+          g.rect(0, this.h - thickness, this.w, thickness).fill({
+            color: C_MANTLE,
+            alpha,
+          });
       }
     }
   }
@@ -310,17 +338,32 @@ export class MatrixDotsScreen extends Container {
         // Lit dot: colored with glow
         const r = DOT_BASE_R + (DOT_LIT_R - DOT_BASE_R) * dot.alpha;
         // Outer glow
-        g.circle(dot.x, dot.y, r * 3.5).fill({ color: dot.color, alpha: dot.alpha * 0.12 });
-        g.circle(dot.x, dot.y, r * 2).fill({ color: dot.color, alpha: dot.alpha * 0.22 });
+        g.circle(dot.x, dot.y, r * 3.5).fill({
+          color: dot.color,
+          alpha: dot.alpha * 0.12,
+        });
+        g.circle(dot.x, dot.y, r * 2).fill({
+          color: dot.color,
+          alpha: dot.alpha * 0.22,
+        });
         // Core
-        g.circle(dot.x, dot.y, r).fill({ color: dot.color, alpha: DOT_BASE_ALPHA + dot.alpha * (1 - DOT_BASE_ALPHA) });
+        g.circle(dot.x, dot.y, r).fill({
+          color: dot.color,
+          alpha: DOT_BASE_ALPHA + dot.alpha * (1 - DOT_BASE_ALPHA),
+        });
         // White specular for fully lit dots
         if (dot.alpha > 0.5) {
-          g.circle(dot.x, dot.y, r * 0.45).fill({ color: 0xffffff, alpha: dot.alpha * 0.25 });
+          g.circle(dot.x, dot.y, r * 0.45).fill({
+            color: 0xffffff,
+            alpha: dot.alpha * 0.25,
+          });
         }
       } else {
         // Dim grey base dot
-        g.circle(dot.x, dot.y, DOT_BASE_R).fill({ color: C_OVERLAY0, alpha: DOT_BASE_ALPHA });
+        g.circle(dot.x, dot.y, DOT_BASE_R).fill({
+          color: C_OVERLAY0,
+          alpha: DOT_BASE_ALPHA,
+        });
       }
     }
   }
@@ -376,14 +419,23 @@ export class MatrixDotsScreen extends Container {
       }
 
       // Glow halo
-      g.circle(p.x, p.y, PARTICLE_RADIUS * 4).fill({ color: p.color, alpha: 0.07 });
-      g.circle(p.x, p.y, PARTICLE_RADIUS * 2.2).fill({ color: p.color, alpha: 0.18 });
+      g.circle(p.x, p.y, PARTICLE_RADIUS * 4).fill({
+        color: p.color,
+        alpha: 0.07,
+      });
+      g.circle(p.x, p.y, PARTICLE_RADIUS * 2.2).fill({
+        color: p.color,
+        alpha: 0.18,
+      });
 
       // Core body
       g.circle(p.x, p.y, PARTICLE_RADIUS).fill({ color: p.color, alpha: 0.92 });
 
       // Bright center
-      g.circle(p.x, p.y, PARTICLE_RADIUS * 0.45).fill({ color: 0xffffff, alpha: 0.7 });
+      g.circle(p.x, p.y, PARTICLE_RADIUS * 0.45).fill({
+        color: 0xffffff,
+        alpha: 0.7,
+      });
     }
   }
 }

@@ -63,7 +63,6 @@ const MAIN_PHRASES = [
   "NOTHING HAPPENED. GO WATCH ADS.",
 ] as const;
 
-
 // ── Constants ─────────────────────────────────────────────────────────────────
 const NET_DOT_COUNT = 45;
 const NET_MAX_DIST = 180;
@@ -87,23 +86,23 @@ const TAPE_SHOW_MAX = 8.5;
 // ── Interfaces ────────────────────────────────────────────────────────────────
 
 interface TapeObj {
-  container:   Container;
+  container: Container;
   contentCont: Container; // holds label + icons; faded as a unit
-  isMain:      boolean;
-  baseCX:      number;
-  baseCY:      number;
-  baseAngle:   number;
-  bounceAmp:   number;
-  bounceFreq:  number;
+  isMain: boolean;
+  baseCX: number;
+  baseCY: number;
+  baseAngle: number;
+  bounceAmp: number;
+  bounceFreq: number;
   bouncePhase: number;
-  wobbleAmp:   number;
-  wobbleFreq:  number;
+  wobbleAmp: number;
+  wobbleFreq: number;
   wobblePhase: number;
-  fontSize:    number;
-  hh:          number;
-  state:       "show" | "fade_out" | "fade_in";
-  fadeTimer:   number;
-  showTimer:   number;
+  fontSize: number;
+  hh: number;
+  state: "show" | "fade_out" | "fade_in";
+  fadeTimer: number;
+  showTimer: number;
   showDuration: number;
 }
 
@@ -200,12 +199,18 @@ interface Drop {
 }
 
 interface FireParticle {
-  x: number; y: number;
-  vx: number; vy: number;
-  life: number; maxLife: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
   size: number;
-  baseX: number; baseY: number;
-  turbPhase: number; turbFreq: number; turbAmp: number;
+  baseX: number;
+  baseY: number;
+  turbPhase: number;
+  turbFreq: number;
+  turbAmp: number;
 }
 
 interface FireworkShell {
@@ -647,11 +652,28 @@ export class ConfidentialScreen extends Container {
   }
 
   private buildTape(opts: {
-    cx: number; cy: number; angle: number; height: number; isMain: boolean;
-    bounceAmp: number; bounceFreq: number; wobbleAmp: number; wobbleFreq: number;
+    cx: number;
+    cy: number;
+    angle: number;
+    height: number;
+    isMain: boolean;
+    bounceAmp: number;
+    bounceFreq: number;
+    wobbleAmp: number;
+    wobbleFreq: number;
     scrollSpeed: number;
   }): void {
-    const { cx, cy, angle, height, isMain, bounceAmp, bounceFreq, wobbleAmp, wobbleFreq } = opts;
+    const {
+      cx,
+      cy,
+      angle,
+      height,
+      isMain,
+      bounceAmp,
+      bounceFreq,
+      wobbleAmp,
+      wobbleFreq,
+    } = opts;
     const hh = height * 0.5;
 
     const container = new Container();
@@ -667,26 +689,43 @@ export class ConfidentialScreen extends Container {
 
     this.tapeCont.addChild(container);
     this.tapes.push({
-      container, contentCont, isMain,
-      baseCX: cx, baseCY: cy, baseAngle: angle,
-      bounceAmp, bounceFreq, bouncePhase: Math.random() * Math.PI * 2,
-      wobbleAmp, wobbleFreq, wobblePhase: Math.random() * Math.PI * 2,
-      fontSize, hh,
+      container,
+      contentCont,
+      isMain,
+      baseCX: cx,
+      baseCY: cy,
+      baseAngle: angle,
+      bounceAmp,
+      bounceFreq,
+      bouncePhase: Math.random() * Math.PI * 2,
+      wobbleAmp,
+      wobbleFreq,
+      wobblePhase: Math.random() * Math.PI * 2,
+      fontSize,
+      hh,
       state: "show",
       fadeTimer: 0,
       showTimer: Math.random() * TAPE_SHOW_MIN,
-      showDuration: TAPE_SHOW_MIN + Math.random() * (TAPE_SHOW_MAX - TAPE_SHOW_MIN),
+      showDuration:
+        TAPE_SHOW_MIN + Math.random() * (TAPE_SHOW_MAX - TAPE_SHOW_MIN),
     });
   }
 
-  private buildTapeContent(contentCont: Container, fontSize: number, hh: number, isMain: boolean): void {
-    contentCont.removeChildren().forEach((c) => (c as Container).destroy({ children: true }));
+  private buildTapeContent(
+    contentCont: Container,
+    fontSize: number,
+    hh: number,
+    isMain: boolean,
+  ): void {
+    contentCont
+      .removeChildren()
+      .forEach((c) => (c as Container).destroy({ children: true }));
 
     const ICON_NAMES = ["1.png", "2.png", "3.png", "4.png", "5.png"] as const;
-    const iconSize   = Math.round(hh * 0.75);
-    const charPx     = fontSize * 0.62;
-    const phrase     = randomFrom(MAIN_PHRASES);
-    const halfW      = (phrase.length * charPx) * 0.5;
+    const iconSize = Math.round(hh * 0.75);
+    const charPx = fontSize * 0.62;
+    const phrase = randomFrom(MAIN_PHRASES);
+    const halfW = phrase.length * charPx * 0.5;
 
     // Label — centred on the tape
     const label = new Text({
@@ -705,10 +744,10 @@ export class ConfidentialScreen extends Container {
 
     // Left icon (before text) and right icon (after text)
     for (const side of [-1, 1]) {
-      const tex  = Texture.from(randomFrom(ICON_NAMES));
+      const tex = Texture.from(randomFrom(ICON_NAMES));
       const node = new Sprite(tex);
       node.anchor.set(0.5);
-      node.width  = iconSize;
+      node.width = iconSize;
       node.height = iconSize;
       node.x = side * (halfW + iconSize * 4.0);
       node.y = 0;
@@ -726,14 +765,15 @@ export class ConfidentialScreen extends Container {
       const offset = Math.sin(tape.bouncePhase) * tape.bounceAmp;
       tape.container.x = tape.baseCX - Math.sin(tape.baseAngle) * offset;
       tape.container.y = tape.baseCY + Math.cos(tape.baseAngle) * offset;
-      tape.container.rotation = tape.baseAngle + Math.sin(tape.wobblePhase) * tape.wobbleAmp;
+      tape.container.rotation =
+        tape.baseAngle + Math.sin(tape.wobblePhase) * tape.wobbleAmp;
 
       // Fade cycle
       switch (tape.state) {
         case "show": {
           tape.showTimer += dt;
           if (tape.showTimer >= tape.showDuration) {
-            tape.state    = "fade_out";
+            tape.state = "fade_out";
             tape.fadeTimer = 0;
           }
           break;
@@ -743,9 +783,14 @@ export class ConfidentialScreen extends Container {
           const t = Math.min(1, tape.fadeTimer / TAPE_FADE_DURATION);
           tape.contentCont.alpha = 1 - easeInOutCubic(t);
           if (t >= 1) {
-            this.buildTapeContent(tape.contentCont, tape.fontSize, tape.hh, tape.isMain);
+            this.buildTapeContent(
+              tape.contentCont,
+              tape.fontSize,
+              tape.hh,
+              tape.isMain,
+            );
             tape.contentCont.alpha = 0;
-            tape.state    = "fade_in";
+            tape.state = "fade_in";
             tape.fadeTimer = 0;
           }
           break;
@@ -756,9 +801,10 @@ export class ConfidentialScreen extends Container {
           tape.contentCont.alpha = easeInOutCubic(t);
           if (t >= 1) {
             tape.contentCont.alpha = 1;
-            tape.state       = "show";
-            tape.showTimer   = 0;
-            tape.showDuration = TAPE_SHOW_MIN + Math.random() * (TAPE_SHOW_MAX - TAPE_SHOW_MIN);
+            tape.state = "show";
+            tape.showTimer = 0;
+            tape.showDuration =
+              TAPE_SHOW_MIN + Math.random() * (TAPE_SHOW_MAX - TAPE_SHOW_MIN);
           }
           break;
         }
@@ -1246,20 +1292,25 @@ export class ConfidentialScreen extends Container {
     }
   }
 
-  private makeFireParticle(baseX: number, baseY: number, randomY = false): FireParticle {
+  private makeFireParticle(
+    baseX: number,
+    baseY: number,
+    randomY = false,
+  ): FireParticle {
     const maxLife = 0.9 + Math.random() * 1.8;
     return {
-      baseX, baseY,
-      x:          baseX + (Math.random() - 0.5) * 70,
-      y:          randomY ? baseY - Math.random() * 400 : baseY - Math.random() * 8,
-      vx:         (Math.random() - 0.5) * 28,
-      vy:         -(200 + Math.random() * 320),
-      life:       randomY ? Math.random() * maxLife : 0,
+      baseX,
+      baseY,
+      x: baseX + (Math.random() - 0.5) * 70,
+      y: randomY ? baseY - Math.random() * 400 : baseY - Math.random() * 8,
+      vx: (Math.random() - 0.5) * 28,
+      vy: -(200 + Math.random() * 320),
+      life: randomY ? Math.random() * maxLife : 0,
       maxLife,
-      size:       3 + Math.random() * Math.random() * 52,
-      turbPhase:  Math.random() * Math.PI * 2,
-      turbFreq:   1.8 + Math.random() * 3.5,
-      turbAmp:    18 + Math.random() * 38,
+      size: 3 + Math.random() * Math.random() * 52,
+      turbPhase: Math.random() * Math.PI * 2,
+      turbFreq: 1.8 + Math.random() * 3.5,
+      turbAmp: 18 + Math.random() * 38,
     };
   }
 
@@ -1270,10 +1321,22 @@ export class ConfidentialScreen extends Container {
 
     // Base glow at each emitter
     const hw = this.w * 0.5;
-    const emitterXs = [-hw*0.85, -hw*0.55, -hw*0.25, 0, hw*0.25, hw*0.55, hw*0.85];
+    const emitterXs = [
+      -hw * 0.85,
+      -hw * 0.55,
+      -hw * 0.25,
+      0,
+      hw * 0.25,
+      hw * 0.55,
+      hw * 0.85,
+    ];
     for (const bx of emitterXs) {
-      this.fireGfx.ellipse(bx, hh, 90, 28).fill({ color: FIRE_ORANGE, alpha: 0.18 });
-      this.fireGfx.ellipse(bx, hh, 44, 14).fill({ color: 0xffffff,    alpha: 0.12 });
+      this.fireGfx
+        .ellipse(bx, hh, 90, 28)
+        .fill({ color: FIRE_ORANGE, alpha: 0.18 });
+      this.fireGfx
+        .ellipse(bx, hh, 44, 14)
+        .fill({ color: 0xffffff, alpha: 0.12 });
     }
 
     for (const p of this.fireParticles) {
@@ -1288,25 +1351,33 @@ export class ConfidentialScreen extends Container {
       p.vx += Math.sin(p.turbPhase) * p.turbAmp * dt;
       p.vx *= 0.965;
       p.vy -= 55 * dt; // buoyancy
-      p.x  += p.vx * dt;
-      p.y  += p.vy * dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
 
       const prog = p.life / p.maxLife;
       const size = p.size * Math.pow(1 - prog, 0.55);
 
       // Color: white-hot base → orange → red → yellow tip
       let col: number;
-      if      (prog < 0.12) col = lerpColor(0xffffff,     FIRE_ORANGE, prog / 0.12);
-      else if (prog < 0.40) col = lerpColor(FIRE_ORANGE,  FIRE_RED,   (prog - 0.12) / 0.28);
-      else if (prog < 0.72) col = lerpColor(FIRE_RED,     FIRE_YELLOW,(prog - 0.40) / 0.32);
-      else                  col = lerpColor(FIRE_YELLOW,  FIRE_TIP,   (prog - 0.72) / 0.28);
+      if (prog < 0.12) col = lerpColor(0xffffff, FIRE_ORANGE, prog / 0.12);
+      else if (prog < 0.4)
+        col = lerpColor(FIRE_ORANGE, FIRE_RED, (prog - 0.12) / 0.28);
+      else if (prog < 0.72)
+        col = lerpColor(FIRE_RED, FIRE_YELLOW, (prog - 0.4) / 0.32);
+      else col = lerpColor(FIRE_YELLOW, FIRE_TIP, (prog - 0.72) / 0.28);
 
-      const a = Math.pow(1 - prog, 1.05) * 0.80;
+      const a = Math.pow(1 - prog, 1.05) * 0.8;
 
       // Three layers: wide soft halo → mid bloom → hot core
-      this.fireGfx.circle(p.x, p.y, size * 2.4).fill({ color: col, alpha: a * 0.12 });
-      this.fireGfx.circle(p.x, p.y, size * 1.3).fill({ color: col, alpha: a * 0.42 });
-      this.fireGfx.circle(p.x, p.y, size * 0.55).fill({ color: 0xffffff, alpha: a * 0.25 });
+      this.fireGfx
+        .circle(p.x, p.y, size * 2.4)
+        .fill({ color: col, alpha: a * 0.12 });
+      this.fireGfx
+        .circle(p.x, p.y, size * 1.3)
+        .fill({ color: col, alpha: a * 0.42 });
+      this.fireGfx
+        .circle(p.x, p.y, size * 0.55)
+        .fill({ color: 0xffffff, alpha: a * 0.25 });
     }
   }
 
@@ -1459,15 +1530,12 @@ export class ConfidentialScreen extends Container {
       const tx = l.x - Math.cos(l.angle) * l.length;
       const ty = l.y - Math.sin(l.angle) * l.length;
       // Gradient: bright head fading to transparent tail
-      this.lineGfx
-        .moveTo(l.x, l.y)
-        .lineTo(tx, ty)
-        .stroke({
-          color: l.color,
-          alpha: l.alpha,
-          width: l.width,
-          cap: "round",
-        });
+      this.lineGfx.moveTo(l.x, l.y).lineTo(tx, ty).stroke({
+        color: l.color,
+        alpha: l.alpha,
+        width: l.width,
+        cap: "round",
+      });
       // Bright head dot
       this.lineGfx
         .circle(l.x, l.y, l.width * 1.8)

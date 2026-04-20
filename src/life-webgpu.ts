@@ -6,8 +6,8 @@
 
 const NUM_PARTICLES = 6000;
 const NUM_TYPES = 7;
-const RMAX = 85;           // interaction radius (CSS px)
-const RMIN = 14;           // hard repulsion radius (CSS px)
+const RMAX = 85; // interaction radius (CSS px)
+const RMIN = 14; // hard repulsion radius (CSS px)
 const FRICTION = 0.87;
 const BASE_FORCE = 11.0;
 const DT = 1.0;
@@ -15,7 +15,7 @@ const PARTICLE_RADIUS = 3.5; // CSS px
 
 // Matrix evolution: every EVOLVE_INTERVAL ms, begin a EVOLVE_DURATION ms lerp
 const EVOLVE_INTERVAL = 22000;
-const EVOLVE_DURATION  = 9000;
+const EVOLVE_DURATION = 9000;
 
 // ─── Catppuccin Mocha accent palette ─────────────────────────────────────────
 
@@ -33,7 +33,7 @@ const BG_COLOR = { r: 0x11 / 255, g: 0x11 / 255, b: 0x1b / 255, a: 1.0 };
 
 // ─── WGSL: compute shader (tiled N-body particle life) ───────────────────────
 
-const COMPUTE_WGSL = /* wgsl */`
+const COMPUTE_WGSL = /* wgsl */ `
 struct Particle {
   px: f32, py: f32,
   vx: f32, vy: f32,
@@ -161,7 +161,7 @@ fn main(
 
 // ─── WGSL: render shader (instanced quads → glowing circles) ─────────────────
 
-const RENDER_WGSL = /* wgsl */`
+const RENDER_WGSL = /* wgsl */ `
 struct Particle {
   px: f32, py: f32,
   vx: f32, vy: f32,
@@ -237,7 +237,7 @@ function randomMatrix(types: number): Float32Array {
   const m = new Float32Array(types * types);
   for (let i = 0; i < m.length; i++) {
     // Bias slightly toward attraction to encourage clustering
-    m[i] = (Math.random() * 2 - 0.9);
+    m[i] = Math.random() * 2 - 0.9;
   }
   return m;
 }
@@ -254,36 +254,45 @@ function lerpMatrix(a: Float32Array, b: Float32Array, t: number): Float32Array {
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const canvas    = document.getElementById('canvas') as HTMLCanvasElement;
-  const noSupport = document.getElementById('no-webgpu') as HTMLDivElement;
+  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  const noSupport = document.getElementById("no-webgpu") as HTMLDivElement;
 
-  if (!navigator.gpu) { noSupport.style.display = 'flex'; return; }
+  if (!navigator.gpu) {
+    noSupport.style.display = "flex";
+    return;
+  }
 
-  const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
-  if (!adapter) { noSupport.style.display = 'flex'; return; }
+  const adapter = await navigator.gpu.requestAdapter({
+    powerPreference: "high-performance",
+  });
+  if (!adapter) {
+    noSupport.style.display = "flex";
+    return;
+  }
 
-  const device  = await adapter.requestDevice();
-  const ctx     = canvas.getContext('webgpu') as GPUCanvasContext;
-  const format  = navigator.gpu.getPreferredCanvasFormat();
+  const device = await adapter.requestDevice();
+  const ctx = canvas.getContext("webgpu") as GPUCanvasContext;
+  const format = navigator.gpu.getPreferredCanvasFormat();
 
   // ── Canvas sizing (CSS logical pixel coordinate space) ───────────────────
-  let cssW = 0, cssH = 0;
+  let cssW = 0,
+    cssH = 0;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   function resizeCanvas(): void {
     cssW = window.innerWidth;
     cssH = window.innerHeight;
-    canvas.width  = Math.floor(cssW * dpr);
+    canvas.width = Math.floor(cssW * dpr);
     canvas.height = Math.floor(cssH * dpr);
   }
   resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener("resize", resizeCanvas);
 
-  ctx.configure({ device, format, alphaMode: 'opaque' });
+  ctx.configure({ device, format, alphaMode: "opaque" });
 
   // ── Particle buffer (ping-pong) ───────────────────────────────────────────
   // Layout per particle: [px, py, vx, vy, ptype, _pad] = 6 × f32 = 24 bytes
-  const STRIDE   = 6;
+  const STRIDE = 6;
   const initData = new Float32Array(NUM_PARTICLES * STRIDE);
 
   for (let i = 0; i < NUM_PARTICLES; i++) {
@@ -298,8 +307,14 @@ async function main(): Promise<void> {
 
   const BUF_SIZE = initData.byteLength;
   const pBufs = [
-    device.createBuffer({ size: BUF_SIZE, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST }),
-    device.createBuffer({ size: BUF_SIZE, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST }),
+    device.createBuffer({
+      size: BUF_SIZE,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    }),
+    device.createBuffer({
+      size: BUF_SIZE,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    }),
   ];
   device.queue.writeBuffer(pBufs[0], 0, initData);
 
@@ -311,8 +326,8 @@ async function main(): Promise<void> {
 
   // ── Attraction matrix buffer ──────────────────────────────────────────────
   let matCurrent = randomMatrix(NUM_TYPES);
-  let matTarget  = randomMatrix(NUM_TYPES);
-  let matT       = 1.0;
+  let matTarget = randomMatrix(NUM_TYPES);
+  let matT = 1.0;
   let lastEvolve = performance.now();
 
   const matBuf = device.createBuffer({
@@ -325,8 +340,8 @@ async function main(): Promise<void> {
   const colorData = new Float32Array(NUM_TYPES * 4);
   TYPE_COLORS_HEX.forEach((hex, i) => {
     colorData[i * 4 + 0] = ((hex >> 16) & 0xff) / 255;
-    colorData[i * 4 + 1] = ((hex >>  8) & 0xff) / 255;
-    colorData[i * 4 + 2] = ( hex        & 0xff) / 255;
+    colorData[i * 4 + 1] = ((hex >> 8) & 0xff) / 255;
+    colorData[i * 4 + 2] = (hex & 0xff) / 255;
     colorData[i * 4 + 3] = 1.0;
   });
   const colorBuf = device.createBuffer({
@@ -343,68 +358,74 @@ async function main(): Promise<void> {
 
   // ── Pipelines ─────────────────────────────────────────────────────────────
   const computeModule = device.createShaderModule({ code: COMPUTE_WGSL });
-  const renderModule  = device.createShaderModule({ code: RENDER_WGSL  });
+  const renderModule = device.createShaderModule({ code: RENDER_WGSL });
 
   const [computePipeline, renderPipeline] = await Promise.all([
     device.createComputePipelineAsync({
-      layout: 'auto',
-      compute: { module: computeModule, entryPoint: 'main' },
+      layout: "auto",
+      compute: { module: computeModule, entryPoint: "main" },
     }),
     device.createRenderPipelineAsync({
-      layout: 'auto',
-      vertex:   { module: renderModule, entryPoint: 'vs_main' },
+      layout: "auto",
+      vertex: { module: renderModule, entryPoint: "vs_main" },
       fragment: {
         module: renderModule,
-        entryPoint: 'fs_main',
-        targets: [{
-          format,
-          blend: {
-            // Additive blending: dense particle clusters glow brighter
-            color: { srcFactor: 'src-alpha', dstFactor: 'one', operation: 'add' },
-            alpha: { srcFactor: 'one',       dstFactor: 'one', operation: 'add' },
+        entryPoint: "fs_main",
+        targets: [
+          {
+            format,
+            blend: {
+              // Additive blending: dense particle clusters glow brighter
+              color: {
+                srcFactor: "src-alpha",
+                dstFactor: "one",
+                operation: "add",
+              },
+              alpha: { srcFactor: "one", dstFactor: "one", operation: "add" },
+            },
           },
-        }],
+        ],
       },
-      primitive: { topology: 'triangle-list' },
+      primitive: { topology: "triangle-list" },
     }),
   ]);
 
   // ── Bind groups (two sets for ping-pong) ──────────────────────────────────
-  const computeBGs = [0, 1].map(i =>
+  const computeBGs = [0, 1].map((i) =>
     device.createBindGroup({
       layout: computePipeline.getBindGroupLayout(0),
       entries: [
-        { binding: 0, resource: { buffer: pBufs[i]     } }, // src
+        { binding: 0, resource: { buffer: pBufs[i] } }, // src
         { binding: 1, resource: { buffer: pBufs[1 - i] } }, // dst
-        { binding: 2, resource: { buffer: computeUBuf  } },
-        { binding: 3, resource: { buffer: matBuf        } },
+        { binding: 2, resource: { buffer: computeUBuf } },
+        { binding: 3, resource: { buffer: matBuf } },
       ],
-    })
+    }),
   );
 
-  const renderBGs = [0, 1].map(i =>
+  const renderBGs = [0, 1].map((i) =>
     device.createBindGroup({
       layout: renderPipeline.getBindGroupLayout(0),
       entries: [
-        { binding: 0, resource: { buffer: pBufs[i]   } },
+        { binding: 0, resource: { buffer: pBufs[i] } },
         { binding: 1, resource: { buffer: renderUBuf } },
-        { binding: 2, resource: { buffer: colorBuf   } },
+        { binding: 2, resource: { buffer: colorBuf } },
       ],
-    })
+    }),
   );
 
   // ── Frame loop ────────────────────────────────────────────────────────────
-  let ping     = 0;
+  let ping = 0;
   let lastTime = performance.now();
-  const WG     = Math.ceil(NUM_PARTICLES / 256);
+  const WG = Math.ceil(NUM_PARTICLES / 256);
 
   // Shared ArrayBuffer for compute uniforms (avoids repeated allocation)
-  const computeUniformAB  = new ArrayBuffer(48);
+  const computeUniformAB = new ArrayBuffer(48);
   const computeUniformF32 = new Float32Array(computeUniformAB);
   const computeUniformU32 = new Uint32Array(computeUniformAB);
 
   function frame(): void {
-    const now     = performance.now();
+    const now = performance.now();
     const elapsed = now - lastTime;
     lastTime = now;
 
@@ -412,17 +433,21 @@ async function main(): Promise<void> {
     const evolveAge = now - lastEvolve;
     if (evolveAge > EVOLVE_INTERVAL && matT >= 1.0) {
       matCurrent = lerpMatrix(matCurrent, matTarget, 1.0);
-      matTarget  = randomMatrix(NUM_TYPES);
-      matT       = 0.0;
+      matTarget = randomMatrix(NUM_TYPES);
+      matT = 0.0;
       lastEvolve = now;
     }
     if (matT < 1.0) {
       matT = Math.min(1.0, matT + elapsed / EVOLVE_DURATION);
-      device.queue.writeBuffer(matBuf, 0, lerpMatrix(matCurrent, matTarget, matT));
+      device.queue.writeBuffer(
+        matBuf,
+        0,
+        lerpMatrix(matCurrent, matTarget, matT),
+      );
     }
 
     // ── "Breathing" force — subtle oscillation to feel alive ───────────────
-    const t          = now * 0.001;
+    const t = now * 0.001;
     const forceScale = BASE_FORCE * (0.82 + 0.18 * Math.sin(t * 0.25));
 
     // ── Update compute uniforms ─────────────────────────────────────────────
@@ -439,7 +464,8 @@ async function main(): Promise<void> {
 
     // ── Update render uniforms ──────────────────────────────────────────────
     device.queue.writeBuffer(
-      renderUBuf, 0,
+      renderUBuf,
+      0,
       new Float32Array([cssW, cssH, PARTICLE_RADIUS, t]),
     );
 
@@ -454,12 +480,14 @@ async function main(): Promise<void> {
 
     // Render pass: draw particles from output buffer
     const rPass = encoder.beginRenderPass({
-      colorAttachments: [{
-        view:       ctx.getCurrentTexture().createView(),
-        clearValue: BG_COLOR,
-        loadOp:     'clear',
-        storeOp:    'store',
-      }],
+      colorAttachments: [
+        {
+          view: ctx.getCurrentTexture().createView(),
+          clearValue: BG_COLOR,
+          loadOp: "clear",
+          storeOp: "store",
+        },
+      ],
     });
     rPass.setPipeline(renderPipeline);
     rPass.setBindGroup(0, renderBGs[1 - ping]); // render the dst (freshly computed) buffer
@@ -475,8 +503,8 @@ async function main(): Promise<void> {
   requestAnimationFrame(frame);
 }
 
-main().catch(err => {
-  console.error('Particle Life init failed:', err);
-  const el = document.getElementById('no-webgpu');
-  if (el) el.style.display = 'flex';
+main().catch((err) => {
+  console.error("Particle Life init failed:", err);
+  const el = document.getElementById("no-webgpu");
+  if (el) el.style.display = "flex";
 });

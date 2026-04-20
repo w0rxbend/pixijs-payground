@@ -3,37 +3,37 @@ import { Container, Graphics } from "pixi.js";
 
 // ── Catppuccin Mocha — dark background tones for triangle fills ───────────────
 const DARK: [number, number, number][] = [
-  [ 11,  11,  18],  // Crust (darkest)
-  [ 17,  17,  27],  // Crust
-  [ 17,  17,  27],  // Crust
-  [ 24,  24,  37],  // Mantle
-  [ 30,  30,  46],  // Base
-  [ 24,  24,  37],  // Mantle
-  [ 17,  17,  27],  // Crust
-  [ 11,  11,  18],  // Crust (wrap)
+  [11, 11, 18], // Crust (darkest)
+  [17, 17, 27], // Crust
+  [17, 17, 27], // Crust
+  [24, 24, 37], // Mantle
+  [30, 30, 46], // Base
+  [24, 24, 37], // Mantle
+  [17, 17, 27], // Crust
+  [11, 11, 18], // Crust (wrap)
 ];
 
 // ── Catppuccin Mocha — vivid accent colors for dots & lines ──────────────────
 const ACCENT: [number, number, number][] = [
-  [203, 166, 247],  // Mauve
-  [137, 180, 250],  // Blue
-  [116, 199, 236],  // Sapphire
-  [148, 226, 213],  // Teal
-  [166, 227, 161],  // Green
-  [249, 226, 175],  // Yellow
-  [250, 179, 135],  // Peach
-  [243, 139, 168],  // Red
-  [245, 194, 231],  // Pink
-  [242, 205, 205],  // Flamingo
-  [203, 166, 247],  // Mauve (wrap)
+  [203, 166, 247], // Mauve
+  [137, 180, 250], // Blue
+  [116, 199, 236], // Sapphire
+  [148, 226, 213], // Teal
+  [166, 227, 161], // Green
+  [249, 226, 175], // Yellow
+  [250, 179, 135], // Peach
+  [243, 139, 168], // Red
+  [245, 194, 231], // Pink
+  [242, 205, 205], // Flamingo
+  [203, 166, 247], // Mauve (wrap)
 ];
 
 function lerpGrad(stops: [number, number, number][], t: number): number {
-  const n   = stops.length - 1;
-  const pos = ((t % 1) + 1) % 1 * n;
-  const lo  = Math.floor(pos);
-  const hi  = Math.ceil(pos) % stops.length;
-  const f   = pos - lo;
+  const n = stops.length - 1;
+  const pos = (((t % 1) + 1) % 1) * n;
+  const lo = Math.floor(pos);
+  const hi = Math.ceil(pos) % stops.length;
+  const f = pos - lo;
   const [r0, g0, b0] = stops[lo];
   const [r1, g1, b1] = stops[hi];
   const r = Math.round(r0 + (r1 - r0) * f);
@@ -42,44 +42,57 @@ function lerpGrad(stops: [number, number, number][], t: number): number {
   return (r << 16) | (g << 8) | b;
 }
 
-const darkColor   = (t: number) => lerpGrad(DARK,   t);
+const darkColor = (t: number) => lerpGrad(DARK, t);
 const accentColor = (t: number) => lerpGrad(ACCENT, t);
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const COLS        = 38;
-const ROWS        = 24;
-const JITTER      = 0.38;
-const WAVE_AMP    = 26;
-const WAVE_SPEED  = 0.55;
-const DOT_R       = 2.2;
+const COLS = 38;
+const ROWS = 24;
+const JITTER = 0.38;
+const WAVE_AMP = 26;
+const WAVE_SPEED = 0.55;
+const DOT_R = 2.2;
 
 // Physics
-const SPRING_K    = 0.018;   // spring stiffness toward rest length
-const HOME_K      = 0.004;   // weak pull back to home position
-const WANDER_K    = 0.009;   // spring toward random wander target
-const WANDER_R    = 28;      // max wander radius from home+jitter
-const DAMP        = 0.92;    // velocity damping per frame
-const TURB        = 0.12;    // random turbulence per frame
+const SPRING_K = 0.018; // spring stiffness toward rest length
+const HOME_K = 0.004; // weak pull back to home position
+const WANDER_K = 0.009; // spring toward random wander target
+const WANDER_R = 28; // max wander radius from home+jitter
+const DAMP = 0.92; // velocity damping per frame
+const TURB = 0.12; // random turbulence per frame
 
 interface Pt {
-  hx: number; hy: number;   // home (grid) position
-  x:  number; y:  number;   // current position
-  vx: number; vy: number;   // velocity
-  jx: number; jy: number;   // frozen jitter
+  hx: number;
+  hy: number; // home (grid) position
+  x: number;
+  y: number; // current position
+  vx: number;
+  vy: number; // velocity
+  jx: number;
+  jy: number; // frozen jitter
   // rest distances to the 4 cardinal neighbors (set once at build time)
-  restN: number; restE: number; restS: number; restW: number;
+  restN: number;
+  restE: number;
+  restS: number;
+  restW: number;
   // wandering spring target (shifts randomly over time)
-  tx: number; ty: number;
-  tTimer: number; tInterval: number;
+  tx: number;
+  ty: number;
+  tTimer: number;
+  tInterval: number;
 }
 
-interface Tri { a: number; b: number; c: number; }
+interface Tri {
+  a: number;
+  b: number;
+  c: number;
+}
 
 export class TriangulationScreen extends Container {
   public static assetBundles: string[] = [];
 
   private readonly gfx: Graphics;
-  private pts:  Pt[]  = [];
+  private pts: Pt[] = [];
   private tris: Tri[] = [];
 
   private W = 800;
@@ -106,15 +119,23 @@ export class TriangulationScreen extends Container {
         const jx = (Math.random() - 0.5) * cellW * JITTER;
         const jy = (Math.random() - 0.5) * cellH * JITTER;
         const angle = Math.random() * Math.PI * 2;
-        const rad   = Math.random() * WANDER_R;
+        const rad = Math.random() * WANDER_R;
         this.pts.push({
-          hx, hy, jx, jy,
-          x: hx + jx, y: hy + jy,
-          vx: 0, vy: 0,
-          restN: cellH, restE: cellW, restS: cellH, restW: cellW,
+          hx,
+          hy,
+          jx,
+          jy,
+          x: hx + jx,
+          y: hy + jy,
+          vx: 0,
+          vy: 0,
+          restN: cellH,
+          restE: cellW,
+          restS: cellH,
+          restW: cellW,
           tx: hx + jx + Math.cos(angle) * rad,
           ty: hy + jy + Math.sin(angle) * rad,
-          tTimer:    Math.random() * 120,
+          tTimer: Math.random() * 120,
           tInterval: 80 + Math.random() * 140,
         });
       }
@@ -138,23 +159,25 @@ export class TriangulationScreen extends Container {
 
   private _wave(nx: number, ny: number, t: number): number {
     return (
-      Math.sin(nx * 2.8 + t)               * 0.50 +
-      Math.sin(ny * 2.2 + t * 0.73)        * 0.30 +
-      Math.sin((nx + ny) * 1.9 + t * 1.35) * 0.20
+      Math.sin(nx * 2.8 + t) * 0.5 +
+      Math.sin(ny * 2.2 + t * 0.73) * 0.3 +
+      Math.sin((nx + ny) * 1.9 + t * 1.35) * 0.2
     );
   }
 
   // ── Physics ───────────────────────────────────────────────────────────────
 
   private _applySpring(a: Pt, b: Pt, restLen: number): void {
-    const dx   = b.x - a.x;
-    const dy   = b.y - a.y;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
     const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
-    const f    = (dist - restLen) * SPRING_K;
-    const fx   = (dx / dist) * f;
-    const fy   = (dy / dist) * f;
-    a.vx += fx; a.vy += fy;
-    b.vx -= fx; b.vy -= fy;
+    const f = (dist - restLen) * SPRING_K;
+    const fx = (dx / dist) * f;
+    const fy = (dy / dist) * f;
+    a.vx += fx;
+    a.vy += fy;
+    b.vx -= fx;
+    b.vy -= fy;
   }
 
   private _updatePhysics(dt: number): void {
@@ -166,8 +189,8 @@ export class TriangulationScreen extends Container {
         const i = r * COLS + c;
         const p = this.pts[i];
 
-        if (c < COLS - 1) this._applySpring(p, this.pts[i + 1],      p.restE);
-        if (r < ROWS - 1) this._applySpring(p, this.pts[i + COLS],   p.restS);
+        if (c < COLS - 1) this._applySpring(p, this.pts[i + 1], p.restE);
+        if (r < ROWS - 1) this._applySpring(p, this.pts[i + COLS], p.restS);
         // Diagonal springs for better mesh rigidity
         if (c < COLS - 1 && r < ROWS - 1) {
           const diagLen = Math.sqrt(p.restE * p.restE + p.restS * p.restS);
@@ -185,10 +208,10 @@ export class TriangulationScreen extends Container {
       // Wander target — picks a new random destination periodically
       pt.tTimer += 1;
       if (pt.tTimer >= pt.tInterval) {
-        pt.tTimer    = 0;
+        pt.tTimer = 0;
         pt.tInterval = 80 + Math.random() * 140;
-        const angle  = Math.random() * Math.PI * 2;
-        const rad    = Math.random() * WANDER_R;
+        const angle = Math.random() * Math.PI * 2;
+        const rad = Math.random() * WANDER_R;
         pt.tx = pt.hx + pt.jx + Math.cos(angle) * rad;
         pt.ty = pt.hy + pt.jy + Math.sin(angle) * rad;
       }
@@ -223,7 +246,7 @@ export class TriangulationScreen extends Container {
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const pt = this.pts[r * COLS + c];
-        const w  = this._wave(nx(c), ny(r), this.time);
+        const w = this._wave(nx(c), ny(r), this.time);
         // Wave nudges vertical velocity — creates the flowing 3-D undulation
         pt.vy += w * 0.28;
       }
@@ -248,16 +271,19 @@ export class TriangulationScreen extends Container {
       const pb = this.pts[tri.b];
       const pc = this.pts[tri.c];
 
-      const ra = tri.a % COLS; const ca = Math.floor(tri.a / COLS);
-      const rb = tri.b % COLS; const cb = Math.floor(tri.b / COLS);
-      const rc = tri.c % COLS; const cc = Math.floor(tri.c / COLS);
+      const ra = tri.a % COLS;
+      const ca = Math.floor(tri.a / COLS);
+      const rb = tri.b % COLS;
+      const cb = Math.floor(tri.b / COLS);
+      const rc = tri.c % COLS;
+      const cc = Math.floor(tri.c / COLS);
       const avgNx = (nx(ra) + nx(rb) + nx(rc)) / 3;
       const avgNy = (ny(ca) + ny(cb) + ny(cc)) / 3;
-      const wv    = this._wave(avgNx, avgNy, this.time);
-      const t     = (wv * 0.5 + 0.5) + this.time * 0.08;
+      const wv = this._wave(avgNx, avgNy, this.time);
+      const t = wv * 0.5 + 0.5 + this.time * 0.08;
 
-      const fill = darkColor(t * 0.55);          // slow cycle through dark tones
-      const edge = accentColor(t);               // vivid color on edges
+      const fill = darkColor(t * 0.55); // slow cycle through dark tones
+      const edge = accentColor(t); // vivid color on edges
 
       g.moveTo(pa.x, pa.y);
       g.lineTo(pb.x, pb.y);
@@ -276,7 +302,7 @@ export class TriangulationScreen extends Container {
       for (let c = 0; c < COLS; c++) {
         const pt = this.pts[r * COLS + c];
         const wv = this._wave(nx(c), ny(r), this.time);
-        const t  = (wv * 0.5 + 0.5) + this.time * 0.08;
+        const t = wv * 0.5 + 0.5 + this.time * 0.08;
         g.circle(pt.x, pt.y, DOT_R);
         g.fill({ color: accentColor(t + 0.3), alpha: 0.95 });
       }

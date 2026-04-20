@@ -15,20 +15,24 @@ const PALETTE = [
   0xf5c2e7, // Pink
 ] as const;
 
-const BG    = 0x11111b;
-const TAU   = Math.PI * 2;
+const BG = 0x11111b;
+const TAU = Math.PI * 2;
 
-const LAT_RINGS     = 8;
+const LAT_RINGS = 8;
 const LON_MERIDIANS = 12;
-const SEGS          = 60;   // segments per lat ring / meridian
+const SEGS = 60; // segments per lat ring / meridian
 const SURFACE_COUNT = 110;
-const FLOAT_COUNT   = 55;
-const FOCAL         = 2000;
-const TILT          = 0.42; // X-axis tilt (rad)
-const ROT_SPEED     = 0.18; // Y-axis rotation (rad / s)
+const FLOAT_COUNT = 55;
+const FOCAL = 2000;
+const TILT = 0.42; // X-axis tilt (rad)
+const ROT_SPEED = 0.18; // Y-axis rotation (rad / s)
 
-function rand(a: number, b: number) { return a + Math.random() * (b - a); }
-function pick<T>(arr: readonly T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+function rand(a: number, b: number) {
+  return a + Math.random() * (b - a);
+}
+function pick<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 interface SurfaceParticle {
   lat: number;
@@ -40,8 +44,10 @@ interface SurfaceParticle {
 }
 
 interface FloatParticle {
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   color: number;
   size: number;
   alpha: number;
@@ -64,10 +70,12 @@ export class ParticleGlobeScreen extends Container {
     this.addChild(this.gfx);
   }
 
-  private get R(): number { return Math.min(this.w, this.h) * 0.37; }
+  private get R(): number {
+    return Math.min(this.w, this.h) * 0.37;
+  }
 
   public async show(): Promise<void> {
-    this.w = window.innerWidth  || 1920;
+    this.w = window.innerWidth || 1920;
     this.h = window.innerHeight || 1080;
     this.spawn();
   }
@@ -90,7 +98,9 @@ export class ParticleGlobeScreen extends Container {
       pulseSpeed: rand(0.02, 0.065),
     }));
 
-    const cx = this.w / 2, cy = this.h / 2, R = this.R;
+    const cx = this.w / 2,
+      cy = this.h / 2,
+      R = this.R;
     this.floaters = Array.from({ length: FLOAT_COUNT }, () => {
       const a = rand(0, TAU);
       const d = rand(R * 1.15, R * 2.0);
@@ -108,7 +118,11 @@ export class ParticleGlobeScreen extends Container {
   }
 
   // Returns (screen x, screen y, depth) where depth ∈ [-1,+1], +1 = closest to viewer.
-  private project(lat: number, lon: number, rot: number): { x: number; y: number; z: number } {
+  private project(
+    lat: number,
+    lon: number,
+    rot: number,
+  ): { x: number; y: number; z: number } {
     const R = this.R;
 
     // Unit sphere surface
@@ -135,7 +149,7 @@ export class ParticleGlobeScreen extends Container {
   }
 
   public update(ticker: Ticker): void {
-    const dt  = Math.min(ticker.deltaMS * 0.001, 0.05);
+    const dt = Math.min(ticker.deltaMS * 0.001, 0.05);
     this.time += dt;
     const rot = this.time * ROT_SPEED;
 
@@ -152,9 +166,9 @@ export class ParticleGlobeScreen extends Container {
   private drawWireframe(g: Graphics, rot: number): void {
     // Latitude rings
     for (let ri = 0; ri < LAT_RINGS; ri++) {
-      const lat   = -Math.PI / 2 + (Math.PI / (LAT_RINGS + 1)) * (ri + 1);
+      const lat = -Math.PI / 2 + (Math.PI / (LAT_RINGS + 1)) * (ri + 1);
       const color = PALETTE[ri % PALETTE.length];
-      const pts   = Array.from({ length: SEGS + 1 }, (_, si) =>
+      const pts = Array.from({ length: SEGS + 1 }, (_, si) =>
         this.project(lat, (TAU / SEGS) * si, rot),
       );
       this.strokeSegments(g, pts, color, 0.85);
@@ -162,9 +176,9 @@ export class ParticleGlobeScreen extends Container {
 
     // Longitude meridians
     for (let mi = 0; mi < LON_MERIDIANS; mi++) {
-      const lon   = (TAU / LON_MERIDIANS) * mi;
+      const lon = (TAU / LON_MERIDIANS) * mi;
       const color = PALETTE[(mi + 3) % PALETTE.length];
-      const pts   = Array.from({ length: SEGS + 1 }, (_, si) =>
+      const pts = Array.from({ length: SEGS + 1 }, (_, si) =>
         this.project(-Math.PI / 2 + (Math.PI / SEGS) * si, lon, rot),
       );
       this.strokeSegments(g, pts, color, 0.85);
@@ -178,7 +192,8 @@ export class ParticleGlobeScreen extends Container {
     base: number,
   ): void {
     for (let i = 0; i < pts.length - 1; i++) {
-      const a = pts[i], b = pts[i + 1];
+      const a = pts[i],
+        b = pts[i + 1];
       const avgZ = (a.z + b.z) * 0.5;
       const alpha = base * Math.max(0.04, (avgZ + 1) * 0.5 * 0.78 + 0.07);
       g.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: 0.9, color, alpha });
@@ -189,12 +204,12 @@ export class ParticleGlobeScreen extends Container {
     for (let ri = 0; ri < LAT_RINGS; ri++) {
       const lat = -Math.PI / 2 + (Math.PI / (LAT_RINGS + 1)) * (ri + 1);
       for (let mi = 0; mi < LON_MERIDIANS; mi++) {
-        const lon           = (TAU / LON_MERIDIANS) * mi;
+        const lon = (TAU / LON_MERIDIANS) * mi;
         const { x, y, z } = this.project(lat, lon, rot);
-        const depth         = (z + 1) * 0.5;
-        const alpha         = Math.max(0.06, depth * 0.9 + 0.08);
-        const color         = PALETTE[(ri + mi) % PALETTE.length];
-        const r             = 1.1 + depth * 1.1;
+        const depth = (z + 1) * 0.5;
+        const alpha = Math.max(0.06, depth * 0.9 + 0.08);
+        const color = PALETTE[(ri + mi) % PALETTE.length];
+        const r = 1.1 + depth * 1.1;
 
         g.circle(x, y, r * 3).fill({ color, alpha: alpha * 0.18 });
         g.circle(x, y, r).fill({ color, alpha });
@@ -206,10 +221,10 @@ export class ParticleGlobeScreen extends Container {
     for (const sp of this.surface) {
       sp.phase += sp.pulseSpeed;
       const { x, y, z } = this.project(sp.lat, sp.lon, rot);
-      const depth  = (z + 1) * 0.5;
-      const alpha  = Math.max(0.07, depth * 0.88 + 0.1);
-      const pulse  = 0.72 + 0.28 * Math.sin(sp.phase);
-      const size   = sp.size * pulse * (0.55 + depth * 0.45);
+      const depth = (z + 1) * 0.5;
+      const alpha = Math.max(0.07, depth * 0.88 + 0.1);
+      const pulse = 0.72 + 0.28 * Math.sin(sp.phase);
+      const size = sp.size * pulse * (0.55 + depth * 0.45);
 
       g.circle(x, y, size * 2.8).fill({ color: sp.color, alpha: alpha * 0.14 });
       g.circle(x, y, size).fill({ color: sp.color, alpha });
@@ -217,33 +232,42 @@ export class ParticleGlobeScreen extends Container {
   }
 
   private drawFloaters(g: Graphics): void {
-    const cx = this.w / 2, cy = this.h / 2;
-    const R  = this.R;
+    const cx = this.w / 2,
+      cy = this.h / 2;
+    const R = this.R;
 
     for (const fp of this.floaters) {
       fp.x += fp.vx;
       fp.y += fp.vy;
       fp.alpha += fp.alphaDir * 0.005;
       if (fp.alpha >= 0.88) fp.alphaDir = -1;
-      if (fp.alpha <= 0.12) fp.alphaDir =  1;
+      if (fp.alpha <= 0.12) fp.alphaDir = 1;
 
       // Gentle orbit
-      const dx   = fp.x - cx, dy = fp.y - cy;
+      const dx = fp.x - cx,
+        dy = fp.y - cy;
       const dist = Math.sqrt(dx * dx + dy * dy) + 0.001;
       const pull = (dist - R * 1.4) * 0.00007;
       fp.vx -= (dx / dist) * pull;
       fp.vy -= (dy / dist) * pull;
 
       const spd = Math.sqrt(fp.vx * fp.vx + fp.vy * fp.vy);
-      if (spd > 0.38) { fp.vx = (fp.vx / spd) * 0.38; fp.vy = (fp.vy / spd) * 0.38; }
+      if (spd > 0.38) {
+        fp.vx = (fp.vx / spd) * 0.38;
+        fp.vy = (fp.vy / spd) * 0.38;
+      }
 
       if (dist > R * 3.2) {
-        const a = rand(0, TAU), d = rand(R * 1.1, R * 1.9);
+        const a = rand(0, TAU),
+          d = rand(R * 1.1, R * 1.9);
         fp.x = cx + Math.cos(a) * d;
         fp.y = cy + Math.sin(a) * d;
       }
 
-      g.circle(fp.x, fp.y, fp.size * 2.8).fill({ color: fp.color, alpha: fp.alpha * 0.13 });
+      g.circle(fp.x, fp.y, fp.size * 2.8).fill({
+        color: fp.color,
+        alpha: fp.alpha * 0.13,
+      });
       g.circle(fp.x, fp.y, fp.size).fill({ color: fp.color, alpha: fp.alpha });
     }
   }

@@ -19,7 +19,7 @@ const ACCENTS = [
 ];
 
 const BOID_GROUP_RADIUS = 140; // radius used to sense nearby boids for glow
-const BOID_GROUP_MAX = 8;      // neighbour count considered "fully grouped"
+const BOID_GROUP_MAX = 8; // neighbour count considered "fully grouped"
 
 // ─── particle constants ───────────────────────────────────────────────────────
 
@@ -33,15 +33,15 @@ const PART_SPEED_MAX = 0.4;
 const COMET_TRAIL_LENGTH = 65;
 const COMET_SPEED_MIN = 5;
 const COMET_SPEED_MAX = 12;
-const COMET_SPAWN_MIN = 400;   // faster spawn cadence — more comets in view
+const COMET_SPAWN_MIN = 400; // faster spawn cadence — more comets in view
 const COMET_SPAWN_MAX = 1400;
-const COMET_DOUBLE_CHANCE = 0.50; // 50 % chance of a second comet per burst
-const COMET_TRIPLE_CHANCE = 0.20; // bonus 20 % chance of a third (meteor shower)
+const COMET_DOUBLE_CHANCE = 0.5; // 50 % chance of a second comet per burst
+const COMET_TRIPLE_CHANCE = 0.2; // bonus 20 % chance of a third (meteor shower)
 
 // comet ↔ boid interaction
-const COMET_BOID_RADIUS = 130;       // px — influence zone around comet head
-const COMET_BOID_FORCE = 1.1;        // repulsion strength
-const COMET_SCATTER_THRESHOLD = 5;   // boids hit in one frame → trigger scatter
+const COMET_BOID_RADIUS = 130; // px — influence zone around comet head
+const COMET_BOID_FORCE = 1.1; // repulsion strength
+const COMET_SCATTER_THRESHOLD = 5; // boids hit in one frame → trigger scatter
 
 // ─── boid constants ───────────────────────────────────────────────────────────
 
@@ -49,53 +49,86 @@ const BOID_COUNT = 42;
 const BOID_SPEED_MIN = 0.8;
 const BOID_SPEED_MAX = 2.5;
 
-const SEP_RADIUS = 180;  // personal-space bubble — wider so symbols don't overlap
+const SEP_RADIUS = 180; // personal-space bubble — wider so symbols don't overlap
 const ALI_RADIUS = 280;
 const COH_RADIUS = 380;
 
-const SEP_FORCE = 0.22;  // per-pair spring — dominates cohesion at close range
+const SEP_FORCE = 0.22; // per-pair spring — dominates cohesion at close range
 const ALI_FORCE = 0.03;
 const COH_FORCE = 0.005; // gentle pull — flock shape, not a tight clump
 
-const SCATTER_DURATION = 3500;    // ms boids stay scattered after a comet hit
+const SCATTER_DURATION = 3500; // ms boids stay scattered after a comet hit
 
 // ─── interfaces ───────────────────────────────────────────────────────────────
 
 interface Particle {
-  x: number; y: number;
-  vx: number; vy: number;
-  r: number; color: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
+  color: number;
 }
 
-interface TrailPoint { x: number; y: number }
+interface TrailPoint {
+  x: number;
+  y: number;
+}
 
 interface Comet {
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   color: number;
   trail: TrailPoint[];
 }
 
 // Tech/dev Nerd Font codepoints (SymbolsNF)
 const BOID_SYMBOLS = [
-  '\uF121', '\uF126', '\uF09B', '\uF120', '\uF013',
-  '\uF135', '\uF0E7', '\uF259', '\uF292', '\uF188',
-  '\uF1C0', '\uF233', '\uF109', '\uF11C', '\uF17C',
-  '\uF179', '\uF0AD', '\uF0C3', '\uF1EB',
-  '\uF108', '\uF200', '\uF201', '\uF11B', '\uF1B2',
-  '\uF1C9', '\uF023', '\uF304', '\uF0E4', '\uF07B',
+  "\uF121",
+  "\uF126",
+  "\uF09B",
+  "\uF120",
+  "\uF013",
+  "\uF135",
+  "\uF0E7",
+  "\uF259",
+  "\uF292",
+  "\uF188",
+  "\uF1C0",
+  "\uF233",
+  "\uF109",
+  "\uF11C",
+  "\uF17C",
+  "\uF179",
+  "\uF0AD",
+  "\uF0C3",
+  "\uF1EB",
+  "\uF108",
+  "\uF200",
+  "\uF201",
+  "\uF11B",
+  "\uF1B2",
+  "\uF1C9",
+  "\uF023",
+  "\uF304",
+  "\uF0E4",
+  "\uF07B",
 ];
 
 const BOID_PALETTE = [
-  0xcba6f7, 0xf38ba8, 0xfab387, 0xf9e2af,
-  0x94e2d5, 0x89dceb, 0x89b4fa, 0xb4befe, 0xf5c2e7,
+  0xcba6f7, 0xf38ba8, 0xfab387, 0xf9e2af, 0x94e2d5, 0x89dceb, 0x89b4fa,
+  0xb4befe, 0xf5c2e7,
 ];
 
 interface Boid {
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   density: number; // 0 = isolated, 1 = fully grouped
-  node: Text;      // the symbol Text object for this boid
+  node: Text; // the symbol Text object for this boid
 }
 
 // ─── screen ───────────────────────────────────────────────────────────────────
@@ -141,7 +174,8 @@ export class BackgroundScreen extends Container {
     this.particles = [];
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = PART_SPEED_MIN + Math.random() * (PART_SPEED_MAX - PART_SPEED_MIN);
+      const speed =
+        PART_SPEED_MIN + Math.random() * (PART_SPEED_MAX - PART_SPEED_MIN);
       this.particles.push({
         x: Math.random() * this.screenWidth,
         y: Math.random() * this.screenHeight,
@@ -163,18 +197,19 @@ export class BackgroundScreen extends Container {
     const cy = this.screenHeight * 0.5;
 
     for (let i = 0; i < BOID_COUNT; i++) {
-      const angle  = Math.random() * Math.PI * 2;
-      const speed  = BOID_SPEED_MIN + Math.random() * (BOID_SPEED_MAX - BOID_SPEED_MIN);
-      const sym    = BOID_SYMBOLS[i % BOID_SYMBOLS.length];
-      const color  = BOID_PALETTE[i % BOID_PALETTE.length];
+      const angle = Math.random() * Math.PI * 2;
+      const speed =
+        BOID_SPEED_MIN + Math.random() * (BOID_SPEED_MAX - BOID_SPEED_MIN);
+      const sym = BOID_SYMBOLS[i % BOID_SYMBOLS.length];
+      const color = BOID_PALETTE[i % BOID_PALETTE.length];
 
       const node = new Text({
         text: sym,
         style: new TextStyle({
           fontFamily: "'SymbolsNF', monospace",
-          fontSize:   22,
-          fill:       color,
-          padding:    16,
+          fontSize: 22,
+          fill: color,
+          padding: 16,
           dropShadow: { color, blur: 12, distance: 0, alpha: 0.85, angle: 0 },
         }),
       });
@@ -184,7 +219,8 @@ export class BackgroundScreen extends Container {
       this.boidCont.addChild(node);
 
       this.boids.push({
-        x: node.x, y: node.y,
+        x: node.x,
+        y: node.y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         density: 0,
@@ -196,22 +232,31 @@ export class BackgroundScreen extends Container {
   private spawnComet(): void {
     const w = this.screenWidth;
     const h = this.screenHeight;
-    const speed = COMET_SPEED_MIN + Math.random() * (COMET_SPEED_MAX - COMET_SPEED_MIN);
+    const speed =
+      COMET_SPEED_MIN + Math.random() * (COMET_SPEED_MAX - COMET_SPEED_MIN);
     const edge = Math.floor(Math.random() * 4);
     let x: number, y: number, vx: number, vy: number;
 
     if (edge === 0) {
-      x = Math.random() * w; y = -5;
-      vx = (Math.random() - 0.5) * speed * 0.6; vy = speed * (0.6 + Math.random() * 0.4);
+      x = Math.random() * w;
+      y = -5;
+      vx = (Math.random() - 0.5) * speed * 0.6;
+      vy = speed * (0.6 + Math.random() * 0.4);
     } else if (edge === 1) {
-      x = w + 5; y = Math.random() * h;
-      vx = -speed * (0.6 + Math.random() * 0.4); vy = (Math.random() - 0.5) * speed * 0.6;
+      x = w + 5;
+      y = Math.random() * h;
+      vx = -speed * (0.6 + Math.random() * 0.4);
+      vy = (Math.random() - 0.5) * speed * 0.6;
     } else if (edge === 2) {
-      x = Math.random() * w; y = h + 5;
-      vx = (Math.random() - 0.5) * speed * 0.6; vy = -speed * (0.6 + Math.random() * 0.4);
+      x = Math.random() * w;
+      y = h + 5;
+      vx = (Math.random() - 0.5) * speed * 0.6;
+      vy = -speed * (0.6 + Math.random() * 0.4);
     } else {
-      x = -5; y = Math.random() * h;
-      vx = speed * (0.6 + Math.random() * 0.4); vy = (Math.random() - 0.5) * speed * 0.6;
+      x = -5;
+      y = Math.random() * h;
+      vx = speed * (0.6 + Math.random() * 0.4);
+      vy = (Math.random() - 0.5) * speed * 0.6;
     }
 
     const color = ACCENTS[Math.floor(Math.random() * ACCENTS.length)];
@@ -229,18 +274,21 @@ export class BackgroundScreen extends Container {
     for (const p of this.particles) {
       p.x += p.vx * dt;
       p.y += p.vy * dt;
-      if (p.x < 0) p.x += w; else if (p.x > w) p.x -= w;
-      if (p.y < 0) p.y += h; else if (p.y > h) p.y -= h;
+      if (p.x < 0) p.x += w;
+      else if (p.x > w) p.x -= w;
+      if (p.y < 0) p.y += h;
+      else if (p.y > h) p.y -= h;
     }
 
     // comet spawn
     this.cometTimer += time.deltaMS;
     if (this.cometTimer >= this.nextCometIn) {
       this.spawnComet();
-      if (Math.random() < COMET_DOUBLE_CHANCE)  this.spawnComet(); // double burst
-      if (Math.random() < COMET_TRIPLE_CHANCE)  this.spawnComet(); // meteor shower
+      if (Math.random() < COMET_DOUBLE_CHANCE) this.spawnComet(); // double burst
+      if (Math.random() < COMET_TRIPLE_CHANCE) this.spawnComet(); // meteor shower
       this.cometTimer = 0;
-      this.nextCometIn = COMET_SPAWN_MIN + Math.random() * (COMET_SPAWN_MAX - COMET_SPAWN_MIN);
+      this.nextCometIn =
+        COMET_SPAWN_MIN + Math.random() * (COMET_SPAWN_MAX - COMET_SPAWN_MIN);
     }
 
     // comet movement + cull
@@ -252,9 +300,12 @@ export class BackgroundScreen extends Container {
       c.x += c.vx * dt;
       c.y += c.vy * dt;
       if (
-        (c.x < -margin && c.vx < 0) || (c.x > w + margin && c.vx > 0) ||
-        (c.y < -margin && c.vy < 0) || (c.y > h + margin && c.vy > 0)
-      ) this.comets.splice(i, 1);
+        (c.x < -margin && c.vx < 0) ||
+        (c.x > w + margin && c.vx > 0) ||
+        (c.y < -margin && c.vy < 0) ||
+        (c.y > h + margin && c.vy > 0)
+      )
+        this.comets.splice(i, 1);
     }
 
     // recover from scatter after duration expires
@@ -312,8 +363,12 @@ export class BackgroundScreen extends Container {
     for (let i = 0; i < this.boids.length; i++) {
       const b = this.boids[i];
 
-      let aliX = 0, aliY = 0, aliN = 0;
-      let cohX = 0, cohY = 0, cohN = 0;
+      let aliX = 0,
+        aliY = 0,
+        aliN = 0;
+      let cohX = 0,
+        cohY = 0,
+        cohN = 0;
 
       for (let j = 0; j < this.boids.length; j++) {
         if (i === j) continue;
@@ -322,8 +377,10 @@ export class BackgroundScreen extends Container {
         // minimum-image delta on torus
         let dx = o.x - b.x;
         let dy = o.y - b.y;
-        if (dx > w / 2) dx -= w; else if (dx < -w / 2) dx += w;
-        if (dy > h / 2) dy -= h; else if (dy < -h / 2) dy += h;
+        if (dx > w / 2) dx -= w;
+        else if (dx < -w / 2) dx += w;
+        if (dy > h / 2) dy -= h;
+        else if (dy < -h / 2) dy += h;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         // separation — applied per-pair so crowding produces more force, not less
@@ -334,10 +391,14 @@ export class BackgroundScreen extends Container {
           b.vy -= (dy / dist) * spring * scale;
         }
         if (!isScatter && dist < ALI_RADIUS) {
-          aliX += o.vx; aliY += o.vy; aliN++;
+          aliX += o.vx;
+          aliY += o.vy;
+          aliN++;
         }
         if (!isScatter && dist < COH_RADIUS) {
-          cohX += b.x + dx; cohY += b.y + dy; cohN++;
+          cohX += b.x + dx;
+          cohY += b.y + dy;
+          cohN++;
         }
       }
 
@@ -346,30 +407,47 @@ export class BackgroundScreen extends Container {
       for (let j = 0; j < this.boids.length; j++) {
         if (i === j) continue;
         const o = this.boids[j];
-        let dx = o.x - b.x, dy = o.y - b.y;
-        if (dx > w / 2) dx -= w; else if (dx < -w / 2) dx += w;
-        if (dy > h / 2) dy -= h; else if (dy < -h / 2) dy += h;
+        let dx = o.x - b.x,
+          dy = o.y - b.y;
+        if (dx > w / 2) dx -= w;
+        else if (dx < -w / 2) dx += w;
+        if (dy > h / 2) dy -= h;
+        else if (dy < -h / 2) dy += h;
         if (dx * dx + dy * dy < BOID_GROUP_RADIUS * BOID_GROUP_RADIUS) groupN++;
       }
       b.density = Math.min(groupN / BOID_GROUP_MAX, 1);
 
-      if (aliN > 0) { b.vx += ((aliX / aliN) - b.vx) * ALI_FORCE; b.vy += ((aliY / aliN) - b.vy) * ALI_FORCE; }
-      if (cohN > 0) { b.vx += ((cohX / cohN) - b.x) * COH_FORCE; b.vy += ((cohY / cohN) - b.y) * COH_FORCE; }
+      if (aliN > 0) {
+        b.vx += (aliX / aliN - b.vx) * ALI_FORCE;
+        b.vy += (aliY / aliN - b.vy) * ALI_FORCE;
+      }
+      if (cohN > 0) {
+        b.vx += (cohX / cohN - b.x) * COH_FORCE;
+        b.vy += (cohY / cohN - b.y) * COH_FORCE;
+      }
 
       // clamp speed
       const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
       const maxSpd = isScatter ? BOID_SPEED_MAX * 2.5 : BOID_SPEED_MAX;
       if (speed > 0.001) {
-        if (speed > maxSpd) { b.vx = (b.vx / speed) * maxSpd; b.vy = (b.vy / speed) * maxSpd; }
-        else if (speed < BOID_SPEED_MIN) { b.vx = (b.vx / speed) * BOID_SPEED_MIN; b.vy = (b.vy / speed) * BOID_SPEED_MIN; }
+        if (speed > maxSpd) {
+          b.vx = (b.vx / speed) * maxSpd;
+          b.vy = (b.vy / speed) * maxSpd;
+        } else if (speed < BOID_SPEED_MIN) {
+          b.vx = (b.vx / speed) * BOID_SPEED_MIN;
+          b.vy = (b.vy / speed) * BOID_SPEED_MIN;
+        }
       }
     }
 
     // move + toroidal wrap
     for (const b of this.boids) {
-      b.x += b.vx * dt; b.y += b.vy * dt;
-      if (b.x < 0) b.x += w; else if (b.x > w) b.x -= w;
-      if (b.y < 0) b.y += h; else if (b.y > h) b.y -= h;
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      if (b.x < 0) b.x += w;
+      else if (b.x > w) b.x -= w;
+      if (b.y < 0) b.y += h;
+      else if (b.y > h) b.y -= h;
     }
   }
 
@@ -388,9 +466,12 @@ export class BackgroundScreen extends Container {
       const a = this.particles[i];
       for (let j = i + 1; j < this.particles.length; j++) {
         const b = this.particles[j];
-        let dx = b.x - a.x; let dy = b.y - a.y;
-        if (dx > w / 2) dx -= w; else if (dx < -w / 2) dx += w;
-        if (dy > h / 2) dy -= h; else if (dy < -h / 2) dy += h;
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        if (dx > w / 2) dx -= w;
+        else if (dx < -w / 2) dx += w;
+        if (dy > h / 2) dy -= h;
+        else if (dy < -h / 2) dy += h;
 
         const dist = Math.sqrt(dx * dx + dy * dy);
         const t = Math.exp(-dist / DECAY);
@@ -400,10 +481,14 @@ export class BackgroundScreen extends Container {
         const color = lerpColor(a.color, b.color, 0.5);
         const alpha = t * 0.65;
 
-        g.moveTo(a.x, a.y).lineTo(a.x + dx, a.y + dy).stroke({ color, alpha, width: lw });
+        g.moveTo(a.x, a.y)
+          .lineTo(a.x + dx, a.y + dy)
+          .stroke({ color, alpha, width: lw });
 
         if (Math.abs(b.x - a.x) > w / 2 || Math.abs(b.y - a.y) > h / 2) {
-          g.moveTo(b.x, b.y).lineTo(b.x - dx, b.y - dy).stroke({ color, alpha, width: lw });
+          g.moveTo(b.x, b.y)
+            .lineTo(b.x - dx, b.y - dy)
+            .stroke({ color, alpha, width: lw });
         }
       }
     }
@@ -422,7 +507,11 @@ export class BackgroundScreen extends Container {
         const t = i / total;
         g.moveTo(pts[i - 1].x, pts[i - 1].y)
           .lineTo(pts[i].x, pts[i].y)
-          .stroke({ color: c.color, alpha: t * t * 0.85, width: 0.5 + t * 3.5 });
+          .stroke({
+            color: c.color,
+            alpha: t * t * 0.85,
+            width: 0.5 + t * 3.5,
+          });
       }
       const head = pts[total - 1];
       g.circle(head.x, head.y, 2.5).fill({ color: c.color, alpha: 1 });
@@ -437,8 +526,8 @@ export class BackgroundScreen extends Container {
       // face the direction of travel
       b.node.rotation = Math.atan2(b.vy, b.vx) + Math.PI * 0.5;
       // grow slightly and brighten when grouped
-      b.node.scale.set(0.75 + d * 0.50);
-      b.node.alpha = 0.45 + d * 0.50;
+      b.node.scale.set(0.75 + d * 0.5);
+      b.node.alpha = 0.45 + d * 0.5;
     }
   }
 
@@ -448,8 +537,14 @@ export class BackgroundScreen extends Container {
     if (this.screenWidth > 0 && this.screenHeight > 0) {
       const sx = width / this.screenWidth;
       const sy = height / this.screenHeight;
-      for (const p of this.particles) { p.x *= sx; p.y *= sy; }
-      for (const b of this.boids) { b.x *= sx; b.y *= sy; }
+      for (const p of this.particles) {
+        p.x *= sx;
+        p.y *= sy;
+      }
+      for (const b of this.boids) {
+        b.x *= sx;
+        b.y *= sy;
+      }
     }
     this.screenWidth = width;
     this.screenHeight = height;
@@ -461,9 +556,15 @@ export class BackgroundScreen extends Container {
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function lerpColor(a: number, b: number, t: number): number {
-  const ar = (a >> 16) & 0xff, ag = (a >> 8) & 0xff, ab = a & 0xff;
-  const br = (b >> 16) & 0xff, bg = (b >> 8) & 0xff, bb = b & 0xff;
-  return (Math.round(ar + (br - ar) * t) << 16) |
-         (Math.round(ag + (bg - ag) * t) << 8) |
-          Math.round(ab + (bb - ab) * t);
+  const ar = (a >> 16) & 0xff,
+    ag = (a >> 8) & 0xff,
+    ab = a & 0xff;
+  const br = (b >> 16) & 0xff,
+    bg = (b >> 8) & 0xff,
+    bb = b & 0xff;
+  return (
+    (Math.round(ar + (br - ar) * t) << 16) |
+    (Math.round(ag + (bg - ag) * t) << 8) |
+    Math.round(ab + (bb - ab) * t)
+  );
 }

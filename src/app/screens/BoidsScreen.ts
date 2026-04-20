@@ -3,27 +3,34 @@ import { Container, Graphics } from "pixi.js";
 
 const BG = 0x11111b;
 
-const N          = 300;
-const MAX_SPEED  = 95;
-const MIN_SPEED  = 28;
-const MAX_FORCE  = 65;   // px/s²
+const N = 300;
+const MAX_SPEED = 95;
+const MIN_SPEED = 28;
+const MAX_FORCE = 65; // px/s²
 
-const SEP_R = 26;   const SEP_W = 2.2;
-const ALI_R = 72;   const ALI_W = 1.0;
-const COH_R = 85;   const COH_W = 0.75;
+const SEP_R = 26;
+const SEP_W = 2.2;
+const ALI_R = 72;
+const ALI_W = 1.0;
+const COH_R = 85;
+const COH_W = 0.75;
 
 // Gentle central attractor (like a star/planet)
-const ATTRACTOR_R    = 220;  // orbit radius
-const ATTRACTOR_W    = 0.18; // weight of orbital pull
+const ATTRACTOR_R = 220; // orbit radius
+const ATTRACTOR_W = 0.18; // weight of orbital pull
 
 const TRAIL_LEN = 7;
 
 // Comet swarm color: teal + cyan, bright on fast
-const COMET_COLORS = [0x94e2d5, 0x89dceb, 0x74c7ec, 0xa6e3a1, 0x89b4fa] as const;
+const COMET_COLORS = [
+  0x94e2d5, 0x89dceb, 0x74c7ec, 0xa6e3a1, 0x89b4fa,
+] as const;
 
 interface Boid {
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   color: number;
   trail: Array<[number, number]>;
 }
@@ -47,14 +54,18 @@ export class BoidsScreen extends Container {
   }
 
   public async show(): Promise<void> {
-    this.w = window.innerWidth  || 1920;
+    this.w = window.innerWidth || 1920;
     this.h = window.innerHeight || 1080;
     this.init();
   }
 
   public async hide(): Promise<void> {}
 
-  public resize(w: number, h: number): void { this.w = w; this.h = h; this.init(); }
+  public resize(w: number, h: number): void {
+    this.w = w;
+    this.h = h;
+    this.init();
+  }
 
   private init(): void {
     this.boids = [];
@@ -87,9 +98,9 @@ export class BoidsScreen extends Container {
   }
 
   private neighbors(b: Boid, radius: number): Boid[] {
-    const cs    = this.cellSize;
-    const cx    = Math.floor(b.x / cs);
-    const cy    = Math.floor(b.y / cs);
+    const cs = this.cellSize;
+    const cx = Math.floor(b.x / cs);
+    const cy = Math.floor(b.y / cs);
     const range = Math.ceil(radius / cs);
     const res: Boid[] = [];
     for (let dx = -range; dx <= range; dx++) {
@@ -110,9 +121,9 @@ export class BoidsScreen extends Container {
   }
 
   public update(ticker: Ticker): void {
-    const dt  = Math.min(ticker.deltaMS * 0.001, 0.033);
-    const cx  = this.w / 2;
-    const cy  = this.h / 2;
+    const dt = Math.min(ticker.deltaMS * 0.001, 0.033);
+    const cx = this.w / 2;
+    const cy = this.h / 2;
 
     this.buildGrid();
 
@@ -120,43 +131,64 @@ export class BoidsScreen extends Container {
       if (b.trail.length >= TRAIL_LEN) b.trail.shift();
       b.trail.push([b.x, b.y]);
 
-      let sx = 0, sy = 0;    // separation
-      let ax = 0, ay = 0;    // alignment
-      let cohX = 0, cohY = 0, nCoh = 0; // cohesion
+      let sx = 0,
+        sy = 0; // separation
+      let ax = 0,
+        ay = 0; // alignment
+      let cohX = 0,
+        cohY = 0,
+        nCoh = 0; // cohesion
 
       const sepN = this.neighbors(b, SEP_R);
       for (const n of sepN) {
-        const dx = b.x - n.x; const dy = b.y - n.y;
+        const dx = b.x - n.x;
+        const dy = b.y - n.y;
         const d2 = dx * dx + dy * dy;
-        if (d2 > 0) { sx += dx / d2; sy += dy / d2; }
+        if (d2 > 0) {
+          sx += dx / d2;
+          sy += dy / d2;
+        }
       }
 
       const aliN = this.neighbors(b, ALI_R);
-      for (const n of aliN) { ax += n.vx; ay += n.vy; }
-      if (aliN.length > 0) { ax /= aliN.length; ay /= aliN.length; }
+      for (const n of aliN) {
+        ax += n.vx;
+        ay += n.vy;
+      }
+      if (aliN.length > 0) {
+        ax /= aliN.length;
+        ay /= aliN.length;
+      }
 
       const cohN = this.neighbors(b, COH_R);
-      for (const n of cohN) { cohX += n.x; cohY += n.y; nCoh++; }
-      if (nCoh > 0) { cohX = cohX / nCoh - b.x; cohY = cohY / nCoh - b.y; }
+      for (const n of cohN) {
+        cohX += n.x;
+        cohY += n.y;
+        nCoh++;
+      }
+      if (nCoh > 0) {
+        cohX = cohX / nCoh - b.x;
+        cohY = cohY / nCoh - b.y;
+      }
 
       // Orbital attractor: steer toward a ring at ATTRACTOR_R from center
-      const adx   = cx - b.x;
-      const ady   = cy - b.y;
+      const adx = cx - b.x;
+      const ady = cy - b.y;
       const adist = Math.sqrt(adx * adx + ady * ady) + 0.01;
       const orbitErr = adist - ATTRACTOR_R;
       const orbFx = (adx / adist) * orbitErr * 0.4;
       const orbFy = (ady / adist) * orbitErr * 0.4;
       // Tangential component to maintain orbit direction
       const tangX = -ady / adist;
-      const tangY =  adx / adist;
+      const tangY = adx / adist;
       const tangFx = tangX * 15;
       const tangFy = tangY * 15;
 
       // Combine steering
-      const steerX = sx * SEP_W + ax * ALI_W + cohX * COH_W
-                   + (orbFx + tangFx) * ATTRACTOR_W;
-      const steerY = sy * SEP_W + ay * ALI_W + cohY * COH_W
-                   + (orbFy + tangFy) * ATTRACTOR_W;
+      const steerX =
+        sx * SEP_W + ax * ALI_W + cohX * COH_W + (orbFx + tangFx) * ATTRACTOR_W;
+      const steerY =
+        sy * SEP_W + ay * ALI_W + cohY * COH_W + (orbFy + tangFy) * ATTRACTOR_W;
 
       // Clamp steering force
       const sLen = Math.sqrt(steerX * steerX + steerY * steerY) + 0.0001;
@@ -166,8 +198,14 @@ export class BoidsScreen extends Container {
 
       // Speed clamp
       const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy) + 0.0001;
-      if (spd > MAX_SPEED) { b.vx = b.vx / spd * MAX_SPEED; b.vy = b.vy / spd * MAX_SPEED; }
-      if (spd < MIN_SPEED) { b.vx = b.vx / spd * MIN_SPEED; b.vy = b.vy / spd * MIN_SPEED; }
+      if (spd > MAX_SPEED) {
+        b.vx = (b.vx / spd) * MAX_SPEED;
+        b.vy = (b.vy / spd) * MAX_SPEED;
+      }
+      if (spd < MIN_SPEED) {
+        b.vx = (b.vx / spd) * MIN_SPEED;
+        b.vy = (b.vy / spd) * MIN_SPEED;
+      }
 
       b.x += b.vx * dt;
       b.y += b.vy * dt;
@@ -185,11 +223,15 @@ export class BoidsScreen extends Container {
     g.rect(0, 0, this.w, this.h).fill({ color: BG });
 
     // Orbit guide ring
-    g.circle(cx, cy, ATTRACTOR_R).stroke({ width: 0.5, color: 0x313244, alpha: 0.4 });
+    g.circle(cx, cy, ATTRACTOR_R).stroke({
+      width: 0.5,
+      color: 0x313244,
+      alpha: 0.4,
+    });
 
     // Boid trails + dots
     for (const b of this.boids) {
-      const spd    = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
       const bright = Math.min(spd / MAX_SPEED, 1);
 
       for (let i = 1; i < b.trail.length; i++) {
@@ -205,6 +247,6 @@ export class BoidsScreen extends Container {
 
     // Central attractor (dim planet/star)
     g.circle(cx, cy, 10).fill({ color: 0xfab387, alpha: 0.15 });
-    g.circle(cx, cy, 5 ).fill({ color: 0xfab387, alpha: 0.5  });
+    g.circle(cx, cy, 5).fill({ color: 0xfab387, alpha: 0.5 });
   }
 }

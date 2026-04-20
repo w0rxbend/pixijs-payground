@@ -1,22 +1,29 @@
 import type { Ticker } from "pixi.js";
-import { Container, Graphics, Rectangle, Sprite, Text, TextStyle, Texture } from "pixi.js";
-
+import {
+  Container,
+  Graphics,
+  Rectangle,
+  Sprite,
+  Text,
+  TextStyle,
+  Texture,
+} from "pixi.js";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
-const TICKER_BG    = 0x00cc44;  // green band
-const TICKER_TEXT  = 0x000000;  // black text
+const TICKER_BG = 0x00cc44; // green band
+const TICKER_TEXT = 0x000000; // black text
 const TOXIC_VIOLET = 0x181825; // top & bottom border
 
 // ── Dimensions ───────────────────────────────────────────────────────────────
-const BORDER_H  = 6;
-const BAND_H    = 80;
-const TOTAL_H   = BAND_H + BORDER_H * 2;
+const BORDER_H = 6;
+const BAND_H = 80;
+const TOTAL_H = BAND_H + BORDER_H * 2;
 const FONT_SIZE = 24;
-const ICON_H    = 52;
-const ITEM_GAP  = 90;
+const ICON_H = 52;
+const ITEM_GAP = 90;
 
 // ── Scroll speed ─────────────────────────────────────────────────────────────
-const SCROLL_PX_PER_MS = 0.2;  // ~200 px/s
+const SCROLL_PX_PER_MS = 0.2; // ~200 px/s
 
 // ── News items ────────────────────────────────────────────────────────────────
 const NEWS = [
@@ -44,16 +51,16 @@ interface TickerEntry {
 export class TitlePowerlineScreen extends Container {
   public static assetBundles = ["main"];
 
-  private readonly band         = new Graphics();
-  private readonly scrollMask   = new Graphics();
-  private readonly scrollCont   = new Container();
+  private readonly band = new Graphics();
+  private readonly scrollMask = new Graphics();
+  private readonly scrollCont = new Container();
   private readonly fluidBorderGfx = new Graphics();
 
-  private items:      TickerEntry[] = [];
-  private textIdx     = 0;
-  private nextIsIcon  = false;
+  private items: TickerEntry[] = [];
+  private textIdx = 0;
+  private nextIsIcon = false;
   private screenW = 0;
-  private ready   = false;
+  private ready = false;
   private fluidTime = 0;
 
   constructor() {
@@ -185,7 +192,7 @@ export class TitlePowerlineScreen extends Container {
     this.fluidBorderGfx.clear();
     if (this.screenW === 0) return;
 
-    const t     = this.fluidTime;
+    const t = this.fluidTime;
     const SEG_W = 6; // px per slice — fine enough for smooth curves
 
     // Wave crests rise upward (negative y) from y=0.
@@ -194,48 +201,64 @@ export class TitlePowerlineScreen extends Container {
     const WAVE_H = BORDER_H * 2.8; // max crest height above y=0
 
     /** Returns how far ABOVE y=0 the wave surface sits at this x (positive = upward). */
-    const crestY = (x: number, amp: number, f1: number, s1: number,
-                                            f2: number, s2: number,
-                                            f3: number, s3: number): number => {
+    const crestY = (
+      x: number,
+      amp: number,
+      f1: number,
+      s1: number,
+      f2: number,
+      s2: number,
+      f3: number,
+      s3: number,
+    ): number => {
       const raw =
-          amp * 1.00 * Math.sin(x * f1 - t * s1)
-        + amp * 0.50 * Math.sin(x * f2 + t * s2 + 1.2)
-        + amp * 0.25 * Math.sin(x * f3 - t * s3 + 2.5);
+        amp * 1.0 * Math.sin(x * f1 - t * s1) +
+        amp * 0.5 * Math.sin(x * f2 + t * s2 + 1.2) +
+        amp * 0.25 * Math.sin(x * f3 - t * s3 + 2.5);
       // Shift so the minimum is 0 (wave never dips below band edge)
       return Math.max(0, raw + amp * 1.75);
     };
 
     // Layer definitions — [amplitude, f1, s1, f2, s2, f3, s3, alpha]
-    const layers: [number, number, number, number, number, number, number, number][] = [
+    const layers: [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+    ][] = [
       // back swell — tallest, slowest, most transparent
-      [WAVE_H * 0.55, 0.008, 1.1, 0.018, 1.7, 0.038, 3.2, 0.20],
+      [WAVE_H * 0.55, 0.008, 1.1, 0.018, 1.7, 0.038, 3.2, 0.2],
       // mid body
-      [WAVE_H * 0.38, 0.012, 1.8, 0.028, 2.6, 0.055, 4.8, 0.50],
+      [WAVE_H * 0.38, 0.012, 1.8, 0.028, 2.6, 0.055, 4.8, 0.5],
       // bright crest — shortest, fastest, most opaque
-      [WAVE_H * 0.22, 0.018, 2.8, 0.042, 4.1, 0.080, 7.0, 0.90],
+      [WAVE_H * 0.22, 0.018, 2.8, 0.042, 4.1, 0.08, 7.0, 0.9],
     ];
 
     for (const [amp, f1, s1, f2, s2, f3, s3, layerAlpha] of layers) {
       for (let x = 0; x < this.screenW; x += SEG_W) {
         // How high above y=0 this slice rises
-        const rise0 = crestY(x,          amp, f1, s1, f2, s2, f3, s3);
-        const rise1 = crestY(x + SEG_W,  amp, f1, s1, f2, s2, f3, s3);
+        const rise0 = crestY(x, amp, f1, s1, f2, s2, f3, s3);
+        const rise1 = crestY(x + SEG_W, amp, f1, s1, f2, s2, f3, s3);
 
         // Trapezoid: wavy top (negative y = above band edge), flat bottom at y=0
         // so the green band shows through below the wave silhouette
         this.fluidBorderGfx
-          .poly([x, -rise0,  x + SEG_W, -rise1,  x + SEG_W, 0,  x, 0])
+          .poly([x, -rise0, x + SEG_W, -rise1, x + SEG_W, 0, x, 0])
           .fill({ color: TICKER_BG, alpha: layerAlpha });
       }
     }
   }
 
   private spawnIcon(): TickerEntry {
-    const base  = Texture.from("sprite.png");
-    const cols  = Math.floor(base.width / 250);
-    const rows  = Math.floor(base.height / 250);
+    const base = Texture.from("sprite.png");
+    const cols = Math.floor(base.width / 250);
+    const rows = Math.floor(base.height / 250);
     const total = Math.max(1, cols * rows);
-    const idx   = Math.floor(Math.random() * total);
+    const idx = Math.floor(Math.random() * total);
     const frame = new Rectangle(
       (idx % cols) * 250,
       Math.floor(idx / cols) * 250,

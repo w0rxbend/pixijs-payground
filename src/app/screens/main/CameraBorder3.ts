@@ -1,9 +1,4 @@
-import {
-  Container,
-  Graphics,
-  Sprite,
-  Texture,
-} from "pixi.js";
+import { Container, Graphics, Sprite, Texture } from "pixi.js";
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 // Razer signature greens + LoL blues/purples + toxic black-green-violet
@@ -149,33 +144,43 @@ interface LightningBolt {
 }
 
 interface FireworkParticle {
-  x: number; y: number;
-  vx: number; vy: number;
-  life: number; decay: number;
-  size: number; color: PaletteColor;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  decay: number;
+  size: number;
+  color: PaletteColor;
 }
 
 interface ElectricSpike {
   points: Array<[number, number]>;
-  alpha: number; decay: number;
-  color: PaletteColor; width: number;
+  alpha: number;
+  decay: number;
+  color: PaletteColor;
+  width: number;
 }
 
 interface SplashDroplet {
-  x: number; y: number;
-  vx: number; vy: number;
-  life: number; decay: number;
-  size: number; color: PaletteColor;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  decay: number;
+  size: number;
+  color: PaletteColor;
 }
 
 interface AsteroidBody {
   cont: Container;
   orbitAngle: number;
   orbitSpeed: number;
-  semiMajor: number;        // ellipse semi-major axis (px)
-  semiMinor: number;        // ellipse semi-minor axis (px)
-  orbitTilt: number;        // current rotation of the ellipse (rad)
-  precessionSpeed: number;  // orbit rotation speed (rad/s)
+  semiMajor: number; // ellipse semi-major axis (px)
+  semiMinor: number; // ellipse semi-minor axis (px)
+  orbitTilt: number; // current rotation of the ellipse (rad)
+  precessionSpeed: number; // orbit rotation speed (rad/s)
   selfRotSpeed: number;
   alpha: number;
   dying: boolean;
@@ -183,19 +188,23 @@ interface AsteroidBody {
 }
 
 interface DebrisParticle {
-  x: number; y: number;
-  vx: number; vy: number;
-  r: number; color: number;
-  life: number; maxLife: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
+  color: number;
+  life: number;
+  maxLife: number;
 }
 
 interface NaturalSatellite {
   cont: Container;
   orbitAngle: number;
-  orbitSpeed: number;   // rad/s, signed
+  orbitSpeed: number; // rad/s, signed
   orbitRadius: number;
   selfRotSpeed: number; // slow self-rotation of surface features
-  kind: number;         // 0=moon 1=europa 2=io
+  kind: number; // 0=moon 1=europa 2=io
 }
 
 interface OrbitDot {
@@ -211,20 +220,20 @@ interface OrbitDot {
 
 interface FluidStain {
   // Orbital position
-  angle:       number;  // current angular position around the ring (radians)
-  speed:       number;  // orbital speed rad/s, signed (CW / CCW)
-  orbitRadius: number;  // distance from origin — near the ring edge
+  angle: number; // current angular position around the ring (radians)
+  speed: number; // orbital speed rad/s, signed (CW / CCW)
+  orbitRadius: number; // distance from origin — near the ring edge
   // Blob self-rotation
-  rotation:    number;  // shape rotation angle (radians)
-  rotSpeed:    number;  // shape rotation speed rad/s
+  rotation: number; // shape rotation angle (radians)
+  rotSpeed: number; // shape rotation speed rad/s
   // Radial drift (float in/out from orbitRadius)
-  floatAmp:    number;  // amplitude px
-  floatSpeed:  number;  // oscillation frequency Hz
-  floatPhase:  number;  // per-stain phase offset
+  floatAmp: number; // amplitude px
+  floatSpeed: number; // oscillation frequency Hz
+  floatPhase: number; // per-stain phase offset
   // Blob geometry
-  baseRadius:  number;  // nominal blob size px
-  color:       CattColor;
-  baseAlpha:   number;  // 0.05..0.12 — super transparent
+  baseRadius: number; // nominal blob size px
+  color: CattColor;
+  baseAlpha: number; // 0.05..0.12 — super transparent
   // Smooth Fourier deformation — modes 1, 2, 3 only (no spikes)
   modes: Array<{ amp: number; phase: number; speed: number }>;
 }
@@ -372,42 +381,48 @@ function jaggedPath(
 
 function paintAsteroid(g: Graphics, r: number): void {
   const sides = 7 + Math.floor(Math.random() * 5); // 7-11 vertices
-  const baseColor = [0x5a5a62, 0x636258, 0x524a48, 0x5e5252, 0x585662, 0x4e5258][
-    Math.floor(Math.random() * 6)
-  ];
+  const baseColor = [
+    0x5a5a62, 0x636258, 0x524a48, 0x5e5252, 0x585662, 0x4e5258,
+  ][Math.floor(Math.random() * 6)];
 
   // Irregular outline — angular jitter per vertex
   const pts: number[] = [];
   for (let i = 0; i < sides; i++) {
-    const a  = (i / sides) * Math.PI * 2 + (Math.random() - 0.5) * (Math.PI / sides) * 0.65;
-    const rr = r * (0.60 + Math.random() * 0.55);
+    const a =
+      (i / sides) * Math.PI * 2 +
+      (Math.random() - 0.5) * (Math.PI / sides) * 0.65;
+    const rr = r * (0.6 + Math.random() * 0.55);
     pts.push(Math.cos(a) * rr, Math.sin(a) * rr);
   }
   g.poly(pts, true).fill({ color: baseColor, alpha: 1.0 });
 
   // Shadow side — dark overlay bottom-right
-  g.circle(r * 0.20, r * 0.20, r * 0.74).fill({ color: 0x14141c, alpha: 0.50 });
+  g.circle(r * 0.2, r * 0.2, r * 0.74).fill({ color: 0x14141c, alpha: 0.5 });
 
   // Lit side — soft highlight upper-left
-  g.circle(-r * 0.18, -r * 0.18, r * 0.60).fill({ color: 0x9898a0, alpha: 0.30 });
-  g.circle(-r * 0.26, -r * 0.26, r * 0.30).fill({ color: 0xbabac0, alpha: 0.20 });
+  g.circle(-r * 0.18, -r * 0.18, r * 0.6).fill({ color: 0x9898a0, alpha: 0.3 });
+  g.circle(-r * 0.26, -r * 0.26, r * 0.3).fill({ color: 0xbabac0, alpha: 0.2 });
 
   // Impact craters (only on bodies large enough to show them)
   if (r >= 7) {
     const n = 1 + Math.floor(Math.random() * 3);
     for (let i = 0; i < n; i++) {
       const ca = Math.random() * Math.PI * 2;
-      const cd = r * (0.10 + Math.random() * 0.30);
-      const cx = Math.cos(ca) * cd, cy = Math.sin(ca) * cd;
+      const cd = r * (0.1 + Math.random() * 0.3);
+      const cx = Math.cos(ca) * cd,
+        cy = Math.sin(ca) * cd;
       const cr = r * (0.11 + Math.random() * 0.15);
-      g.circle(cx, cy, cr).fill({ color: 0x242430, alpha: 0.70 });
-      g.circle(cx - cr * 0.18, cy - cr * 0.18, cr * 0.55).fill({ color: 0x3c3c46, alpha: 0.35 });
+      g.circle(cx, cy, cr).fill({ color: 0x242430, alpha: 0.7 });
+      g.circle(cx - cr * 0.18, cy - cr * 0.18, cr * 0.55).fill({
+        color: 0x3c3c46,
+        alpha: 0.35,
+      });
       g.circle(cx, cy, cr).stroke({ color: 0x888890, alpha: 0.18, width: 0.5 });
     }
   }
 
   // Specular limb — faint bright outline on lit side
-  g.poly(pts, true).stroke({ color: 0xc0c0c8, alpha: 0.20, width: 0.7 });
+  g.poly(pts, true).stroke({ color: 0xc0c0c8, alpha: 0.2, width: 0.7 });
 }
 
 // ── Natural satellite paint functions ─────────────────────────────────────────
@@ -416,9 +431,15 @@ function paintAsteroid(g: Graphics, r: number): void {
 
 function paintNatSatellite(g: Graphics, kind: number, r: number): void {
   switch (kind) {
-    case 0: paintMoonBody(g, r);   break;
-    case 1: paintEuropaBody(g, r); break;
-    default: paintIoBody(g, r);    break;
+    case 0:
+      paintMoonBody(g, r);
+      break;
+    case 1:
+      paintEuropaBody(g, r);
+      break;
+    default:
+      paintIoBody(g, r);
+      break;
   }
 }
 
@@ -435,41 +456,65 @@ function paintMoonBody(g: Graphics, r: number): void {
   g.circle(0, 0, r).fill({ color: 0x6a6a72, alpha: 1.0 });
 
   // ── Lit hemisphere — layered offset circles simulate sphere gradient ────────
-  g.circle(-r * 0.18, -r * 0.18, r * 0.97).fill({ color: 0xbcb8b0, alpha: 0.52 });
-  g.circle(-r * 0.24, -r * 0.24, r * 0.72).fill({ color: 0xccc8c0, alpha: 0.38 });
-  g.circle(-r * 0.30, -r * 0.30, r * 0.44).fill({ color: 0xd8d4cc, alpha: 0.26 });
+  g.circle(-r * 0.18, -r * 0.18, r * 0.97).fill({
+    color: 0xbcb8b0,
+    alpha: 0.52,
+  });
+  g.circle(-r * 0.24, -r * 0.24, r * 0.72).fill({
+    color: 0xccc8c0,
+    alpha: 0.38,
+  });
+  g.circle(-r * 0.3, -r * 0.3, r * 0.44).fill({ color: 0xd8d4cc, alpha: 0.26 });
   // Specular highlight
-  g.circle(-r * 0.38, -r * 0.38, r * 0.13).fill({ color: 0xf0ece4, alpha: 0.22 });
+  g.circle(-r * 0.38, -r * 0.38, r * 0.13).fill({
+    color: 0xf0ece4,
+    alpha: 0.22,
+  });
 
   // ── Dark mare basins (ancient volcanic plains) ─────────────────────────────
-  g.circle(-r * 0.08, -r * 0.22, r * 0.30).fill({ color: 0x3e3e48, alpha: 0.60 }); // Mare Imbrium
-  g.circle( r * 0.26, -r * 0.06, r * 0.19).fill({ color: 0x424250, alpha: 0.52 }); // Mare Serenitatis
-  g.circle(-r * 0.30,  r * 0.28, r * 0.14).fill({ color: 0x444450, alpha: 0.44 }); // Mare Humorum
-  g.circle( r * 0.10,  r * 0.32, r * 0.11).fill({ color: 0x464656, alpha: 0.38 }); // Mare Nubium
+  g.circle(-r * 0.08, -r * 0.22, r * 0.3).fill({ color: 0x3e3e48, alpha: 0.6 }); // Mare Imbrium
+  g.circle(r * 0.26, -r * 0.06, r * 0.19).fill({
+    color: 0x424250,
+    alpha: 0.52,
+  }); // Mare Serenitatis
+  g.circle(-r * 0.3, r * 0.28, r * 0.14).fill({ color: 0x444450, alpha: 0.44 }); // Mare Humorum
+  g.circle(r * 0.1, r * 0.32, r * 0.11).fill({ color: 0x464656, alpha: 0.38 }); // Mare Nubium
 
   // ── Impact craters — shadow floor + bright ejecta rim ─────────────────────
   const craters = [
-    { cx:  0.14, cy:  0.30, cr: 0.20 }, // large — centre-south
-    { cx: -0.32, cy:  0.18, cr: 0.13 }, // mid — west
-    { cx:  0.36, cy: -0.30, cr: 0.11 }, // mid — north-east
+    { cx: 0.14, cy: 0.3, cr: 0.2 }, // large — centre-south
+    { cx: -0.32, cy: 0.18, cr: 0.13 }, // mid — west
+    { cx: 0.36, cy: -0.3, cr: 0.11 }, // mid — north-east
     { cx: -0.12, cy: -0.36, cr: 0.09 }, // small — north
-    { cx:  0.44, cy:  0.22, cr: 0.08 }, // small — east edge
+    { cx: 0.44, cy: 0.22, cr: 0.08 }, // small — east edge
     { cx: -0.38, cy: -0.14, cr: 0.07 }, // small — west
-    { cx:  0.22, cy:  0.46, cr: 0.07 }, // small — south
-    { cx: -0.20, cy:  0.44, cr: 0.06 }, // tiny — south-west
-    { cx:  0.02, cy: -0.50, cr: 0.05 }, // tiny — far north
-    { cx:  0.50, cy: -0.06, cr: 0.05 }, // tiny — far east
+    { cx: 0.22, cy: 0.46, cr: 0.07 }, // small — south
+    { cx: -0.2, cy: 0.44, cr: 0.06 }, // tiny — south-west
+    { cx: 0.02, cy: -0.5, cr: 0.05 }, // tiny — far north
+    { cx: 0.5, cy: -0.06, cr: 0.05 }, // tiny — far east
   ];
   for (const c of craters) {
-    const cx = c.cx * r, cy = c.cy * r, cr = c.cr * r;
+    const cx = c.cx * r,
+      cy = c.cy * r,
+      cr = c.cr * r;
     // Shadow floor
     g.circle(cx, cy, cr).fill({ color: 0x2e2e36, alpha: 0.65 });
     // Interior — slight lighter centre (central peak)
-    g.circle(cx - cr * 0.15, cy - cr * 0.15, cr * 0.55).fill({ color: 0x585860, alpha: 0.30 });
+    g.circle(cx - cr * 0.15, cy - cr * 0.15, cr * 0.55).fill({
+      color: 0x585860,
+      alpha: 0.3,
+    });
     // Bright ejecta rim
-    g.circle(cx, cy, cr).stroke({ color: 0xc8c4bc, alpha: 0.50, width: r * 0.022 });
+    g.circle(cx, cy, cr).stroke({
+      color: 0xc8c4bc,
+      alpha: 0.5,
+      width: r * 0.022,
+    });
     // Shadow crescent on rim (southeast)
-    g.circle(cx + cr * 0.28, cy + cr * 0.28, cr * 0.22).fill({ color: 0x222228, alpha: 0.45 });
+    g.circle(cx + cr * 0.28, cy + cr * 0.28, cr * 0.22).fill({
+      color: 0x222228,
+      alpha: 0.45,
+    });
   }
 
   // ── Terminator edge — soft shadow on right side ────────────────────────────
@@ -485,63 +530,85 @@ function paintMoonBody(g: Graphics, r: number): void {
  */
 function paintEuropaBody(g: Graphics, r: number): void {
   // ── Deep glow — cold blue ──────────────────────────────────────────────────
-  g.circle(0, 0, r * 1.50).fill({ color: 0x88ccff, alpha: 0.05 });
+  g.circle(0, 0, r * 1.5).fill({ color: 0x88ccff, alpha: 0.05 });
   g.circle(0, 0, r * 1.18).fill({ color: 0xaaddff, alpha: 0.08 });
 
   // ── Base sphere — icy blue-white ───────────────────────────────────────────
   g.circle(0, 0, r).fill({ color: 0x9fc8e8, alpha: 1.0 });
 
   // ── Lit hemisphere gradient ────────────────────────────────────────────────
-  g.circle(-r * 0.16, -r * 0.16, r * 0.96).fill({ color: 0xd8eef8, alpha: 0.55 });
-  g.circle(-r * 0.22, -r * 0.22, r * 0.70).fill({ color: 0xe8f6ff, alpha: 0.38 });
-  g.circle(-r * 0.28, -r * 0.28, r * 0.42).fill({ color: 0xf4faff, alpha: 0.25 });
-  g.circle(-r * 0.36, -r * 0.36, r * 0.12).fill({ color: 0xffffff, alpha: 0.22 });
+  g.circle(-r * 0.16, -r * 0.16, r * 0.96).fill({
+    color: 0xd8eef8,
+    alpha: 0.55,
+  });
+  g.circle(-r * 0.22, -r * 0.22, r * 0.7).fill({
+    color: 0xe8f6ff,
+    alpha: 0.38,
+  });
+  g.circle(-r * 0.28, -r * 0.28, r * 0.42).fill({
+    color: 0xf4faff,
+    alpha: 0.25,
+  });
+  g.circle(-r * 0.36, -r * 0.36, r * 0.12).fill({
+    color: 0xffffff,
+    alpha: 0.22,
+  });
 
   // ── Subsurface warm glow (hint of the ocean beneath the ice) ───────────────
-  g.circle(r * 0.08, r * 0.08, r * 0.65).fill({ color: 0x2244aa, alpha: 0.10 });
+  g.circle(r * 0.08, r * 0.08, r * 0.65).fill({ color: 0x2244aa, alpha: 0.1 });
 
   // ── Chaos terrain patches — older disrupted ice regions ───────────────────
   const patches = [
     { cx: 0.18, cy: 0.24, rx: 0.22, ry: 0.14 },
     { cx: -0.25, cy: -0.28, rx: 0.18, ry: 0.11 },
-    { cx: 0.30, cy: -0.18, rx: 0.15, ry: 0.10 },
+    { cx: 0.3, cy: -0.18, rx: 0.15, ry: 0.1 },
   ];
   for (const p of patches) {
     // Use a circle as approximation of the elliptical patch
-    g.circle(p.cx * r, p.cy * r, (p.rx + p.ry) * 0.5 * r).fill({ color: 0x7898b8, alpha: 0.22 });
+    g.circle(p.cx * r, p.cy * r, (p.rx + p.ry) * 0.5 * r).fill({
+      color: 0x7898b8,
+      alpha: 0.22,
+    });
   }
 
   // ── Lineae — the iconic reddish-brown crack network ────────────────────────
   // Major tidal cracks crossing the globe
   const lineae: Array<[number, number, number, number]> = [
-    [ -0.70, -0.28,  0.65,  0.40 ], // Thera Macula diagonal
-    [  0.20, -0.72, -0.30,  0.68 ], // cross-equatorial ridge
-    [ -0.55,  0.55,  0.70, -0.42 ], // Minos Linea
-    [  0.60,  0.55, -0.58, -0.30 ], // Cadmus Linea
-    [ -0.10, -0.68,  0.15,  0.72 ], // Conamara region
-    [  0.68, -0.20, -0.62,  0.35 ], // Astypalaea Linea
+    [-0.7, -0.28, 0.65, 0.4], // Thera Macula diagonal
+    [0.2, -0.72, -0.3, 0.68], // cross-equatorial ridge
+    [-0.55, 0.55, 0.7, -0.42], // Minos Linea
+    [0.6, 0.55, -0.58, -0.3], // Cadmus Linea
+    [-0.1, -0.68, 0.15, 0.72], // Conamara region
+    [0.68, -0.2, -0.62, 0.35], // Astypalaea Linea
   ];
   for (const [x1, y1, x2, y2] of lineae) {
-    const lx1 = x1 * r, ly1 = y1 * r, lx2 = x2 * r, ly2 = y2 * r;
+    const lx1 = x1 * r,
+      ly1 = y1 * r,
+      lx2 = x2 * r,
+      ly2 = y2 * r;
     // Outer warm glow — reddish-brown
-    g.moveTo(lx1, ly1).lineTo(lx2, ly2)
+    g.moveTo(lx1, ly1)
+      .lineTo(lx2, ly2)
       .stroke({ color: 0x8b3a1a, alpha: 0.25, width: r * 0.065, cap: "round" });
     // Core crack line
-    g.moveTo(lx1, ly1).lineTo(lx2, ly2)
+    g.moveTo(lx1, ly1)
+      .lineTo(lx2, ly2)
       .stroke({ color: 0xb85a2a, alpha: 0.55, width: r * 0.025, cap: "round" });
     // Bright frost along crack edge
-    g.moveTo(lx1, ly1).lineTo(lx2, ly2)
+    g.moveTo(lx1, ly1)
+      .lineTo(lx2, ly2)
       .stroke({ color: 0xddeeff, alpha: 0.18, width: r * 0.008, cap: "round" });
   }
   // Finer secondary cracks
   const fineLineae: Array<[number, number, number, number]> = [
-    [ -0.40,  0.10,  0.45, -0.35 ],
-    [  0.10,  0.55, -0.50, -0.10 ],
-    [  0.55,  0.15,  0.10,  0.60 ],
-    [ -0.22, -0.50,  0.50,  0.22 ],
+    [-0.4, 0.1, 0.45, -0.35],
+    [0.1, 0.55, -0.5, -0.1],
+    [0.55, 0.15, 0.1, 0.6],
+    [-0.22, -0.5, 0.5, 0.22],
   ];
   for (const [x1, y1, x2, y2] of fineLineae) {
-    g.moveTo(x1 * r, y1 * r).lineTo(x2 * r, y2 * r)
+    g.moveTo(x1 * r, y1 * r)
+      .lineTo(x2 * r, y2 * r)
       .stroke({ color: 0x7a3318, alpha: 0.32, width: r * 0.016, cap: "round" });
   }
 
@@ -565,55 +632,79 @@ function paintIoBody(g: Graphics, r: number): void {
   g.circle(0, 0, r).fill({ color: 0xd4aa18, alpha: 1.0 });
 
   // ── Lit hemisphere ─────────────────────────────────────────────────────────
-  g.circle(-r * 0.17, -r * 0.17, r * 0.96).fill({ color: 0xeec830, alpha: 0.52 });
-  g.circle(-r * 0.24, -r * 0.24, r * 0.70).fill({ color: 0xf8dc50, alpha: 0.35 });
-  g.circle(-r * 0.30, -r * 0.30, r * 0.40).fill({ color: 0xfcec78, alpha: 0.22 });
-  g.circle(-r * 0.37, -r * 0.37, r * 0.12).fill({ color: 0xfffc9a, alpha: 0.20 });
+  g.circle(-r * 0.17, -r * 0.17, r * 0.96).fill({
+    color: 0xeec830,
+    alpha: 0.52,
+  });
+  g.circle(-r * 0.24, -r * 0.24, r * 0.7).fill({
+    color: 0xf8dc50,
+    alpha: 0.35,
+  });
+  g.circle(-r * 0.3, -r * 0.3, r * 0.4).fill({ color: 0xfcec78, alpha: 0.22 });
+  g.circle(-r * 0.37, -r * 0.37, r * 0.12).fill({
+    color: 0xfffc9a,
+    alpha: 0.2,
+  });
 
   // ── Sulfur dioxide frost patches — bright white-yellow regions ─────────────
-  g.circle(-r * 0.20, -r * 0.32, r * 0.24).fill({ color: 0xf8f4dc, alpha: 0.45 });
-  g.circle( r * 0.28,  r * 0.26, r * 0.20).fill({ color: 0xf0ecd0, alpha: 0.38 });
-  g.circle(-r * 0.10,  r * 0.40, r * 0.15).fill({ color: 0xece8c8, alpha: 0.32 });
+  g.circle(-r * 0.2, -r * 0.32, r * 0.24).fill({
+    color: 0xf8f4dc,
+    alpha: 0.45,
+  });
+  g.circle(r * 0.28, r * 0.26, r * 0.2).fill({ color: 0xf0ecd0, alpha: 0.38 });
+  g.circle(-r * 0.1, r * 0.4, r * 0.15).fill({ color: 0xece8c8, alpha: 0.32 });
 
   // ── Red & orange sulphur flows ─────────────────────────────────────────────
-  g.circle( r * 0.22,  r * 0.08, r * 0.28).fill({ color: 0xc84400, alpha: 0.40 });
-  g.circle(-r * 0.32,  r * 0.14, r * 0.20).fill({ color: 0xd05800, alpha: 0.35 });
-  g.circle( r * 0.10, -r * 0.30, r * 0.16).fill({ color: 0xe06000, alpha: 0.30 });
+  g.circle(r * 0.22, r * 0.08, r * 0.28).fill({ color: 0xc84400, alpha: 0.4 });
+  g.circle(-r * 0.32, r * 0.14, r * 0.2).fill({ color: 0xd05800, alpha: 0.35 });
+  g.circle(r * 0.1, -r * 0.3, r * 0.16).fill({ color: 0xe06000, alpha: 0.3 });
 
   // ── Volcanic calderas — dark pits ─────────────────────────────────────────
   const calderas = [
-    { cx: 0.16, cy: 0.10, cr: 0.14 }, // Pele — giant caldera
-    { cx: -0.24, cy: 0.28, cr: 0.10 }, // Loki Patera
+    { cx: 0.16, cy: 0.1, cr: 0.14 }, // Pele — giant caldera
+    { cx: -0.24, cy: 0.28, cr: 0.1 }, // Loki Patera
     { cx: 0.38, cy: -0.22, cr: 0.08 }, // Tvashtar
-    { cx: -0.10, cy: -0.36, cr: 0.07 }, // Prometheus
-    { cx: 0.44, cy:  0.30, cr: 0.06 }, // Ra Patera
+    { cx: -0.1, cy: -0.36, cr: 0.07 }, // Prometheus
+    { cx: 0.44, cy: 0.3, cr: 0.06 }, // Ra Patera
     { cx: -0.36, cy: -0.22, cr: 0.05 },
   ];
   for (const c of calderas) {
-    const cx = c.cx * r, cy = c.cy * r, cr = c.cr * r;
+    const cx = c.cx * r,
+      cy = c.cy * r,
+      cr = c.cr * r;
     // Outer lava field — dark reddish ring
     g.circle(cx, cy, cr * 1.5).fill({ color: 0x5a1a00, alpha: 0.35 });
     // Caldera floor — black/dark brown
     g.circle(cx, cy, cr).fill({ color: 0x1a0800, alpha: 0.88 });
     // Active lava lake glow — orange hotspot
     g.circle(cx, cy, cr * 0.55).fill({ color: 0xff4400, alpha: 0.55 });
-    g.circle(cx, cy, cr * 0.28).fill({ color: 0xff8c00, alpha: 0.70 });
-    g.circle(cx, cy, cr * 0.10).fill({ color: 0xffee00, alpha: 0.60 }); // white-hot centre
+    g.circle(cx, cy, cr * 0.28).fill({ color: 0xff8c00, alpha: 0.7 });
+    g.circle(cx, cy, cr * 0.1).fill({ color: 0xffee00, alpha: 0.6 }); // white-hot centre
     // Ejecta ring — bright sulphur around rim
-    g.circle(cx, cy, cr).stroke({ color: 0xf0c020, alpha: 0.40, width: r * 0.020 });
+    g.circle(cx, cy, cr).stroke({
+      color: 0xf0c020,
+      alpha: 0.4,
+      width: r * 0.02,
+    });
   }
 
   // ── Pele plume halo — enormous SO₂ deposit ring around the biggest volcano ─
-  g.circle(0.16 * r, 0.10 * r, r * 0.62)
-    .stroke({ color: 0xe84400, alpha: 0.16, width: r * 0.05 });
-  g.circle(0.16 * r, 0.10 * r, r * 0.55)
-    .stroke({ color: 0xff8800, alpha: 0.10, width: r * 0.03 });
+  g.circle(0.16 * r, 0.1 * r, r * 0.62).stroke({
+    color: 0xe84400,
+    alpha: 0.16,
+    width: r * 0.05,
+  });
+  g.circle(0.16 * r, 0.1 * r, r * 0.55).stroke({
+    color: 0xff8800,
+    alpha: 0.1,
+    width: r * 0.03,
+  });
 
   // ── Terminator shadow ──────────────────────────────────────────────────────
-  g.circle(r * 0.12, 0, r * 0.92).fill({ color: 0x1a0800, alpha: 0.30 });
+  g.circle(r * 0.12, 0, r * 0.92).fill({ color: 0x1a0800, alpha: 0.3 });
 
   // ── Sulphur limb glow — eerie orange atmosphere ────────────────────────────
-  g.circle(0, 0, r).stroke({ color: 0xff6600, alpha: 0.20, width: r * 0.05 });
+  g.circle(0, 0, r).stroke({ color: 0xff6600, alpha: 0.2, width: r * 0.05 });
 }
 
 // ── CameraBorder ──────────────────────────────────────────────────────────────
@@ -648,10 +739,10 @@ export class CameraBorder3 extends Container {
   private readonly particleGfx: Graphics;
   private readonly glitchGfx: Graphics; // pixel-glitch chromatic split — above waves
   private readonly orbitDotGfx: Graphics; // catppuccin dots orbiting the ring
-  private readonly stainGfx: Graphics;    // catppuccin fluid stains orbiting the ring
-  private readonly beltCont: Container;       // asteroid bodies
-  private readonly beltEffectGfx: Graphics;   // debris particles from destruction
-  private readonly natSatCont: Container;     // natural satellite sprites
+  private readonly stainGfx: Graphics; // catppuccin fluid stains orbiting the ring
+  private readonly beltCont: Container; // asteroid bodies
+  private readonly beltEffectGfx: Graphics; // debris particles from destruction
+  private readonly natSatCont: Container; // natural satellite sprites
 
   // ── Logo ───────────────────────────────────────────────────────────────────
   private logoSprite: Sprite | null = null;
@@ -660,7 +751,7 @@ export class CameraBorder3 extends Container {
 
   private static readonly LOGO_SIZE = 96;
   private static readonly LOGO_ORBIT_RADIUS = 233; // px from centre
-  private static readonly LOGO_ORBIT_SPEED = 0.12;  // rad/s
+  private static readonly LOGO_ORBIT_SPEED = 0.12; // rad/s
 
   private logoOrbitAngle = -Math.PI * 0.75; // start at top-left (~225°)
 
@@ -708,7 +799,7 @@ export class CameraBorder3 extends Container {
 
   private static readonly BRUSH_INTERVAL = 0.07;
   private static readonly SPARKLE_INTERVAL = 0.09;
-  private static readonly SPARK_INTERVAL = 0.10;
+  private static readonly SPARK_INTERVAL = 0.1;
   private static readonly LIGHTNING_INTERVAL = 4.0;
   private static readonly FIREWORK_INTERVAL = 3.5;
   private static readonly SPIKE_INTERVAL = 0.65;
@@ -720,9 +811,9 @@ export class CameraBorder3 extends Container {
   private static readonly MAX_FIREWORK_PARTICLES = 300;
   private static readonly MAX_SPIKES = 90;
   private static readonly MAX_SPLASH_DROPLETS = 180;
-  private static readonly MAX_ASTEROIDS           = 200;
-  private static readonly ASTEROID_SPAWN_INTERVAL = 1.2;  // seconds between spawn bursts
-  private static readonly ASTEROID_DEATH_CHANCE   = 0.0012; // per asteroid per second
+  private static readonly MAX_ASTEROIDS = 200;
+  private static readonly ASTEROID_SPAWN_INTERVAL = 1.2; // seconds between spawn bursts
+  private static readonly ASTEROID_DEATH_CHANCE = 0.0012; // per asteroid per second
   private static readonly ASTEROID_DEATH_DURATION = 0.55; // seconds for death animation
 
   constructor(radius = 200) {
@@ -741,9 +832,9 @@ export class CameraBorder3 extends Container {
     this.particleGfx = new Graphics();
     this.orbitDotGfx = new Graphics();
     this.stainGfx = new Graphics();
-    this.beltCont      = new Container();
+    this.beltCont = new Container();
     this.beltEffectGfx = new Graphics();
-    this.natSatCont    = new Container();
+    this.natSatCont = new Container();
 
     this.graffCont.addChild(this.graffGfx);
 
@@ -755,11 +846,11 @@ export class CameraBorder3 extends Container {
     this.addChild(this.surfaceGfx);
     this.addChild(this.effectGfx);
     this.addChild(this.particleGfx);
-    this.addChild(this.stainGfx);    // fluid stains — above particles, below orbit dots
-    this.addChild(this.orbitDotGfx);    // catppuccin orbit dots
-    this.addChild(this.beltCont);       // asteroid bodies
-    this.addChild(this.beltEffectGfx);  // destruction debris
-    this.addChild(this.natSatCont);     // natural satellites — above ring, below logo
+    this.addChild(this.stainGfx); // fluid stains — above particles, below orbit dots
+    this.addChild(this.orbitDotGfx); // catppuccin orbit dots
+    this.addChild(this.beltCont); // asteroid bodies
+    this.addChild(this.beltEffectGfx); // destruction debris
+    this.addChild(this.natSatCont); // natural satellites — above ring, below logo
     // logo layer is added on attachLogo call (topmost)
 
     // Per-ring independent drift — random starting phases so no two rings are in sync
@@ -862,37 +953,55 @@ export class CameraBorder3 extends Container {
   private initFluidStains(): void {
     const count = 10;
     const colors: CattColor[] = [
-      CATT_PINK, CATT_PEACH, CATT_MAUVE, CATT_TEAL_CAT,
-      CATT_SKY, CATT_LAVENDER, CATT_YELLOW, CATT_SAPPHIRE,
+      CATT_PINK,
+      CATT_PEACH,
+      CATT_MAUVE,
+      CATT_TEAL_CAT,
+      CATT_SKY,
+      CATT_LAVENDER,
+      CATT_YELLOW,
+      CATT_SAPPHIRE,
     ];
 
     for (let i = 0; i < count; i++) {
-      const dir   = i % 2 === 0 ? 1 : -1;
+      const dir = i % 2 === 0 ? 1 : -1;
       const speed = dir * (0.06 + Math.random() * 0.14); // slower than dots
 
       // Fourier modes 1–3 only → smooth large bumps, never spiky
       const baseR = 14 + Math.random() * 10; // 14–24 px — small accent blobs
       const modes = [
-        { amp: baseR * (0.28 + Math.random() * 0.18), phase: Math.random() * Math.PI * 2, speed: 0.07 + Math.random() * 0.09 },
-        { amp: baseR * (0.14 + Math.random() * 0.12), phase: Math.random() * Math.PI * 2, speed: 0.12 + Math.random() * 0.12 },
-        { amp: baseR * (0.07 + Math.random() * 0.07), phase: Math.random() * Math.PI * 2, speed: 0.18 + Math.random() * 0.16 },
+        {
+          amp: baseR * (0.28 + Math.random() * 0.18),
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.07 + Math.random() * 0.09,
+        },
+        {
+          amp: baseR * (0.14 + Math.random() * 0.12),
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.12 + Math.random() * 0.12,
+        },
+        {
+          amp: baseR * (0.07 + Math.random() * 0.07),
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.18 + Math.random() * 0.16,
+        },
       ];
 
       // strictly outside the ring: baseRadius + 18..58 px beyond
       const orbitRadius = this.baseRadius + 18 + Math.random() * 40;
 
       this.fluidStains.push({
-        angle:       (i / count) * Math.PI * 2 + Math.random() * 0.4,
+        angle: (i / count) * Math.PI * 2 + Math.random() * 0.4,
         speed,
         orbitRadius,
-        rotation:    Math.random() * Math.PI * 2,
-        rotSpeed:    (Math.random() - 0.5) * 0.35,
-        floatAmp:    4 + Math.random() * 8,   // smaller radial drift
-        floatSpeed:  0.22 + Math.random() * 0.28,
-        floatPhase:  Math.random() * Math.PI * 2,
-        baseRadius:  baseR,
-        color:       colors[i % colors.length],
-        baseAlpha:   0.20 + Math.random() * 0.18,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.35,
+        floatAmp: 4 + Math.random() * 8, // smaller radial drift
+        floatSpeed: 0.22 + Math.random() * 0.28,
+        floatPhase: Math.random() * Math.PI * 2,
+        baseRadius: baseR,
+        color: colors[i % colors.length],
+        baseAlpha: 0.2 + Math.random() * 0.18,
         modes,
       });
     }
@@ -1000,7 +1109,10 @@ export class CameraBorder3 extends Container {
 
     // Fireworks
     this.fireworkAccum += dt;
-    if (this.fireworkAccum >= CameraBorder3.FIREWORK_INTERVAL / (0.5 + this.activityLevel * 0.8)) {
+    if (
+      this.fireworkAccum >=
+      CameraBorder3.FIREWORK_INTERVAL / (0.5 + this.activityLevel * 0.8)
+    ) {
       this.fireworkAccum = 0;
       this.spawnFirework();
     }
@@ -1013,7 +1125,10 @@ export class CameraBorder3 extends Container {
 
     // Electric spikes
     this.spikeAccum += dt;
-    if (this.spikeAccum >= CameraBorder3.SPIKE_INTERVAL / (0.5 + this.activityLevel * 0.8)) {
+    if (
+      this.spikeAccum >=
+      CameraBorder3.SPIKE_INTERVAL / (0.5 + this.activityLevel * 0.8)
+    ) {
       this.spikeAccum = 0;
       this.spawnElectricSpikes();
     }
@@ -1024,7 +1139,10 @@ export class CameraBorder3 extends Container {
 
     // Paint splashes
     this.splashAccum += dt;
-    if (this.splashAccum >= CameraBorder3.SPLASH_INTERVAL / (0.4 + this.activityLevel * 0.8)) {
+    if (
+      this.splashAccum >=
+      CameraBorder3.SPLASH_INTERVAL / (0.4 + this.activityLevel * 0.8)
+    ) {
       this.splashAccum = 0;
       this.spawnPaintSplash();
     }
@@ -1042,25 +1160,33 @@ export class CameraBorder3 extends Container {
     if (this.beltSpawnTimer >= CameraBorder3.ASTEROID_SPAWN_INTERVAL) {
       this.beltSpawnTimer = 0;
       const burst = 2 + Math.floor(Math.random() * 4);
-      for (let s = 0; s < burst && this.asteroidBelt.length < CameraBorder3.MAX_ASTEROIDS; s++)
+      for (
+        let s = 0;
+        s < burst && this.asteroidBelt.length < CameraBorder3.MAX_ASTEROIDS;
+        s++
+      )
         this.spawnAsteroid();
     }
 
     for (let i = this.asteroidBelt.length - 1; i >= 0; i--) {
       const ast = this.asteroidBelt[i];
-      ast.orbitAngle     += ast.orbitSpeed * dt;
-      ast.orbitTilt      += ast.precessionSpeed * dt;
+      ast.orbitAngle += ast.orbitSpeed * dt;
+      ast.orbitTilt += ast.precessionSpeed * dt;
       // Elliptic position in orbit frame, then rotated by tilt
       const lx = ast.semiMajor * Math.cos(ast.orbitAngle) * breatheNow;
       const ly = ast.semiMinor * Math.sin(ast.orbitAngle) * breatheNow;
-      const ct = Math.cos(ast.orbitTilt), st = Math.sin(ast.orbitTilt);
+      const ct = Math.cos(ast.orbitTilt),
+        st = Math.sin(ast.orbitTilt);
       ast.cont.x = lx * ct - ly * st;
       ast.cont.y = lx * st + ly * ct;
       ast.cont.rotation += ast.selfRotSpeed * dt;
 
       if (ast.dying) {
         ast.dyingTimer -= dt;
-        ast.alpha = Math.max(0, ast.dyingTimer / CameraBorder3.ASTEROID_DEATH_DURATION);
+        ast.alpha = Math.max(
+          0,
+          ast.dyingTimer / CameraBorder3.ASTEROID_DEATH_DURATION,
+        );
         ast.cont.alpha = ast.alpha;
         ast.cont.scale.set(1 + (1 - ast.alpha) * 0.7);
         if (ast.dyingTimer <= 0) {
@@ -1107,7 +1233,7 @@ export class CameraBorder3 extends Container {
 
     // Fluid stains — advance orbit + self-rotation + Fourier mode phases
     for (const stain of this.fluidStains) {
-      stain.angle    += stain.speed   * dt;
+      stain.angle += stain.speed * dt;
       stain.rotation += stain.rotSpeed * dt;
       for (const m of stain.modes) m.phase += m.speed * dt;
     }
@@ -1221,7 +1347,10 @@ export class CameraBorder3 extends Container {
       color: randomPalette(),
     });
     if (this.sparkles.length > CameraBorder3.MAX_SPARKLES) {
-      this.sparkles.splice(0, this.sparkles.length - CameraBorder3.MAX_SPARKLES);
+      this.sparkles.splice(
+        0,
+        this.sparkles.length - CameraBorder3.MAX_SPARKLES,
+      );
     }
   }
 
@@ -1308,10 +1437,12 @@ export class CameraBorder3 extends Container {
     const color = randomPalette();
     const count = 22 + Math.floor(Math.random() * 16);
     for (let i = 0; i < count; i++) {
-      const shootAngle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+      const shootAngle =
+        (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
       const speed = 55 + Math.random() * 145;
       this.fireworkParticles.push({
-        x: ox, y: oy,
+        x: ox,
+        y: oy,
         vx: Math.cos(shootAngle) * speed,
         vy: Math.sin(shootAngle) * speed,
         life: 1.0,
@@ -1321,7 +1452,10 @@ export class CameraBorder3 extends Container {
       });
     }
     if (this.fireworkParticles.length > CameraBorder3.MAX_FIREWORK_PARTICLES)
-      this.fireworkParticles.splice(0, this.fireworkParticles.length - CameraBorder3.MAX_FIREWORK_PARTICLES);
+      this.fireworkParticles.splice(
+        0,
+        this.fireworkParticles.length - CameraBorder3.MAX_FIREWORK_PARTICLES,
+      );
   }
 
   private spawnElectricSpikes(): void {
@@ -1332,11 +1466,15 @@ export class CameraBorder3 extends Container {
     for (let i = 0; i < count; i++) {
       const a = burstAngle + (Math.random() - 0.5) * 1.1;
       const length = 20 + Math.random() * 65;
-      const sx = Math.cos(a) * r, sy = Math.sin(a) * r;
-      const ex = Math.cos(a) * (r + length), ey = Math.sin(a) * (r + length);
-      const dx = ex - sx, dy = ey - sy;
+      const sx = Math.cos(a) * r,
+        sy = Math.sin(a) * r;
+      const ex = Math.cos(a) * (r + length),
+        ey = Math.sin(a) * (r + length);
+      const dx = ex - sx,
+        dy = ey - sy;
       const len = Math.sqrt(dx * dx + dy * dy) || 1;
-      const px = -dy / len, py = dx / len;
+      const px = -dy / len,
+        py = dx / len;
       const segs = 3 + Math.floor(Math.random() * 4);
       const pts: Array<[number, number]> = [[sx, sy]];
       for (let j = 1; j < segs; j++) {
@@ -1354,7 +1492,10 @@ export class CameraBorder3 extends Container {
       });
     }
     if (this.electricSpikes.length > CameraBorder3.MAX_SPIKES)
-      this.electricSpikes.splice(0, this.electricSpikes.length - CameraBorder3.MAX_SPIKES);
+      this.electricSpikes.splice(
+        0,
+        this.electricSpikes.length - CameraBorder3.MAX_SPIKES,
+      );
   }
 
   private spawnPaintSplash(): void {
@@ -1368,7 +1509,8 @@ export class CameraBorder3 extends Container {
       const shootAngle = angle + (Math.random() - 0.5) * Math.PI * 0.85;
       const speed = 35 + Math.random() * 105;
       this.splashDroplets.push({
-        x: ox, y: oy,
+        x: ox,
+        y: oy,
         vx: Math.cos(shootAngle) * speed,
         vy: Math.sin(shootAngle) * speed,
         life: 1.0,
@@ -1378,14 +1520,23 @@ export class CameraBorder3 extends Container {
       });
     }
     if (this.splashDroplets.length > CameraBorder3.MAX_SPLASH_DROPLETS)
-      this.splashDroplets.splice(0, this.splashDroplets.length - CameraBorder3.MAX_SPLASH_DROPLETS);
+      this.splashDroplets.splice(
+        0,
+        this.splashDroplets.length - CameraBorder3.MAX_SPLASH_DROPLETS,
+      );
   }
 
   private drawFireworks(): void {
     for (const p of this.fireworkParticles) {
-      this.effectGfx.circle(p.x, p.y, p.size * 3.2).fill({ color: p.color, alpha: p.life * 0.14 });
-      this.effectGfx.circle(p.x, p.y, p.size).fill({ color: p.color, alpha: p.life });
-      this.effectGfx.circle(p.x, p.y, p.size * 0.4).fill({ color: 0xffffff, alpha: p.life * 0.65 });
+      this.effectGfx
+        .circle(p.x, p.y, p.size * 3.2)
+        .fill({ color: p.color, alpha: p.life * 0.14 });
+      this.effectGfx
+        .circle(p.x, p.y, p.size)
+        .fill({ color: p.color, alpha: p.life });
+      this.effectGfx
+        .circle(p.x, p.y, p.size * 0.4)
+        .fill({ color: 0xffffff, alpha: p.life * 0.65 });
     }
   }
 
@@ -1394,27 +1545,56 @@ export class CameraBorder3 extends Container {
       const pts = s.points;
       // Outer glow
       this.effectGfx.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 1; i < pts.length; i++) this.effectGfx.lineTo(pts[i][0], pts[i][1]);
-      this.effectGfx.stroke({ color: s.color, alpha: s.alpha * 0.14, width: s.width * 9, cap: "round", join: "round" });
+      for (let i = 1; i < pts.length; i++)
+        this.effectGfx.lineTo(pts[i][0], pts[i][1]);
+      this.effectGfx.stroke({
+        color: s.color,
+        alpha: s.alpha * 0.14,
+        width: s.width * 9,
+        cap: "round",
+        join: "round",
+      });
       // Mid glow
       this.effectGfx.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 1; i < pts.length; i++) this.effectGfx.lineTo(pts[i][0], pts[i][1]);
-      this.effectGfx.stroke({ color: s.color, alpha: s.alpha * 0.42, width: s.width * 3, cap: "round", join: "round" });
+      for (let i = 1; i < pts.length; i++)
+        this.effectGfx.lineTo(pts[i][0], pts[i][1]);
+      this.effectGfx.stroke({
+        color: s.color,
+        alpha: s.alpha * 0.42,
+        width: s.width * 3,
+        cap: "round",
+        join: "round",
+      });
       // Core
       this.effectGfx.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 1; i < pts.length; i++) this.effectGfx.lineTo(pts[i][0], pts[i][1]);
-      this.effectGfx.stroke({ color: s.color, alpha: s.alpha, width: s.width, cap: "round", join: "round" });
+      for (let i = 1; i < pts.length; i++)
+        this.effectGfx.lineTo(pts[i][0], pts[i][1]);
+      this.effectGfx.stroke({
+        color: s.color,
+        alpha: s.alpha,
+        width: s.width,
+        cap: "round",
+        join: "round",
+      });
       // Bright tip
       const tip = pts[pts.length - 1];
-      this.effectGfx.circle(tip[0], tip[1], s.width * 2.2).fill({ color: s.color, alpha: s.alpha });
-      this.effectGfx.circle(tip[0], tip[1], s.width * 1.1).fill({ color: 0xffffff, alpha: s.alpha * 0.8 });
+      this.effectGfx
+        .circle(tip[0], tip[1], s.width * 2.2)
+        .fill({ color: s.color, alpha: s.alpha });
+      this.effectGfx
+        .circle(tip[0], tip[1], s.width * 1.1)
+        .fill({ color: 0xffffff, alpha: s.alpha * 0.8 });
     }
   }
 
   private drawSplashDroplets(): void {
     for (const d of this.splashDroplets) {
-      this.effectGfx.circle(d.x, d.y, d.size * 2.4).fill({ color: d.color, alpha: d.life * 0.12 });
-      this.effectGfx.circle(d.x, d.y, d.size).fill({ color: d.color, alpha: d.life * 0.88 });
+      this.effectGfx
+        .circle(d.x, d.y, d.size * 2.4)
+        .fill({ color: d.color, alpha: d.life * 0.12 });
+      this.effectGfx
+        .circle(d.x, d.y, d.size)
+        .fill({ color: d.color, alpha: d.life * 0.88 });
     }
   }
 
@@ -1505,12 +1685,13 @@ export class CameraBorder3 extends Container {
     this.beltEffectGfx.clear();
     for (const d of this.debrisParticles) {
       const t = d.life / d.maxLife;
-      this.beltEffectGfx.circle(d.x, d.y, d.r * t).fill({ color: d.color, alpha: t * 0.85 });
+      this.beltEffectGfx
+        .circle(d.x, d.y, d.r * t)
+        .fill({ color: d.color, alpha: t * 0.85 });
     }
 
     // ── Logo badge ────────────────────────────────────────────────────────────
     if (this.logoSprite && this.logoGfx) this.animateLogo();
-
   }
 
   // ── Brush stroke ───────────────────────────────────────────────────────────
@@ -1963,15 +2144,18 @@ export class CameraBorder3 extends Container {
 
     for (const stain of this.fluidStains) {
       // ── Orbital position ─────────────────────────────────────────────────
-      const float = Math.sin(this.time * stain.floatSpeed + stain.floatPhase) * stain.floatAmp;
-      const r     = (stain.orbitRadius + float) * breathe;
-      const cx    = Math.cos(stain.angle) * r;
-      const cy    = Math.sin(stain.angle) * r;
+      const float =
+        Math.sin(this.time * stain.floatSpeed + stain.floatPhase) *
+        stain.floatAmp;
+      const r = (stain.orbitRadius + float) * breathe;
+      const cx = Math.cos(stain.angle) * r;
+      const cy = Math.sin(stain.angle) * r;
 
       // ── Alpha pulse — gentle, slightly faster than orbit ─────────────────
-      const alphaPulse = 0.50 + 0.50 * Math.sin(this.time * 0.55 + stain.floatPhase);
-      const beatSwell  = 1 + (this.beatAmplitude - 1) * 0.08;
-      const alpha      = stain.baseAlpha * alphaPulse;
+      const alphaPulse =
+        0.5 + 0.5 * Math.sin(this.time * 0.55 + stain.floatPhase);
+      const beatSwell = 1 + (this.beatAmplitude - 1) * 0.08;
+      const alpha = stain.baseAlpha * alphaPulse;
 
       // ── Build smooth Fourier polygon at (bx, by) with radius scale ────────
       const buildPts = (bx: number, by: number, rScale: number): number[] => {
@@ -1980,8 +2164,10 @@ export class CameraBorder3 extends Container {
           const theta = (i / VERTS) * Math.PI * 2;
           let rad = stain.baseRadius * rScale * beatSwell;
           for (let mi = 0; mi < stain.modes.length; mi++) {
-            rad += stain.modes[mi].amp * rScale *
-                   Math.sin((mi + 1) * theta + stain.modes[mi].phase);
+            rad +=
+              stain.modes[mi].amp *
+              rScale *
+              Math.sin((mi + 1) * theta + stain.modes[mi].phase);
           }
           pts.push(
             bx + Math.cos(theta + stain.rotation) * rad,
@@ -1992,15 +2178,25 @@ export class CameraBorder3 extends Container {
       };
 
       // ── Primary blob — 3 concentric passes: wide dim → mid → core ────────
-      this.stainGfx.poly(buildPts(cx, cy, 1.55)).fill({ color: stain.color, alpha: alpha * 0.45 });
-      this.stainGfx.poly(buildPts(cx, cy, 1.00)).fill({ color: stain.color, alpha: alpha * 0.70 });
-      this.stainGfx.poly(buildPts(cx, cy, 0.58)).fill({ color: stain.color, alpha: alpha * 1.00 });
+      this.stainGfx
+        .poly(buildPts(cx, cy, 1.55))
+        .fill({ color: stain.color, alpha: alpha * 0.45 });
+      this.stainGfx
+        .poly(buildPts(cx, cy, 1.0))
+        .fill({ color: stain.color, alpha: alpha * 0.7 });
+      this.stainGfx
+        .poly(buildPts(cx, cy, 0.58))
+        .fill({ color: stain.color, alpha: alpha * 1.0 });
 
       // ── Secondary offset blob — paint-splash asymmetry ────────────────────
       const ox = cx + Math.cos(stain.rotation + 0.9) * stain.baseRadius * 0.45;
       const oy = cy + Math.sin(stain.rotation + 0.9) * stain.baseRadius * 0.45;
-      this.stainGfx.poly(buildPts(ox, oy, 0.72)).fill({ color: stain.color, alpha: alpha * 0.45 });
-      this.stainGfx.poly(buildPts(ox, oy, 0.42)).fill({ color: stain.color, alpha: alpha * 0.65 });
+      this.stainGfx
+        .poly(buildPts(ox, oy, 0.72))
+        .fill({ color: stain.color, alpha: alpha * 0.45 });
+      this.stainGfx
+        .poly(buildPts(ox, oy, 0.42))
+        .fill({ color: stain.color, alpha: alpha * 0.65 });
     }
   }
 
@@ -2065,18 +2261,18 @@ export class CameraBorder3 extends Container {
   }
 
   private spawnAsteroid(instant = false): void {
-    const BASE_A   = this.baseRadius + 92; // semi-major axis centre
-    const bodyR    = 4 + Math.random() * 10;
-    const semiMajor     = BASE_A + (Math.random() - 0.5) * 24;
-    const eccentricity  = 0.18 + Math.random() * 0.52;          // 0.18–0.70
-    const semiMinor     = semiMajor * Math.sqrt(1 - eccentricity * eccentricity);
-    const orbitTilt     = Math.random() * Math.PI * 2;
-    const precessionSpd = (Math.random() - 0.5) * 0.06;         // slow, both directions
-    const orbitSpd      = (-0.28 + (Math.random() - 0.5) * 0.10);
-    const selfRot       = (Math.random() - 0.5) * 0.9;
+    const BASE_A = this.baseRadius + 92; // semi-major axis centre
+    const bodyR = 4 + Math.random() * 10;
+    const semiMajor = BASE_A + (Math.random() - 0.5) * 24;
+    const eccentricity = 0.18 + Math.random() * 0.52; // 0.18–0.70
+    const semiMinor = semiMajor * Math.sqrt(1 - eccentricity * eccentricity);
+    const orbitTilt = Math.random() * Math.PI * 2;
+    const precessionSpd = (Math.random() - 0.5) * 0.06; // slow, both directions
+    const orbitSpd = -0.28 + (Math.random() - 0.5) * 0.1;
+    const selfRot = (Math.random() - 0.5) * 0.9;
 
     const cont = new Container();
-    const gfx  = new Graphics();
+    const gfx = new Graphics();
     cont.addChild(gfx);
     paintAsteroid(gfx, bodyR);
     this.beltCont.addChild(cont);
@@ -2086,31 +2282,35 @@ export class CameraBorder3 extends Container {
 
     this.asteroidBelt.push({
       cont,
-      orbitAngle:       Math.random() * Math.PI * 2,
-      orbitSpeed:       orbitSpd,
-      semiMajor, semiMinor,
+      orbitAngle: Math.random() * Math.PI * 2,
+      orbitSpeed: orbitSpd,
+      semiMajor,
+      semiMinor,
       orbitTilt,
-      precessionSpeed:  precessionSpd,
-      selfRotSpeed:     selfRot,
+      precessionSpeed: precessionSpd,
+      selfRotSpeed: selfRot,
       alpha,
-      dying:            false,
-      dyingTimer:       0,
+      dying: false,
+      dyingTimer: 0,
     });
   }
 
   private spawnDebris(wx: number, wy: number): void {
     const COLORS = [0x909098, 0x706860, 0x5a5a62, 0x9898a0, 0x484850];
-    const count  = 6 + Math.floor(Math.random() * 8);
+    const count = 6 + Math.floor(Math.random() * 8);
     for (let i = 0; i < count; i++) {
-      const a    = Math.random() * Math.PI * 2;
-      const spd  = 25 + Math.random() * 75;
+      const a = Math.random() * Math.PI * 2;
+      const spd = 25 + Math.random() * 75;
       const life = 0.35 + Math.random() * 0.55;
       this.debrisParticles.push({
-        x: wx, y: wy,
-        vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
+        x: wx,
+        y: wy,
+        vx: Math.cos(a) * spd,
+        vy: Math.sin(a) * spd,
         r: 1.2 + Math.random() * 3.0,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        life, maxLife: life,
+        life,
+        maxLife: life,
       });
     }
   }
@@ -2120,21 +2320,39 @@ export class CameraBorder3 extends Container {
   private initNaturalSatellites(): void {
     // Moon, Europa, Io — each on a distinct orbit, drawn once, slowly self-rotating
     const defs = [
-      { kind: 0, r: this.baseRadius + 32,  orbitSpd:  0.16, bodyR: 26, selfRot:  0.018 }, // Moon
-      { kind: 1, r: this.baseRadius + 60,  orbitSpd: -0.11, bodyR: 22, selfRot: -0.024 }, // Europa
-      { kind: 2, r: this.baseRadius + 85,  orbitSpd:  0.20, bodyR: 20, selfRot:  0.030 }, // Io
+      {
+        kind: 0,
+        r: this.baseRadius + 32,
+        orbitSpd: 0.16,
+        bodyR: 26,
+        selfRot: 0.018,
+      }, // Moon
+      {
+        kind: 1,
+        r: this.baseRadius + 60,
+        orbitSpd: -0.11,
+        bodyR: 22,
+        selfRot: -0.024,
+      }, // Europa
+      {
+        kind: 2,
+        r: this.baseRadius + 85,
+        orbitSpd: 0.2,
+        bodyR: 20,
+        selfRot: 0.03,
+      }, // Io
     ];
     for (const d of defs) {
       const cont = new Container();
-      const gfx  = new Graphics();
+      const gfx = new Graphics();
       cont.addChild(gfx);
       paintNatSatellite(gfx, d.kind, d.bodyR);
       this.natSatCont.addChild(cont);
       this.naturalSatellites.push({
         cont,
-        orbitAngle:   Math.random() * Math.PI * 2,
-        orbitSpeed:   d.orbitSpd,
-        orbitRadius:  d.r,
+        orbitAngle: Math.random() * Math.PI * 2,
+        orbitSpeed: d.orbitSpd,
+        orbitRadius: d.r,
         selfRotSpeed: d.selfRot,
         kind: d.kind,
       });

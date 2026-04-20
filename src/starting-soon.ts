@@ -6,9 +6,7 @@ const engine = new CreationEngine();
 setEngine(engine);
 
 (async () => {
-  await Promise.all([
-    document.fonts.load("1em 'Rock Salt'"),
-  ]);
+  await Promise.all([document.fonts.load("1em 'Rock Salt'")]);
   await document.fonts.ready;
 
   await engine.init({

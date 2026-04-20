@@ -2,7 +2,7 @@ import type { Ticker } from "pixi.js";
 import { Container, Graphics } from "pixi.js";
 
 // ── Catppuccin Mocha ──────────────────────────────────────────────────────────
-const CRUST    = 0x11111b;
+const CRUST = 0x11111b;
 const SURFACE0 = 0x313244;
 
 const ACCENTS = [
@@ -34,7 +34,7 @@ const INNER_N = 40;
 export class CollatzScreen extends Container {
   public static assetBundles: string[] = [];
 
-  private readonly bgGfx   = new Graphics();
+  private readonly bgGfx = new Graphics();
   private readonly glowGfx = new Graphics();
   private readonly roseGfx = new Graphics();
 
@@ -42,7 +42,7 @@ export class CollatzScreen extends Container {
   private sw = 1920;
   private sh = 1080;
 
-  private readonly seqs:    number[][];
+  private readonly seqs: number[][];
   private readonly maxVals: number[];
 
   constructor() {
@@ -51,7 +51,7 @@ export class CollatzScreen extends Container {
     this.addChild(this.glowGfx);
     this.addChild(this.roseGfx);
 
-    this.seqs    = [];
+    this.seqs = [];
     this.maxVals = [];
     for (let i = 0; i < OUTER_N; i++) {
       const seq = collatzSeq(i + 2);
@@ -60,7 +60,9 @@ export class CollatzScreen extends Container {
     }
   }
 
-  public show(): Promise<void> { return Promise.resolve(); }
+  public show(): Promise<void> {
+    return Promise.resolve();
+  }
 
   public resize(w: number, h: number): void {
     this.sw = w;
@@ -74,23 +76,24 @@ export class CollatzScreen extends Container {
 
   private _petalPts(
     seqIdx: number,
-    cx: number, cy: number,
+    cx: number,
+    cy: number,
     maxR: number,
     rot: number,
     petalSpread: number,
     totalSlots: number,
     slotIdx: number,
   ): [number, number][] {
-    const seq    = this.seqs[seqIdx];
+    const seq = this.seqs[seqIdx];
     const maxVal = this.maxVals[seqIdx];
-    const base   = (slotIdx / totalSlots) * Math.PI * 2 + rot;
+    const base = (slotIdx / totalSlots) * Math.PI * 2 + rot;
     const pts: [number, number][] = [];
     for (let k = 0; k < seq.length; k++) {
-      const t        = k / Math.max(seq.length - 1, 1);
-      const theta    = base + (t - 0.5) * petalSpread;
+      const t = k / Math.max(seq.length - 1, 1);
+      const theta = base + (t - 0.5) * petalSpread;
       const envelope = Math.sin(t * Math.PI);
-      const logR     = Math.log(seq[k] + 1) / Math.log(maxVal + 1);
-      const r        = (0.35 + 0.65 * logR) * envelope * maxR;
+      const logR = Math.log(seq[k] + 1) / Math.log(maxVal + 1);
+      const r = (0.35 + 0.65 * logR) * envelope * maxR;
       pts.push([cx + r * Math.cos(theta), cy + r * Math.sin(theta)]);
     }
     return pts;
@@ -128,11 +131,11 @@ export class CollatzScreen extends Container {
     const { sw, sh, time } = this;
     const cx = sw / 2;
     const cy = sh / 2;
-    const maxR        = Math.min(sw, sh) * 0.44;
-    const outerRot    = time * 0.04;
-    const innerRot    = -time * 0.07;
-    const outerSpread = (Math.PI * 2 / OUTER_N) * 4;
-    const innerSpread = (Math.PI * 2 / INNER_N) * 3.5;
+    const maxR = Math.min(sw, sh) * 0.44;
+    const outerRot = time * 0.04;
+    const innerRot = -time * 0.07;
+    const outerSpread = ((Math.PI * 2) / OUTER_N) * 4;
+    const innerSpread = ((Math.PI * 2) / INNER_N) * 3.5;
 
     this.bgGfx.clear();
     this.glowGfx.clear();
@@ -151,34 +154,58 @@ export class CollatzScreen extends Container {
 
     // Outer rose
     for (let i = 0; i < OUTER_N; i++) {
-      const phase  = ((i / OUTER_N) + time / 40) % 1;
-      const alpha  = 0.25 + 0.75 * Math.sin(phase * Math.PI);
-      const colorA = ACCENTS[(ci + Math.floor(i * ACCENTS.length / OUTER_N)) % ACCENTS.length];
-      const pts    = this._petalPts(i, cx, cy, maxR, outerRot, outerSpread, OUTER_N, i);
+      const phase = (i / OUTER_N + time / 40) % 1;
+      const alpha = 0.25 + 0.75 * Math.sin(phase * Math.PI);
+      const colorA =
+        ACCENTS[
+          (ci + Math.floor((i * ACCENTS.length) / OUTER_N)) % ACCENTS.length
+        ];
+      const pts = this._petalPts(
+        i,
+        cx,
+        cy,
+        maxR,
+        outerRot,
+        outerSpread,
+        OUTER_N,
+        i,
+      );
 
       this._stroke(this.glowGfx, pts, colorA, alpha * 0.04, 16);
-      this._stroke(this.glowGfx, pts, colorA, alpha * 0.09,  6);
-      this._stroke(this.roseGfx, pts, colorA, alpha * 0.80,  1.2);
+      this._stroke(this.glowGfx, pts, colorA, alpha * 0.09, 6);
+      this._stroke(this.roseGfx, pts, colorA, alpha * 0.8, 1.2);
     }
 
     // Inner counter-rotating rose
-    const ci2    = (ci + 4) % ACCENTS.length;
+    const ci2 = (ci + 4) % ACCENTS.length;
     const innerR = maxR * 0.54;
 
     for (let i = 0; i < INNER_N; i++) {
       const seqIdx = (i * 2 + 1) % OUTER_N;
-      const phase  = ((i / INNER_N) + time / 55) % 1;
-      const alpha  = 0.20 + 0.65 * Math.sin(phase * Math.PI);
-      const colorB = ACCENTS[(ci2 + Math.floor(i * ACCENTS.length / INNER_N)) % ACCENTS.length];
-      const pts    = this._petalPts(seqIdx, cx, cy, innerR, innerRot, innerSpread, INNER_N, i);
+      const phase = (i / INNER_N + time / 55) % 1;
+      const alpha = 0.2 + 0.65 * Math.sin(phase * Math.PI);
+      const colorB =
+        ACCENTS[
+          (ci2 + Math.floor((i * ACCENTS.length) / INNER_N)) % ACCENTS.length
+        ];
+      const pts = this._petalPts(
+        seqIdx,
+        cx,
+        cy,
+        innerR,
+        innerRot,
+        innerSpread,
+        INNER_N,
+        i,
+      );
 
       this._stroke(this.glowGfx, pts, colorB, alpha * 0.05, 10);
-      this._stroke(this.roseGfx, pts, colorB, alpha * 0.60,  0.9);
+      this._stroke(this.roseGfx, pts, colorB, alpha * 0.6, 0.9);
     }
 
     // Center glow
     const ca = ACCENTS[ci];
-    this.roseGfx.circle(cx, cy,  5).fill({ color: ca, alpha: 0.95 });
+    this.roseGfx.circle(cx, cy, 5).fill({ color: ca, alpha: 0.95 });
     this.roseGfx.circle(cx, cy, 14).fill({ color: ca, alpha: 0.22 });
     this.roseGfx.circle(cx, cy, 30).fill({ color: ca, alpha: 0.07 });
   }

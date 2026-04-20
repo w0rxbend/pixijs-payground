@@ -3,70 +3,92 @@ import { Container, Graphics } from "pixi.js";
 
 // ── Catppuccin Mocha ──────────────────────────────────────────────────────────
 const CATT_ROSEWATER = 0xf5e0dc;
-const CATT_FLAMINGO  = 0xf2cdcd;
-const CATT_PINK      = 0xf5c2e7;
-const CATT_MAUVE     = 0xcba6f7;
-const CATT_RED       = 0xf38ba8;
-const CATT_MAROON    = 0xeba0ac;
-const CATT_PEACH     = 0xfab387;
-const CATT_YELLOW    = 0xf9e2af;
-const CATT_GREEN     = 0xa6e3a1;
-const CATT_TEAL      = 0x94e2d5;
-const CATT_SKY       = 0x89dceb;
-const CATT_SAPPHIRE  = 0x74c7ec;
-const CATT_BLUE      = 0x89b4fa;
-const CATT_LAVENDER  = 0xb4befe;
-const CATT_TEXT      = 0xcdd6f4;
+const CATT_FLAMINGO = 0xf2cdcd;
+const CATT_PINK = 0xf5c2e7;
+const CATT_MAUVE = 0xcba6f7;
+const CATT_RED = 0xf38ba8;
+const CATT_MAROON = 0xeba0ac;
+const CATT_PEACH = 0xfab387;
+const CATT_YELLOW = 0xf9e2af;
+const CATT_GREEN = 0xa6e3a1;
+const CATT_TEAL = 0x94e2d5;
+const CATT_SKY = 0x89dceb;
+const CATT_SAPPHIRE = 0x74c7ec;
+const CATT_BLUE = 0x89b4fa;
+const CATT_LAVENDER = 0xb4befe;
+const CATT_TEXT = 0xcdd6f4;
 
 const PALETTE = [
-  CATT_ROSEWATER, CATT_FLAMINGO, CATT_PINK, CATT_MAUVE, CATT_RED,
-  CATT_MAROON, CATT_PEACH, CATT_YELLOW, CATT_GREEN, CATT_TEAL,
-  CATT_SKY, CATT_SAPPHIRE, CATT_BLUE, CATT_LAVENDER,
+  CATT_ROSEWATER,
+  CATT_FLAMINGO,
+  CATT_PINK,
+  CATT_MAUVE,
+  CATT_RED,
+  CATT_MAROON,
+  CATT_PEACH,
+  CATT_YELLOW,
+  CATT_GREEN,
+  CATT_TEAL,
+  CATT_SKY,
+  CATT_SAPPHIRE,
+  CATT_BLUE,
+  CATT_LAVENDER,
 ] as const;
 
-function palColor(i: number): number { return PALETTE[Math.abs(Math.floor(i)) % PALETTE.length]; }
+function palColor(i: number): number {
+  return PALETTE[Math.abs(Math.floor(i)) % PALETTE.length];
+}
 
 // ── Geometry ──────────────────────────────────────────────────────────────────
-const WEBCAM_R  = 200;
-const HEX_SIZE  = 24;                           // circumradius of each hex
-const INNER_R   = WEBCAM_R - HEX_SIZE * 0.4;   // inner edge of hex ring
-const OUTER_R   = WEBCAM_R + HEX_SIZE * 3.8;   // outer edge of hex ring
+const WEBCAM_R = 200;
+const HEX_SIZE = 24; // circumradius of each hex
+const INNER_R = WEBCAM_R - HEX_SIZE * 0.4; // inner edge of hex ring
+const OUTER_R = WEBCAM_R + HEX_SIZE * 3.8; // outer edge of hex ring
 
 // Flat-top hex grid spacings
-const HEX_W     = HEX_SIZE * 1.5;              // col step
-const HEX_H     = HEX_SIZE * Math.sqrt(3);     // row step
+const HEX_W = HEX_SIZE * 1.5; // col step
+const HEX_H = HEX_SIZE * Math.sqrt(3); // row step
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface HexNode {
-  homeX: number; homeY: number;
-  x: number; y: number;
-  vx: number; vy: number;
-  rot: number; rotV: number; homeRot: number;
-  dist: number;   // distance from origin — drives visual layering
+  homeX: number;
+  homeY: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rot: number;
+  rotV: number;
+  homeRot: number;
+  dist: number; // distance from origin — drives visual layering
   color: number;
   colorTimer: number;
   colorInterval: number;
 }
 
-interface Shockwave { r: number; alpha: number; color: number; }
+interface Shockwave {
+  r: number;
+  alpha: number;
+  color: number;
+}
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 export class HexGridCamScreen extends Container {
   public static assetBundles: string[] = [];
 
-  private readonly world:    Container;
-  private readonly hexGfx:   Graphics;
+  private readonly world: Container;
+  private readonly hexGfx: Graphics;
   private readonly shockGfx: Graphics;
-  private readonly rimGfx:   Graphics;
+  private readonly rimGfx: Graphics;
 
-  private hexagons:   HexNode[]   = [];
+  private hexagons: HexNode[] = [];
   private shockwaves: Shockwave[] = [];
 
-  private time         = 0;
-  private beatTimer    = 0;
+  private time = 0;
+  private beatTimer = 0;
   private beatInterval = 130;
-  private beatPhase    = 0;
-  private beatColor    = CATT_BLUE;
+  private beatPhase = 0;
+  private beatColor = CATT_BLUE;
 
   constructor() {
     super();
@@ -75,8 +97,8 @@ export class HexGridCamScreen extends Container {
     this.addChild(this.world);
 
     this.shockGfx = new Graphics();
-    this.hexGfx   = new Graphics();
-    this.rimGfx   = new Graphics();
+    this.hexGfx = new Graphics();
+    this.rimGfx = new Graphics();
     this.world.addChild(this.shockGfx);
     this.world.addChild(this.hexGfx);
     this.world.addChild(this.rimGfx);
@@ -104,20 +126,25 @@ export class HexGridCamScreen extends Container {
         if (dist < INNER_R || dist > OUTER_R) continue;
 
         // Colour by angle around the circle so the palette wraps the ring
-        const angle     = Math.atan2(cy, cx);
-        const colorIdx  = Math.floor(((angle + Math.PI) / (Math.PI * 2)) * PALETTE.length);
-        const homeRot   = Math.PI / 6; // flat-top canonical rotation
+        const angle = Math.atan2(cy, cx);
+        const colorIdx = Math.floor(
+          ((angle + Math.PI) / (Math.PI * 2)) * PALETTE.length,
+        );
+        const homeRot = Math.PI / 6; // flat-top canonical rotation
 
         this.hexagons.push({
-          homeX: cx, homeY: cy,
-          x: cx, y: cy,
-          vx: 0, vy: 0,
+          homeX: cx,
+          homeY: cy,
+          x: cx,
+          y: cy,
+          vx: 0,
+          vy: 0,
           rot: homeRot + (Math.random() - 0.5) * 0.2,
           rotV: 0,
           homeRot,
           dist,
-          color:         palColor(colorIdx),
-          colorTimer:    Math.random() * 200,
+          color: palColor(colorIdx),
+          colorTimer: Math.random() * 200,
           colorInterval: 180 + Math.random() * 240,
         });
       }
@@ -134,14 +161,17 @@ export class HexGridCamScreen extends Container {
     for (const h of this.hexagons) {
       const len = h.dist || 1;
       // Hexes closer to the inner edge (circle boundary) get a stronger kick
-      const proximity = Math.max(0, 1 - (h.dist - INNER_R) / (OUTER_R - INNER_R));
-      const boost     = 0.4 + proximity * 1.2;
-      h.vx   += (h.homeX / len) * mag * boost * (0.5 + Math.random() * 0.8);
-      h.vy   += (h.homeY / len) * mag * boost * (0.5 + Math.random() * 0.8);
-      h.rotV += (Math.random() - 0.5) * 0.30;
+      const proximity = Math.max(
+        0,
+        1 - (h.dist - INNER_R) / (OUTER_R - INNER_R),
+      );
+      const boost = 0.4 + proximity * 1.2;
+      h.vx += (h.homeX / len) * mag * boost * (0.5 + Math.random() * 0.8);
+      h.vy += (h.homeY / len) * mag * boost * (0.5 + Math.random() * 0.8);
+      h.rotV += (Math.random() - 0.5) * 0.3;
     }
 
-    this.shockwaves.push({ r: WEBCAM_R, alpha: 0.80, color: this.beatColor });
+    this.shockwaves.push({ r: WEBCAM_R, alpha: 0.8, color: this.beatColor });
   }
 
   // ── Update ────────────────────────────────────────────────────────────────
@@ -155,18 +185,18 @@ export class HexGridCamScreen extends Container {
       this.beatTimer = this.beatInterval * (0.75 + Math.random() * 0.5);
       this._triggerBeat();
     }
-    this.beatPhase = Math.max(0, this.beatPhase - dt * 0.040);
+    this.beatPhase = Math.max(0, this.beatPhase - dt * 0.04);
 
     this._updateHexagons(dt);
     this._draw();
   }
 
   private _updateHexagons(dt: number): void {
-    const homeK   = 0.050;
-    const rotK    = 0.058;
+    const homeK = 0.05;
+    const rotK = 0.058;
     const posDamp = 0.83;
     const rotDamp = 0.86;
-    const dts     = dt * 0.5;
+    const dts = dt * 0.5;
 
     for (const h of this.hexagons) {
       // Spring back to grid home
@@ -174,34 +204,39 @@ export class HexGridCamScreen extends Container {
       h.vy += (h.homeY - h.y) * homeK;
 
       // Breathing wave — inner hexes breathe more dramatically
-      const proximity = Math.max(0, 1 - (h.dist - INNER_R) / (OUTER_R - INNER_R));
-      const angle     = Math.atan2(h.homeY, h.homeX);
-      const breath    = Math.sin(this.time * 2.1 + angle * 4) * 0.08 * (0.5 + proximity);
+      const proximity = Math.max(
+        0,
+        1 - (h.dist - INNER_R) / (OUTER_R - INNER_R),
+      );
+      const angle = Math.atan2(h.homeY, h.homeX);
+      const breath =
+        Math.sin(this.time * 2.1 + angle * 4) * 0.08 * (0.5 + proximity);
       h.vx += -Math.sin(angle) * breath;
-      h.vy +=  Math.cos(angle) * breath;
+      h.vy += Math.cos(angle) * breath;
 
       // Low turbulence
       h.vx += (Math.random() - 0.5) * 0.18;
       h.vy += (Math.random() - 0.5) * 0.18;
 
-      h.vx *= posDamp; h.vy *= posDamp;
-      h.x  += h.vx * dts;
-      h.y  += h.vy * dts;
+      h.vx *= posDamp;
+      h.vy *= posDamp;
+      h.x += h.vx * dts;
+      h.y += h.vy * dts;
 
       // Rotation spring
       h.rotV += (h.homeRot - h.rot) * rotK;
       h.rotV += (Math.random() - 0.5) * 0.009;
       h.rotV *= rotDamp;
-      h.rot  += h.rotV * dts;
+      h.rot += h.rotV * dts;
 
       // Colour slowly drifts
       h.colorTimer += dt;
       if (h.colorTimer >= h.colorInterval) {
         h.colorTimer = 0;
-        const a      = Math.atan2(h.homeY, h.homeX);
-        h.color      = palColor(
-          Math.floor(((a + Math.PI) / (Math.PI * 2)) * PALETTE.length)
-          + Math.floor(this.time * 0.25),
+        const a = Math.atan2(h.homeY, h.homeX);
+        h.color = palColor(
+          Math.floor(((a + Math.PI) / (Math.PI * 2)) * PALETTE.length) +
+            Math.floor(this.time * 0.25),
         );
       }
     }
@@ -217,11 +252,14 @@ export class HexGridCamScreen extends Container {
     sg.clear();
     for (let i = this.shockwaves.length - 1; i >= 0; i--) {
       const sw = this.shockwaves[i];
-      sw.r    += 3.2;
+      sw.r += 3.2;
       sw.alpha = Math.max(0, sw.alpha - 0.022);
-      if (sw.alpha <= 0) { this.shockwaves.splice(i, 1); continue; }
+      if (sw.alpha <= 0) {
+        this.shockwaves.splice(i, 1);
+        continue;
+      }
       sg.circle(0, 0, sw.r + 8);
-      sg.stroke({ color: sw.color, width: 18, alpha: sw.alpha * 0.10 });
+      sg.stroke({ color: sw.color, width: 18, alpha: sw.alpha * 0.1 });
       sg.circle(0, 0, sw.r);
       sg.stroke({ color: sw.color, width: 2.5, alpha: sw.alpha * 0.65 });
     }
@@ -232,12 +270,22 @@ export class HexGridCamScreen extends Container {
 
     for (const h of this.hexagons) {
       // Hexes closer to the inner circle edge are more opaque / brighter
-      const t          = 1 - (h.dist - INNER_R) / (OUTER_R - INNER_R); // 1=inner, 0=outer
-      const fillAlpha  = (0.12 + t * 0.22 + beat * 0.12);
-      const strokeAlpha = (0.55 + t * 0.35 + beat * 0.20);
-      const strokeW    = 1.0 + t * 0.8 + beat * 0.6;
+      const t = 1 - (h.dist - INNER_R) / (OUTER_R - INNER_R); // 1=inner, 0=outer
+      const fillAlpha = 0.12 + t * 0.22 + beat * 0.12;
+      const strokeAlpha = 0.55 + t * 0.35 + beat * 0.2;
+      const strokeW = 1.0 + t * 0.8 + beat * 0.6;
 
-      this._drawHex(g, h.x, h.y, HEX_SIZE, h.rot, h.color, fillAlpha, strokeAlpha, strokeW);
+      this._drawHex(
+        g,
+        h.x,
+        h.y,
+        HEX_SIZE,
+        h.rot,
+        h.color,
+        fillAlpha,
+        strokeAlpha,
+        strokeW,
+      );
     }
 
     // Camera rim
@@ -245,35 +293,35 @@ export class HexGridCamScreen extends Container {
     r.clear();
     const rimCol = palColor(Math.floor(this.time * 0.45) + 2);
     r.circle(0, 0, WEBCAM_R + 3);
-    r.stroke({ color: rimCol, width: 20, alpha: 0.07 + beat * 0.10 });
+    r.stroke({ color: rimCol, width: 20, alpha: 0.07 + beat * 0.1 });
     r.circle(0, 0, WEBCAM_R + 1);
-    r.stroke({ color: CATT_TEXT, width: 3, alpha: 0.90 });
+    r.stroke({ color: CATT_TEXT, width: 3, alpha: 0.9 });
     r.circle(0, 0, WEBCAM_R - 3);
-    r.stroke({ color: rimCol, width: 1.5, alpha: 0.28 + beat * 0.20 });
+    r.stroke({ color: rimCol, width: 1.5, alpha: 0.28 + beat * 0.2 });
   }
 
   private _drawHex(
-    g:           Graphics,
-    cx:          number,
-    cy:          number,
-    size:        number,
-    rot:         number,
-    color:       number,
-    fillAlpha:   number,
+    g: Graphics,
+    cx: number,
+    cy: number,
+    size: number,
+    rot: number,
+    color: number,
+    fillAlpha: number,
     strokeAlpha: number,
-    strokeW:     number,
+    strokeW: number,
   ): void {
     for (let i = 0; i <= 6; i++) {
       const a = rot + (i / 6) * Math.PI * 2;
       if (i === 0) g.moveTo(cx + Math.cos(a) * size, cy + Math.sin(a) * size);
-      else         g.lineTo(cx + Math.cos(a) * size, cy + Math.sin(a) * size);
+      else g.lineTo(cx + Math.cos(a) * size, cy + Math.sin(a) * size);
     }
     g.fill({ color, alpha: fillAlpha });
 
     for (let i = 0; i <= 6; i++) {
       const a = rot + (i / 6) * Math.PI * 2;
       if (i === 0) g.moveTo(cx + Math.cos(a) * size, cy + Math.sin(a) * size);
-      else         g.lineTo(cx + Math.cos(a) * size, cy + Math.sin(a) * size);
+      else g.lineTo(cx + Math.cos(a) * size, cy + Math.sin(a) * size);
     }
     g.stroke({ color, width: strokeW, alpha: strokeAlpha });
   }
@@ -281,7 +329,7 @@ export class HexGridCamScreen extends Container {
   // ── Layout ────────────────────────────────────────────────────────────────
 
   public resize(width: number, height: number): void {
-    this.world.x = width  * 0.5;
+    this.world.x = width * 0.5;
     this.world.y = height * 0.5;
   }
 }

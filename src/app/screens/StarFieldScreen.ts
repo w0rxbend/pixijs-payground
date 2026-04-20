@@ -2,8 +2,8 @@ import type { Ticker } from "pixi.js";
 import { Container, Graphics } from "pixi.js";
 
 // Catppuccin Mocha
-const C_BASE     = 0x1e1e2e;
-const C_CRUST    = 0x11111b;
+const C_BASE = 0x1e1e2e;
+const C_CRUST = 0x11111b;
 
 const ACCENT_COLORS = [
   0xcba6f7, // mauve
@@ -16,23 +16,23 @@ const ACCENT_COLORS = [
   0xf5c2e7, // pink
 ] as const;
 
-const STAR_COUNT   = 600;
-const SPEED_BASE   = 0.4;   // base radial speed (fraction of half-diagonal per second)
-const SPEED_ACCEL  = 2.8;   // speed multiplier applied as stars age (warp stretch factor)
-const TRAIL_ALPHA  = 0.92;  // how much of the trail is retained each frame (fade comet tail)
-const FADE_MARGIN  = 0.08;  // fraction of viewport where stars fade in/out at edge
+const STAR_COUNT = 600;
+const SPEED_BASE = 0.4; // base radial speed (fraction of half-diagonal per second)
+const SPEED_ACCEL = 2.8; // speed multiplier applied as stars age (warp stretch factor)
+const TRAIL_ALPHA = 0.92; // how much of the trail is retained each frame (fade comet tail)
+const FADE_MARGIN = 0.08; // fraction of viewport where stars fade in/out at edge
 
 interface Star {
   x: number;
   y: number;
-  px: number;   // previous x (for streak rendering)
-  py: number;   // previous y
-  vx: number;   // normalised direction x
-  vy: number;   // normalised direction y
+  px: number; // previous x (for streak rendering)
+  py: number; // previous y
+  vx: number; // normalised direction x
+  vy: number; // normalised direction y
   speed: number;
   size: number;
   color: number;
-  age: number;  // 0–1 (born → dead)
+  age: number; // 0–1 (born → dead)
   life: number; // total lifetime in seconds
 }
 
@@ -47,9 +47,12 @@ function newStar(cx: number, cy: number, halfDiag: number): Star {
   const y = cy + vy * spawnR;
 
   return {
-    x, y,
-    px: x, py: y,
-    vx, vy,
+    x,
+    y,
+    px: x,
+    py: y,
+    vx,
+    vy,
     speed: (0.5 + Math.random() * 0.5) * SPEED_BASE,
     size: 0.5 + Math.random() * 1.5,
     color: ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)],
@@ -61,7 +64,7 @@ function newStar(cx: number, cy: number, halfDiag: number): Star {
 export class StarFieldScreen extends Container {
   public static assetBundles: string[] = [];
 
-  private readonly bg  = new Graphics();
+  private readonly bg = new Graphics();
   private readonly gfx = new Graphics();
 
   private w = 800;
@@ -113,14 +116,21 @@ export class StarFieldScreen extends Container {
       s.age += dt / s.life;
 
       // Respawn when off-screen or life elapsed
-      if (s.age >= 1 || s.x < -8 || s.x > this.w + 8 || s.y < -8 || s.y > this.h + 8) {
+      if (
+        s.age >= 1 ||
+        s.x < -8 ||
+        s.x > this.w + 8 ||
+        s.y < -8 ||
+        s.y > this.h + 8
+      ) {
         this.stars[i] = newStar(cx, cy, halfDiag);
         continue;
       }
 
       // Fade in at birth, fade out near edge
       const distR = Math.hypot(s.x - cx, s.y - cy) / halfDiag;
-      const edgeFade = 1 - Math.max(0, (distR - (1 - FADE_MARGIN)) / FADE_MARGIN);
+      const edgeFade =
+        1 - Math.max(0, (distR - (1 - FADE_MARGIN)) / FADE_MARGIN);
       const birthFade = Math.min(1, s.age / 0.05);
       const alpha = birthFade * edgeFade;
 

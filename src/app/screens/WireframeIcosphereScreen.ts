@@ -2,40 +2,77 @@ import type { Ticker } from "pixi.js";
 import { Container, Graphics } from "pixi.js";
 
 // Catppuccin Mocha
-const CRUST    = 0x11111b;
-const MAUVE    = 0xcba6f7;
-const RED      = 0xf38ba8;
-const PEACH    = 0xfab387;
-const YELLOW   = 0xf9e2af;
-const GREEN    = 0xa6e3a1;
-const TEAL     = 0x94e2d5;
-const SKY      = 0x89dceb;
+const CRUST = 0x11111b;
+const MAUVE = 0xcba6f7;
+const RED = 0xf38ba8;
+const PEACH = 0xfab387;
+const YELLOW = 0xf9e2af;
+const GREEN = 0xa6e3a1;
+const TEAL = 0x94e2d5;
+const SKY = 0x89dceb;
 const SAPPHIRE = 0x74c7ec;
-const BLUE     = 0x89b4fa;
+const BLUE = 0x89b4fa;
 const LAVENDER = 0xb4befe;
-const PINK     = 0xf5c2e7;
+const PINK = 0xf5c2e7;
 
-const PALETTE = [MAUVE, RED, PEACH, YELLOW, GREEN, TEAL, SKY, SAPPHIRE, BLUE, LAVENDER, PINK] as const;
+const PALETTE = [
+  MAUVE,
+  RED,
+  PEACH,
+  YELLOW,
+  GREEN,
+  TEAL,
+  SKY,
+  SAPPHIRE,
+  BLUE,
+  LAVENDER,
+  PINK,
+] as const;
 
-const TAU       = Math.PI * 2;
-const PHI       = (1 + Math.sqrt(5)) / 2;
-const TILT      = 0.38;
+const TAU = Math.PI * 2;
+const PHI = (1 + Math.sqrt(5)) / 2;
+const TILT = 0.38;
 const ROT_SPEED = 0.14;
-const FOCAL     = 2200;
+const FOCAL = 2200;
 
 type Vec3 = [number, number, number];
 
 const BASE_VERTS: Vec3[] = [
-  [-1, PHI, 0], [1, PHI, 0], [-1, -PHI, 0], [1, -PHI, 0],
-  [0, -1, PHI], [0, 1, PHI], [0, -1, -PHI], [0, 1, -PHI],
-  [PHI, 0, -1], [PHI, 0, 1], [-PHI, 0, -1], [-PHI, 0, 1],
+  [-1, PHI, 0],
+  [1, PHI, 0],
+  [-1, -PHI, 0],
+  [1, -PHI, 0],
+  [0, -1, PHI],
+  [0, 1, PHI],
+  [0, -1, -PHI],
+  [0, 1, -PHI],
+  [PHI, 0, -1],
+  [PHI, 0, 1],
+  [-PHI, 0, -1],
+  [-PHI, 0, 1],
 ];
 
 const BASE_FACES: [number, number, number][] = [
-  [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
-  [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
-  [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
-  [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1],
+  [0, 11, 5],
+  [0, 5, 1],
+  [0, 1, 7],
+  [0, 7, 10],
+  [0, 10, 11],
+  [1, 5, 9],
+  [5, 11, 4],
+  [11, 10, 2],
+  [10, 7, 6],
+  [7, 1, 8],
+  [3, 9, 4],
+  [3, 4, 2],
+  [3, 2, 6],
+  [3, 6, 8],
+  [3, 8, 9],
+  [4, 9, 5],
+  [2, 4, 11],
+  [6, 2, 10],
+  [8, 6, 7],
+  [9, 8, 1],
 ];
 
 function norm(v: Vec3): Vec3 {
@@ -43,8 +80,11 @@ function norm(v: Vec3): Vec3 {
   return [v[0] / l, v[1] / l, v[2] / l];
 }
 
-function buildIcosphere(subs: number): { verts: Vec3[]; edges: [number, number][] } {
-  let verts = BASE_VERTS.map(norm);
+function buildIcosphere(subs: number): {
+  verts: Vec3[];
+  edges: [number, number][];
+} {
+  const verts = BASE_VERTS.map(norm);
   let faces: [number, number, number][] = [...BASE_FACES];
 
   for (let s = 0; s < subs; s++) {
@@ -55,13 +95,18 @@ function buildIcosphere(subs: number): { verts: Vec3[]; edges: [number, number][
       let i = cache.get(k);
       if (i !== undefined) return i;
       i = verts.length;
-      const va = verts[a], vb = verts[b];
-      verts.push(norm([(va[0] + vb[0]) / 2, (va[1] + vb[1]) / 2, (va[2] + vb[2]) / 2]));
+      const va = verts[a],
+        vb = verts[b];
+      verts.push(
+        norm([(va[0] + vb[0]) / 2, (va[1] + vb[1]) / 2, (va[2] + vb[2]) / 2]),
+      );
       cache.set(k, i);
       return i;
     };
     for (const [a, b, c] of faces) {
-      const ab = mid(a, b), bc = mid(b, c), ca = mid(c, a);
+      const ab = mid(a, b),
+        bc = mid(b, c),
+        ca = mid(c, a);
       next.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
     }
     faces = next;
@@ -70,9 +115,16 @@ function buildIcosphere(subs: number): { verts: Vec3[]; edges: [number, number][
   const seen = new Set<string>();
   const edges: [number, number][] = [];
   for (const [a, b, c] of faces) {
-    for (const [i, j] of [[a, b], [b, c], [c, a]] as [number, number][]) {
+    for (const [i, j] of [
+      [a, b],
+      [b, c],
+      [c, a],
+    ] as [number, number][]) {
       const k = i < j ? `${i}_${j}` : `${j}_${i}`;
-      if (!seen.has(k)) { seen.add(k); edges.push([i, j]); }
+      if (!seen.has(k)) {
+        seen.add(k);
+        edges.push([i, j]);
+      }
     }
   }
 
@@ -82,11 +134,16 @@ function buildIcosphere(subs: number): { verts: Vec3[]; edges: [number, number][
 // Precompute at load time — subdivision 2 gives 162 verts, 480 edges
 const ICOSPHERE = buildIcosphere(2);
 
-function rand(a: number, b: number) { return a + Math.random() * (b - a); }
-function pick<T>(arr: readonly T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+function rand(a: number, b: number) {
+  return a + Math.random() * (b - a);
+}
+function pick<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 interface StarParticle {
-  x: number; y: number;
+  x: number;
+  y: number;
   size: number;
   baseAlpha: number;
   alpha: number;
@@ -96,7 +153,9 @@ interface StarParticle {
 }
 
 interface SurfaceParticle {
-  ux: number; uy: number; uz: number;
+  ux: number;
+  uy: number;
+  uz: number;
   color: number;
   size: number;
   phase: number;
@@ -104,17 +163,19 @@ interface SurfaceParticle {
 }
 
 interface FloatParticle {
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   color: number;
   size: number;
   alpha: number;
   alphaDir: number;
 }
 
-const STAR_COUNT    = 260;
+const STAR_COUNT = 260;
 const SURFACE_COUNT = 85;
-const FLOAT_COUNT   = 48;
+const FLOAT_COUNT = 48;
 
 export class WireframeIcosphereScreen extends Container {
   public static assetBundles: string[] = [];
@@ -133,10 +194,12 @@ export class WireframeIcosphereScreen extends Container {
     this.addChild(this.gfx);
   }
 
-  private get R(): number { return Math.min(this.w, this.h) * 0.36; }
+  private get R(): number {
+    return Math.min(this.w, this.h) * 0.36;
+  }
 
   public async show(): Promise<void> {
-    this.w = window.innerWidth  || 1920;
+    this.w = window.innerWidth || 1920;
     this.h = window.innerHeight || 1080;
     this.spawn();
   }
@@ -183,7 +246,9 @@ export class WireframeIcosphereScreen extends Container {
       };
     });
 
-    const cx = w / 2, cy = h / 2, R = this.R;
+    const cx = w / 2,
+      cy = h / 2,
+      R = this.R;
     this.floaters = Array.from({ length: FLOAT_COUNT }, () => {
       const a = rand(0, TAU);
       const d = rand(R * 1.12, R * 2.3);
@@ -238,25 +303,32 @@ export class WireframeIcosphereScreen extends Container {
     }
 
     // Update floaters
-    const cx = this.w / 2, cy = this.h / 2, R = this.R;
+    const cx = this.w / 2,
+      cy = this.h / 2,
+      R = this.R;
     for (const fp of this.floaters) {
       fp.x += fp.vx;
       fp.y += fp.vy;
       fp.alpha += fp.alphaDir * 0.004;
       if (fp.alpha >= 0.92) fp.alphaDir = -1;
-      if (fp.alpha <= 0.1)  fp.alphaDir =  1;
+      if (fp.alpha <= 0.1) fp.alphaDir = 1;
 
-      const dx = fp.x - cx, dy = fp.y - cy;
+      const dx = fp.x - cx,
+        dy = fp.y - cy;
       const dist = Math.sqrt(dx * dx + dy * dy) + 0.001;
       const pull = (dist - R * 1.45) * 0.00006;
       fp.vx -= (dx / dist) * pull;
       fp.vy -= (dy / dist) * pull;
 
       const spd = Math.sqrt(fp.vx * fp.vx + fp.vy * fp.vy);
-      if (spd > 0.35) { fp.vx = (fp.vx / spd) * 0.35; fp.vy = (fp.vy / spd) * 0.35; }
+      if (spd > 0.35) {
+        fp.vx = (fp.vx / spd) * 0.35;
+        fp.vy = (fp.vy / spd) * 0.35;
+      }
 
       if (dist > R * 3.5) {
-        const a = rand(0, TAU), d = rand(R * 1.1, R * 2.1);
+        const a = rand(0, TAU),
+          d = rand(R * 1.1, R * 2.1);
         fp.x = cx + Math.cos(a) * d;
         fp.y = cy + Math.sin(a) * d;
       }
@@ -276,7 +348,10 @@ export class WireframeIcosphereScreen extends Container {
   private drawStars(g: Graphics): void {
     for (const s of this.stars) {
       if (s.size > 1.6 && s.color !== 0xcdd6f4) {
-        g.circle(s.x, s.y, s.size * 3.2).fill({ color: s.color, alpha: s.alpha * 0.1 });
+        g.circle(s.x, s.y, s.size * 3.2).fill({
+          color: s.color,
+          alpha: s.alpha * 0.1,
+        });
       }
       g.circle(s.x, s.y, s.size).fill({ color: s.color, alpha: s.alpha });
     }
@@ -284,7 +359,7 @@ export class WireframeIcosphereScreen extends Container {
 
   private drawIcosphereEdges(g: Graphics, rot: number): void {
     const { verts, edges } = ICOSPHERE;
-    const projected = verts.map(v => this.project(v, rot));
+    const projected = verts.map((v) => this.project(v, rot));
 
     for (let ei = 0; ei < edges.length; ei++) {
       const [ai, bi] = edges[ei];
@@ -338,7 +413,10 @@ export class WireframeIcosphereScreen extends Container {
 
   private drawFloaters(g: Graphics): void {
     for (const fp of this.floaters) {
-      g.circle(fp.x, fp.y, fp.size * 3.2).fill({ color: fp.color, alpha: fp.alpha * 0.12 });
+      g.circle(fp.x, fp.y, fp.size * 3.2).fill({
+        color: fp.color,
+        alpha: fp.alpha * 0.12,
+      });
       g.circle(fp.x, fp.y, fp.size).fill({ color: fp.color, alpha: fp.alpha });
     }
   }
