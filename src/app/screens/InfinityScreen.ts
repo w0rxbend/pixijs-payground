@@ -167,7 +167,8 @@ export class InfinityScreen extends Container {
 
     // Trail particles travel along the lemniscate in 3D
     for (let i = 0; i < N_TRAIL; i++) {
-      this.trailPhases[i] = (this.trailPhases[i] + this.trailSpeeds[i] * dt) % TAU;
+      this.trailPhases[i] =
+        (this.trailPhases[i] + this.trailSpeeds[i] * dt) % TAU;
       const [px, py] = lemniscate(this.trailPhases[i]);
       const [sx, sy, sc] = project(
         px * Math.cos(this.rotY),
@@ -278,7 +279,8 @@ export class InfinityScreen extends Container {
       const t = i / N_HELIX;
       this.helixAngles[i] = t * TAU * N_HELIX_TURNS;
       this.helixHeights[i] = (t - 0.5) * HELIX_HEIGHT;
-      this.helixRadii[i] = HELIX_RADIUS * (0.82 + 0.18 * Math.sin(t * TAU * 2.8));
+      this.helixRadii[i] =
+        HELIX_RADIUS * (0.82 + 0.18 * Math.sin(t * TAU * 2.8));
       const s = new Sprite(this.helixTextures[i % this.helixTextures.length]);
       s.anchor.set(0.5);
       this.helixLayer.addChild(s);
