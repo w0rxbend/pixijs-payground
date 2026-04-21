@@ -108,6 +108,13 @@ interface GraffitiTag {
   node: Text;
   baseX: number;
   baseY: number;
+  orbitAngle: number;
+  orbitRadius: number;
+  orbitBase: number;  // centre angle in upper arc (–π..0)
+  orbitSwing: number; // half-range of back-and-forth (rad)
+  oscSpeed: number;   // oscillation frequency (rad/s)
+  oscPhase: number;   // initial phase offset
+  baseRot: number;
   alphaMin: number;
   alphaMax: number;
   alphaSpeed: number;
@@ -1019,7 +1026,8 @@ export class CameraBorder extends Container {
         stroke: { color: INK_BLACK, width: Math.max(2, size * 0.14) },
       });
 
-    for (const def of GRAFFITI_DEFS) {
+    for (let i = 0; i < GRAFFITI_DEFS.length; i++) {
+      const def = GRAFFITI_DEFS[i];
       const x = Math.cos(def.angle) * (r + def.rOffset);
       const y = Math.sin(def.angle) * (r + def.rOffset);
       const tag = new Text({
@@ -1032,10 +1040,20 @@ export class CameraBorder extends Container {
       tag.rotation = def.rot;
       tag.alpha = 0;
       this.graffCont.addChild(tag);
+      const orbitRadius = r + def.rOffset;
+      const orbitBase =
+        -Math.PI + (i / GRAFFITI_DEFS.length) * Math.PI;
       this.graffitiTags.push({
         node: tag,
         baseX: x,
         baseY: y,
+        orbitAngle: orbitBase,
+        orbitRadius,
+        orbitBase,
+        orbitSwing: 0.18 + Math.random() * 0.22,
+        oscSpeed: 0.18 + Math.random() * 0.22,
+        oscPhase: Math.random() * Math.PI * 2,
+        baseRot: def.rot,
         alphaMin: 0.25 + Math.random() * 0.2,
         alphaMax: 0.75 + Math.random() * 0.25,
         alphaSpeed: 0.18 + Math.random() * 0.38,
@@ -1527,16 +1545,21 @@ export class CameraBorder extends Container {
   }
 
   private updateGraffitiTags(breathe: number): void {
+    const dt = 1 / 60;
     for (const tag of this.graffitiTags) {
+      tag.oscPhase += tag.oscSpeed * dt;
+      tag.orbitAngle = tag.orbitBase + Math.sin(tag.oscPhase) * tag.orbitSwing;
+      const r = tag.orbitRadius * breathe;
+      const bob =
+        Math.sin(this.time * tag.bobSpeed + tag.bobPhase) * tag.bobAmp;
+      tag.node.x = Math.cos(tag.orbitAngle) * r;
+      tag.node.y = Math.sin(tag.orbitAngle) * r + bob;
+      tag.node.rotation = tag.orbitAngle + Math.PI / 2 + tag.baseRot;
       const alpha =
         tag.alphaMin +
         (tag.alphaMax - tag.alphaMin) *
           (0.5 + 0.5 * Math.sin(this.time * tag.alphaSpeed + tag.alphaPhase));
-      const bob =
-        Math.sin(this.time * tag.bobSpeed + tag.bobPhase) * tag.bobAmp;
       tag.node.alpha = alpha;
-      tag.node.x = tag.baseX * breathe;
-      tag.node.y = tag.baseY * breathe + bob;
     }
   }
 
@@ -1951,6 +1974,7 @@ export class CameraBorder extends Container {
 
       s.node.x = Math.cos(s.angle) * r + jx;
       s.node.y = Math.sin(s.angle) * r + jy;
+      s.node.rotation = s.angle + Math.PI / 2;
 
       // Scale vibrates rapidly — multiplied by beat boost on kicks
       const vibeScale = 1 + s.vibeAmp * Math.sin(s.vibePhase) * beatBoost;
