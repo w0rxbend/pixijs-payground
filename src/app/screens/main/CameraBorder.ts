@@ -110,10 +110,10 @@ interface GraffitiTag {
   baseY: number;
   orbitAngle: number;
   orbitRadius: number;
-  orbitBase: number;  // centre angle in upper arc (–π..0)
+  orbitBase: number; // centre angle in upper arc (–π..0)
   orbitSwing: number; // half-range of back-and-forth (rad)
-  oscSpeed: number;   // oscillation frequency (rad/s)
-  oscPhase: number;   // initial phase offset
+  oscSpeed: number; // oscillation frequency (rad/s)
+  oscPhase: number; // initial phase offset
   baseRot: number;
   alphaMin: number;
   alphaMax: number;
@@ -1041,8 +1041,7 @@ export class CameraBorder extends Container {
       tag.alpha = 0;
       this.graffCont.addChild(tag);
       const orbitRadius = r + def.rOffset;
-      const orbitBase =
-        -Math.PI + (i / GRAFFITI_DEFS.length) * Math.PI;
+      const orbitBase = -Math.PI + (i / GRAFFITI_DEFS.length) * Math.PI;
       this.graffitiTags.push({
         node: tag,
         baseX: x,
