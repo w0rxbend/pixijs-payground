@@ -60,6 +60,8 @@ export default defineConfig({
         auroraBorealis: resolve(__dirname, "aurora-borealis.html"),
         fourierEpicycles: resolve(__dirname, "fourier-epicycles.html"),
         hexRipple: resolve(__dirname, "hex-ripple.html"),
+        stippledGeodesic: resolve(__dirname, "stippled-geodesic.html"),
+        geodesicSphere: resolve(__dirname, "geodesic-sphere.html"),
         wireframeIcosphere: resolve(__dirname, "wireframe-icosphere.html"),
         nebula: resolve(__dirname, "nebula.html"),
         blackHoleCam: resolve(__dirname, "black-hole-cam.html"),

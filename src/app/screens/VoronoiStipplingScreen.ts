@@ -218,7 +218,11 @@ export class VoronoiStipplingScreen extends Container {
     const tCycle = (this.time * cycleSpeed) % ACCENTS.length;
     const idx1 = Math.floor(tCycle);
     const idx2 = (idx1 + 1) % ACCENTS.length;
-    const currentAccent = this.lerpColor(ACCENTS[idx1], ACCENTS[idx2], tCycle % 1);
+    const currentAccent = this.lerpColor(
+      ACCENTS[idx1],
+      ACCENTS[idx2],
+      tCycle % 1,
+    );
     const maxArea = ((this.w * this.h) / this.seeds.length) * 2.8;
 
     for (let i = 0; i < this.seeds.length; i++) {
@@ -231,7 +235,11 @@ export class VoronoiStipplingScreen extends Container {
         const ageFactor = 1 - s.age / s.maxAge;
         const tArea = Math.min(1, s.area / maxArea);
         const baseColor = this.lerpColor(currentAccent, C_SURFACE0, tArea);
-        s.color = this.lerpColor(C_SURFACE0, baseColor, Math.max(0.3, ageFactor));
+        s.color = this.lerpColor(
+          C_SURFACE0,
+          baseColor,
+          Math.max(0.3, ageFactor),
+        );
       }
     }
   }
@@ -296,7 +304,10 @@ export class VoronoiStipplingScreen extends Container {
       const pulse = 1 + 0.06 * Math.sin(this.time * 4 + s.x * 0.015);
 
       g.circle(s.x, s.y, r * pulse).fill({ color: s.color, alpha: 0.85 });
-      g.circle(s.x, s.y, r * 0.22).fill({ color: C_SKY, alpha: 0.45 * growFactor });
+      g.circle(s.x, s.y, r * 0.22).fill({
+        color: C_SKY,
+        alpha: 0.45 * growFactor,
+      });
     }
 
     this.drawOrganismDetail(g);
@@ -315,7 +326,9 @@ export class VoronoiStipplingScreen extends Container {
         const d2 = dx * dx + dy * dy;
         if (d2 < threshold) {
           const alpha = (1 - d2 / threshold) * 0.15;
-          g.moveTo(s1.x, s1.y).lineTo(s2.x, s2.y).stroke({ color: C_TEAL, width: 1, alpha });
+          g.moveTo(s1.x, s1.y)
+            .lineTo(s2.x, s2.y)
+            .stroke({ color: C_TEAL, width: 1, alpha });
         }
       }
     }
