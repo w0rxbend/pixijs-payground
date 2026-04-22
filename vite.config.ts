@@ -83,6 +83,7 @@ export default defineConfig({
         confidential: resolve(__dirname, "confidential.html"),
         index: resolve(__dirname, "index.html"),
         smokeBar: resolve(__dirname, "smoke-bar.html"),
+        voronoiStippling: resolve(__dirname, "voronoi-stippling.html"),
       },
     },
   },
