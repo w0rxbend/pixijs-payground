@@ -18,7 +18,6 @@ const C_GREEN = 0xa6e3a1;
 const C_YELLOW = 0xf9e2af;
 const C_PEACH = 0xfab387;
 const C_RED = 0xf38ba8; // Hot
-const C_MAUVE = 0xcba6f7;
 const C_SKY = 0x89dceb;
 
 const TEMPERATURE_GRADIENT = [
@@ -121,7 +120,7 @@ export class KineticGasScreen extends Container {
     const pistonVel = (this.pistonX - this.prevPistonX) / dt;
 
     this.updateParticles(dt, pistonVel);
-    this.drawChamber(dt);
+    this.drawChamber();
   }
 
   private updateParticles(dt: number, pistonVel: number): void {
@@ -238,7 +237,7 @@ export class KineticGasScreen extends Container {
     p2.y += ny * overlap * 0.5;
   }
 
-  private drawChamber(dt: number): void {
+  private drawChamber(): void {
     const gGlow = this.glowGfx;
     gGlow.clear();
     const tempFactor = Math.min(1, this.avgTemp / 450);
