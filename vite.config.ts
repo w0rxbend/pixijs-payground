@@ -70,6 +70,7 @@ export default defineConfig({
         solarWind: resolve(__dirname, "solar-wind.html"),
         shockWave: resolve(__dirname, "shock-wave.html"),
         boids: resolve(__dirname, "boids.html"),
+        linuxBoids: resolve(__dirname, "linux-boids.html"),
         verletCloth: resolve(__dirname, "verlet-cloth.html"),
         sph: resolve(__dirname, "sph.html"),
         wireframeSphereCam: resolve(__dirname, "wireframe-sphere-cam.html"),
