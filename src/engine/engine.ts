@@ -35,7 +35,7 @@ extensions.add(CreationNavigationPlugin);
  */
 export class CreationEngine extends Application {
   /** Initialize the application */
-  public async init(opts: Partial<ApplicationOptions>): Promise<void> {
+  public async init(opts: Partial<ApplicationOptions> = {}): Promise<void> {
     opts.resizeTo ??= window;
     opts.resolution ??= getResolution();
 

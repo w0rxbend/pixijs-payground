@@ -84,6 +84,7 @@ export default defineConfig({
         index: resolve(__dirname, "index.html"),
         smokeBar: resolve(__dirname, "smoke-bar.html"),
         voronoiStippling: resolve(__dirname, "voronoi-stippling.html"),
+        kineticGas: resolve(__dirname, "kinetic-gas.html"),
       },
     },
   },
