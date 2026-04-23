@@ -98,6 +98,7 @@ export default defineConfig({
         worxbendMolecular: resolve(__dirname, "worxbend-molecular.html"),
         startingSoonFluid: resolve(__dirname, "starting-soon-fluid.html"),
         topography: resolve(__dirname, "topography.html"),
+        dottedMesh: resolve(__dirname, "dotted-mesh.html"),
       },
     },
   },
