@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>OBS Effects — Preview Grid</title>
+    <title>OBS Effects — Map</title>
     <style>
       *,
       *::before,
@@ -14,89 +14,90 @@
       }
 
       body {
-        background: #0d0d0d;
+        background: #11111b;
         color: #cdd6f4;
         font-family:
           system-ui,
           -apple-system,
           sans-serif;
-        padding: 24px;
+        padding: 32px;
+        line-height: 1.5;
+      }
+
+      header {
+        max-width: 1200px;
+        margin: 0 auto 32px auto;
       }
 
       h1 {
-        font-size: 22px;
-        font-weight: 600;
-        margin-bottom: 20px;
+        font-size: 28px;
+        font-weight: 700;
         color: #cba6f7;
+        margin-bottom: 8px;
+      }
+
+      p {
+        color: #a6adc8;
+        font-size: 14px;
       }
 
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 12px;
+        max-width: 1200px;
+        margin: 0 auto;
       }
 
       .card {
-        display: block;
+        display: flex;
+        align-items: center;
         text-decoration: none;
-        color: inherit;
+        color: #cdd6f4;
         border: 1px solid #313244;
         border-radius: 8px;
-        overflow: hidden;
+        padding: 14px 18px;
         background: #1e1e2e;
         transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
+          background 0.2s,
+          border-color 0.2s,
+          transform 0.1s;
+        font-size: 14px;
+        font-weight: 500;
       }
 
       .card:hover {
+        background: #313244;
         border-color: #cba6f7;
-        box-shadow: 0 0 0 1px #cba6f7;
+        color: #cba6f7;
+        transform: translateY(-1px);
       }
 
-      .preview {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        position: relative;
-        overflow: hidden;
-        background: #11111b;
-        cursor: pointer;
+      .card:active {
+        transform: translateY(0);
       }
 
-      .preview iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 1920px;
-        height: 1080px;
-        border: none;
-        pointer-events: none;
-        transform-origin: top left;
+      .card::before {
+        content: "→";
+        margin-right: 12px;
+        color: #cba6f7;
+        opacity: 0.5;
       }
 
-      .preview .placeholder {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #45475a;
-        font-size: 13px;
-      }
-
-      .label {
-        padding: 7px 11px;
-        font-size: 12px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        border-top: 1px solid #313244;
-        color: #a6adc8;
+      .card:hover::before {
+        opacity: 1;
       }
     </style>
   </head>
   <body>
-    <h1>OBS Effects — Preview Grid</h1>
+    <header>
+      <h1>OBS Effects Directory</h1>
+      <p>
+        Click any effect to open it in a new tab. Optimized for OBS Browser
+        Sources.
+      </p>
+    </header>
+
     <div class="grid" id="grid"></div>
 
     <script>
@@ -227,38 +228,13 @@
         },
         { href: "wavy-cam.html", label: "Wavy Cam — Oscillating Frame" },
         { href: "worxbend-text.html", label: "Worxbend Particle Text" },
+        { href: "starting-soon-fluid.html", label: "Starting Soon Fluid" },
+        { href: "topography.html", label: "Topography" },
+        { href: "worxbend-fluid.html", label: "Worxbend Fluid" },
+        { href: "worxbend-molecular.html", label: "Worxbend Molecular" },
       ];
 
       const grid = document.getElementById("grid");
-
-      const ro = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          const preview = entry.target;
-          const iframe = preview.querySelector("iframe");
-          if (iframe) {
-            const scale = entry.contentRect.width / 1920;
-            iframe.style.transform = `scale(${scale})`;
-          }
-        }
-      });
-
-      const io = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (!entry.isIntersecting) continue;
-            const preview = entry.target;
-            const iframe = preview.querySelector("iframe");
-            if (iframe && iframe.dataset.src) {
-              iframe.src = iframe.dataset.src;
-              delete iframe.dataset.src;
-            }
-            const ph = preview.querySelector(".placeholder");
-            if (ph) ph.remove();
-            io.unobserve(preview);
-          }
-        },
-        { rootMargin: "300px" },
-      );
 
       for (const { href, label } of pages) {
         const card = document.createElement("a");
@@ -266,31 +242,8 @@
         card.href = href;
         card.target = "_blank";
         card.rel = "noopener";
-
-        const preview = document.createElement("div");
-        preview.className = "preview";
-
-        const ph = document.createElement("div");
-        ph.className = "placeholder";
-        ph.textContent = "Loading…";
-        preview.appendChild(ph);
-
-        const iframe = document.createElement("iframe");
-        iframe.dataset.src = href;
-        iframe.title = label;
-        iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
-        preview.appendChild(iframe);
-
-        const labelEl = document.createElement("div");
-        labelEl.className = "label";
-        labelEl.textContent = label;
-
-        card.appendChild(preview);
-        card.appendChild(labelEl);
+        card.textContent = label;
         grid.appendChild(card);
-
-        ro.observe(preview);
-        io.observe(preview);
       }
     </script>
   </body>
