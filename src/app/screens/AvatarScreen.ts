@@ -6,7 +6,6 @@ const BASE = 0x1e1e2e;
 const SURFACE0 = 0x313244;
 const SURFACE1 = 0x45475a;
 const OVERLAY0 = 0x6c7086;
-const TEXT = 0xcdd6f4;
 const BLUE = 0x89b4fa;
 const RED = 0xf38ba8;
 const PEACH = 0xfab387;
@@ -141,7 +140,6 @@ export class AvatarScreen extends Container {
 
     for (let i = 0; i < segmentCount; i++) {
       const tStart = i / segmentCount;
-      const tEnd = (i + 0.9) / segmentCount;
       const segX = x1 + dx * tStart;
       const segY = y1 + dy * tStart;
       const segLen = (distance / segmentCount) * 0.9;

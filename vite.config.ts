@@ -85,6 +85,7 @@ export default defineConfig({
         topoLandscape: resolve(__dirname, "topo-landscape.html"),
         map: resolve(__dirname, "map.html"),
         confidential: resolve(__dirname, "confidential.html"),
+        trapnation: resolve(__dirname, "trapnation.html"),
         index: resolve(__dirname, "index.html"),
         smokeBar: resolve(__dirname, "smoke-bar.html"),
         voronoiStippling: resolve(__dirname, "voronoi-stippling.html"),
