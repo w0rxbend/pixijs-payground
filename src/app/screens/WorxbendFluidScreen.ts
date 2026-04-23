@@ -11,7 +11,7 @@ const SKY = 0x89dceb;
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 const TEXT_PARTICLE_STEP = 10; // Denser for more "liquid" feel
-const RETURN_STRENGTH = 0.04; 
+const RETURN_STRENGTH = 0.04;
 const DAMPING = 0.94; // Viscous friction
 const SPRING_OVERSHOOT = 0.08;
 
@@ -191,7 +191,7 @@ export class WorxbendFluidScreen extends Container {
       height: combined, // -1 to 1
       shimmer: shimmer,
       dx: w1 * 12 + w2 * 5,
-      dy: w1 * 8 + w3 * 4
+      dy: w1 * 8 + w3 * 4,
     };
   }
 
@@ -252,7 +252,8 @@ export class WorxbendFluidScreen extends Container {
       const disp = this._getDisplacement(p.homeX, p.homeY, this.time);
 
       // Submerged effect: text swells and distorts with wave height
-      const targetRadius = p.baseRadius * (1 + disp.height * 0.4 + disp.shimmer * 0.2);
+      const targetRadius =
+        p.baseRadius * (1 + disp.height * 0.4 + disp.shimmer * 0.2);
       p.radius += (targetRadius - p.radius) * 0.1 * dt;
 
       // Displacement logic
@@ -294,7 +295,8 @@ export class WorxbendFluidScreen extends Container {
           p.vy += (dy / dist) * diff * BOND_STRENGTH * dt;
 
           if (dist < COHESION_DIST) {
-            const alpha = (1 - dist / COHESION_DIST) * 0.15 * (0.5 + disp.shimmer * 0.5);
+            const alpha =
+              (1 - dist / COHESION_DIST) * 0.15 * (0.5 + disp.shimmer * 0.5);
             this.cohesionGfx.moveTo(p.x, p.y);
             this.cohesionGfx.lineTo(p2.x, p2.y);
             this.cohesionGfx.stroke({ color: p.color, width: 1, alpha });

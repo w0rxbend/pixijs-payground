@@ -95,6 +95,8 @@ export default defineConfig({
         worxbendText: resolve(__dirname, "worxbend-text.html"),
         worxbendFluid: resolve(__dirname, "worxbend-fluid.html"),
         worxbendMolecular: resolve(__dirname, "worxbend-molecular.html"),
+        startingSoonFluid: resolve(__dirname, "starting-soon-fluid.html"),
+        topography: resolve(__dirname, "topography.html"),
       },
     },
   },

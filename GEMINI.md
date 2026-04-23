@@ -56,8 +56,8 @@ Circular webcam borders (e.g., `CameraScreen.ts`) follow a layered design patter
     - **Dynamic Waves:** Animated `Graphics` using wave functions.
     - **VFX:** Sparkles, sparks, and lightning arcs.
     - **Particles:** GPU-accelerated orbiting dots.
-3.  **Animation Lifecycle:** 
-    - `update(time)`: Uses delta-time for movement and "heartbeat" kicks. 
+3.  **Animation Lifecycle:**
+    - `update(time)`: Uses delta-time for movement and "heartbeat" kicks.
     - `drawFrame()`: Clears and redraws dynamic `Graphics` layers each frame.
 4.  **OBS Integration:** Always set `backgroundAlpha: 0` in the engine init to ensure the center of the circle is transparent for the camera feed.
 
