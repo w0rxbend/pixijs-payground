@@ -21,6 +21,7 @@ export default defineConfig({
         ),
         titlePowerline: resolve(__dirname, "title-powerline.html"),
         logo: resolve(__dirname, "logo.html"),
+        proceduralLogo: resolve(__dirname, "procedural-logo.html"),
         background: resolve(__dirname, "background.html"),
         startingSoon: resolve(__dirname, "starting-soon.html"),
         musicBreak: resolve(__dirname, "music-break.html"),
