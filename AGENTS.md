@@ -1,127 +1,211 @@
-# Conventional Commits
+# OBS Effects Agent Guide
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
+This repository is a multi-page PixiJS 8 + TypeScript project for OBS Browser Source visuals. Treat it as a library of standalone procedural screens, not a single app surface.
 
-## Format
+## Core Project Model
 
-```
+- Every effect is usually made of three pieces:
+  - `src/app/screens/*Screen.ts`: the Pixi scene class.
+  - `src/*.ts`: the entry point that creates `CreationEngine`, calls `setEngine`, runs `engine.init(...)`, and shows the screen through `engine.navigation.showScreen(...)`.
+  - `*.html` in the repo root: the Vite entry page that mounts `#pixi-container` and imports the entry TS file.
+- New pages must also be registered in:
+  - `vite.config.ts` under `build.rollupOptions.input`
+  - `map.html` so the effect appears in the local preview directory
+- The engine bootstrap lives in:
+  - `src/engine/engine.ts`
+  - `src/app/getEngine.ts`
+
+## Operating Assumptions
+
+- Never analyze, traverse, or scan `node_modules`.
+- Always exclude `node_modules` from searches and context gathering.
+- Prefer `rg` / `rg --files` for discovery.
+- Expect a dirty worktree. Do not revert unrelated changes.
+- This repo often contains many independent effects. Scope edits tightly to the requested screen unless the request explicitly asks for shared-system changes.
+
+## Conventional Commits
+
+Use Conventional Commits for any commit you create.
+
+Format:
+
+```text
 <type>(<scope>): <subject>
 
 <body>
 ```
 
-## Types
+Types:
 
-- **feat**: A new feature
-- **fix**: A bug fix
-- **chore**: Build process, dependencies, tooling
-- **docs**: Documentation changes
-- **style**: Code style changes (formatting, semicolons)
-- **refactor**: Code refactoring without feature changes
-- **perf**: Performance improvements
-- **test**: Adding or updating tests
+- `feat`
+- `fix`
+- `chore`
+- `docs`
+- `style`
+- `refactor`
+- `perf`
+- `test`
 
-## Examples
+Example:
 
-```
-feat(canvas): add sprite rendering support
+```text
+feat(globe): add rotating wavy planet mesh page
 
-Implemented WebGL sprite rendering with batch optimization.
-```
-
-```
-chore(deps): update pixi.js to v8.0.0
+Adds a new standalone Pixi screen, Vite entry, and map listing.
 ```
 
-```
-fix(physics): resolve collision detection bug
+## Architecture Notes
 
-Fixes #123
-```
+### Engine and Page Bootstrapping
 
-## Scope (Optional)
+- `CreationEngine` extends `Application` and mounts the canvas into `#pixi-container`.
+- Assets are initialized through AssetPack in `engine.init()`.
+- Most procedural screens with no external assets should use `static assetBundles: string[] = []`.
+- Entry points usually look like:
+  - create `new CreationEngine()`
+  - call `setEngine(engine)`
+  - await `engine.init({ ... })`
+  - await `engine.navigation.showScreen(ScreenClass)`
 
-Specify the module or component affected (e.g., `canvas`, `loader`, `physics`).
+### Screen Lifecycle Pattern
 
-## Body (Optional)
+- Screen classes extend `Container`.
+- Common methods:
+  - `show()`
+  - `hide()` when needed
+  - `resize(width, height)`
+  - `update(ticker)`
+- For procedural drawing, use a persistent `Graphics` instance and redraw each frame instead of reallocating display objects.
+- Use `ticker.deltaMS` or `ticker.deltaTime` and clamp large deltas to avoid unstable animation after tab switching.
 
-Provide detailed explanation of changes and motivation.
+### OBS Rendering Intent
 
-## Scope Notes
+- Webcam borders and transparent overlays should generally initialize the engine with `backgroundAlpha: 0`.
+- Full-screen backgrounds can use an opaque `background` color.
+- Preserve responsiveness: most screens compute their visual radius or layout from `Math.min(width, height)`.
+- Effects should read well at OBS-style resolutions such as `1920x1080`.
 
-- Never analyze or traverse `node_modules` directory
-- Always ignore and skip `node_modules` when gathering context
-- Exclude `node_modules` from all file scanning operations
+## PixiJS and TypeScript Guidelines
 
-## PixiJS Best Practices
+- Use typed data structures for simulation nodes, particles, and segments.
+- Avoid avoidable allocation in frame loops.
+- Reuse `Graphics` and long-lived arrays where practical.
+- Use masks and filters sparingly.
+- Favor clear math helpers and explicit interfaces for geometry-heavy effects.
+- Keep TypeScript strict-friendly.
 
-- Use **typed containers** for better performance and maintainability
-- Leverage **display lists** efficiently; batch similar objects together
-- Implement **object pooling** for frequently created/destroyed entities
-- Use **masks and filters** sparingly; they impact performance
-- Optimize **texture atlases** to reduce draw calls
-- Enable **antialiasing** only when necessary
-- Use **PIXI.Container** for grouping related sprites
-- Cache **static graphics** as textures to improve rendering speed
-- Profile with DevTools to identify bottlenecks
+## Implementation Playbooks
 
-## TypeScript Guidelines
+### Adding a New Screen
 
-- Define types for custom sprites and containers
-- Use strict mode (`"strict": true` in `tsconfig.json`)
-- Leverage generics for reusable component patterns
+1. Create `src/app/screens/YourScreen.ts`.
+2. Create `src/your-screen.ts`.
+3. Create `your-screen.html`.
+4. Register the HTML file in `vite.config.ts`.
+5. Add the page to `map.html`.
+6. If the effect is asset-free, set `static assetBundles: string[] = []`.
 
-## How to build a Camera Circle Overlay
+### Adding a Webcam Border
 
-Follow these steps to create a new animated circular camera overlay (Webcam Border):
+1. Extend `Container`.
+2. Keep the center visually open and transparent for camera feed usage.
+3. Use layered `Graphics` and `Container` instances for ring, accents, glow, and particles.
+4. Initialize the engine with `backgroundAlpha: 0`.
 
-1.  **Skeleton Setup:**
-    - Create `src/app/screens/YourCamScreen.ts`.
-    - Extend `Container` and include `static assetBundles = ["main"]`.
-    - Create a specialized `YourCamBorder` class in `src/app/screens/main/` or a dedicated folder.
-2.  **Visual Layering:**
-    - Define a `baseRadius` (usually ~200px) and use it for all radial calculations.
-    - In the border's constructor, initialize multiple `Graphics` objects for specific effects (waves, glow, particles).
-    - Use `Container` for elements that require grouping (e.g., orbiting text or sprites).
-3.  **Animation Logic:**
-    - Implement an `update()` method in the border class that accepts `Ticker` or delta time.
-    - Use a global `time` accumulator for phase-based animations (sin/cos).
-    - Implement a "beat" system using a decay variable (e.g., `beatAmplitude`) that spikes on a timer and decays back to 1.0.
-    - Redraw dynamic shapes in a `drawFrame()` method called by `update()`.
-4.  **Assets & Sprites:**
-    - Use `Sprite` for complex elements from the `sprite.png` sheet.
-    - Use `Texture.from()` in the screen's `show()` method to safely load textures after the bundle is ready.
-    - Use `Text` with custom fonts (preloaded in HTML) for tags.
-5.  **OBS Optimization:**
-    - Ensure the central area remains empty/transparent.
-    - In the entry point (`src/yourcam.ts`), initialize the engine with `backgroundAlpha: 0`.
-6.  **Integration:**
-    - Create `yourcam.html` in the root.
-    - Register `yourcam` in `vite.config.ts` under `build.rollupOptions.input`.
-    - Add the new page to `map.html` for previewing.
+### Adding a Full-Screen Background
 
-## How to build a Full Screen Background Overlay
+1. Extend `Container`.
+2. Keep a primary `Graphics` instance for redraw-based rendering.
+3. Rebuild or redistribute simulation state in `resize`.
+4. Initialize the engine with an opaque `background` color when the page is intended as a background layer.
 
-Follow these steps to create a new opaque procedural background for OBS scenes:
+## Visual Direction
 
-1.  **Skeleton Setup:**
-    - Create `src/app/screens/YourBgScreen.ts` extending `Container`.
-    - Initialize a primary `Graphics` object in the constructor.
-    - Set `static assetBundles: string[] = []` if no external textures are needed.
-2.  **Simulation State:**
-    - Define interfaces for your simulation entities (e.g., `Particle`, `Wave`, `Agent`).
-    - Store entities in an array within the screen class.
-    - Implement an `_initEntities()` method to populate the initial state.
-3.  **Animation Loop (PixiJS 8 API):**
-    - In `update(ticker: Ticker)`, clear the graphics using `this.gfx.clear()`.
-    - Iterate through entities, update their positions using `ticker.deltaTime`.
-    - Draw entities using the `Graphics` context: `moveTo()`, `lineTo()`, `stroke({ color, width, alpha })`, `circle()`, `fill({ color, alpha })`.
-4.  **Responsiveness:**
-    - Implement `resize(w, h)` to capture current dimensions.
-    - Call `_initEntities()` inside `resize` to redistribute elements for the new resolution.
-5.  **Entry Point & Engine:**
-    - Create `src/yourbg.ts`.
-    - Initialize `CreationEngine` with an opaque background: `background: 0x11111b` (Catppuccin Crust) and **do not** set `backgroundAlpha: 0`.
-6.  **Integration:**
-    - Create `yourbg.html` in the root.
-    - Register in `vite.config.ts` and add to `map.html`.
+- The repo already contains many globe, mesh, and field effects such as:
+  - `ParticleGlobeScreen`
+  - `DottedMeshScreen`
+  - `GeodesicSphereScreen`
+  - `WireframeIcosphereScreen`
+  - `WireframeSphereCamScreen`
+- For globe-like effects, prefer depth-aware rendering:
+  - sort lines/dots by depth
+  - vary alpha and size by depth
+  - use perspective scaling rather than flat orthographic placement
+- For “fluid” requests, do more than animate opacity:
+  - deform positions
+  - vary local elevation
+  - let connection lines react to neighboring relief
+
+## Recent Context: Last Run
+
+The most recent feature work added a new standalone page named `wavy-planet-mesh`.
+
+Files added:
+
+- `src/app/screens/WavyPlanetMeshScreen.ts`
+- `src/wavy-planet-mesh.ts`
+- `wavy-planet-mesh.html`
+
+Files updated:
+
+- `vite.config.ts`
+- `map.html`
+
+### What The User Asked For
+
+The original prompt was a terse visual request: a dotted grid and mesh rotating sphere, imitating planet rotation, with all dots connected and a fluid, wavy surface.
+
+Interpretation that worked:
+
+- treat the request as a new full-screen procedural page
+- build a sphere from latitude/longitude nodes
+- connect neighboring nodes into a mesh
+- render dots at intersections
+- animate surface displacement so the sphere feels alive rather than rigid
+
+### What Was Implemented
+
+- A rotating lat/lon sphere with connected mesh lines and depth-sorted dots.
+- A dark full-screen background with layered aura behind the globe.
+- A dedicated Vite/html entry so it behaves like every other standalone effect in the repo.
+
+### Follow-Up Tuning From The Next Prompt
+
+The next user request asked to:
+
+- improve the wave effect
+- slow the planet rotation
+- improve dot elevation so the wave looks more realistic
+
+That refinement changed `src/app/screens/WavyPlanetMeshScreen.ts` by:
+
+- slowing `ROTATION_SPEED` to `0.16`
+- replacing faster mixed oscillation with slower traveling swells
+- separating `wave`, `elevation`, and `crest`
+- making radius displacement depend on local elevation
+- making dots visually lift based on positive elevation instead of only brightness
+- making mesh segment width/alpha respond to local relief between connected nodes
+
+When extending or refining this screen, preserve that intent: calm rotation, readable swells, and visible topography across both dots and mesh lines.
+
+## Prompt Handling Guidance
+
+- Users in this repo often phrase visual requests informally and tersely.
+- Default interpretation should be implementation, not discussion, unless they explicitly ask for ideas first.
+- For effect refinements, inspect the current screen and patch the math directly instead of proposing general art-direction advice.
+- When a user asks for a new page, make the full integration change set, not just the screen file.
+
+## Verification Guidance
+
+- Preferred validation flow:
+  - `npm run lint`
+  - `npm run build`
+- If dependencies are unavailable in the workspace, state that clearly instead of implying verification passed.
+- Do not fabricate runtime validation for visual work. Say exactly what was and was not checked.
+
+## File-Specific Guidance
+
+- `vite.config.ts`: keep keys descriptive and consistent with existing camelCase entry names.
+- `map.html`: add human-readable labels that describe the visual identity of the page.
+- `src/app/screens/*`: keep render math self-contained and readable; small helper interfaces are preferred over untyped objects.
+- Root `*.html` files: keep them minimal and consistent with existing pages.

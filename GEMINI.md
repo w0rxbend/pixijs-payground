@@ -1,85 +1,129 @@
-# OBS Effects: PixiJS Overlay Project
+# OBS Effects Project Instructions
 
-This project is a collection of high-performance, GPU-accelerated visual overlays and backgrounds designed for use as OBS Browser Sources. It leverages **PixiJS 8** and **TypeScript** to create dynamic, transparent, and responsive visuals.
+This repo is a PixiJS 8 + TypeScript multi-page collection of OBS Browser Source effects. Work from the assumption that each page is an independent visual scene with its own screen class, TS entry point, and root HTML file.
 
-## Core Technologies
+## Project Structure
 
-- **PixiJS 8:** Used for WebGL/WebGPU rendering. We utilize the Ticker for delta-time based animations, Graphics for procedural shapes, and Containers for scene management.
-- **Vite:** Multi-page application (MPA) build system. Each effect has its own `.html` entry point.
-- **TypeScript:** Strict typing for all simulation logic and engine components.
-- **AssetPack:** Optimized asset processing for textures and fonts.
+- Screen classes live in `src/app/screens/`.
+- Standalone page entry points live in `src/`.
+- Vite HTML entries live at the repo root.
+- New pages must be wired into:
+  - `vite.config.ts`
+  - `map.html`
 
-## Overlay Categories
+The runtime foundation is:
 
-The project distinguishes between three primary use cases for OBS:
+- `src/engine/engine.ts`
+- `src/app/getEngine.ts`
 
-1.  **Webcam Borders:** Animated frames designed to wrap around a camera feed (often circular or rounded). Examples: `hexcam.html`, `wavecam.html`, `main-web-cam-border.html`.
-2.  **Full Screen Overlays:** Transparent layers that sit _above_ content, providing HUD elements, ambient particles, or interactive effects. Examples: `atom.html` (when used as an overlay), `matrix-dots.html`, `rain.html`.
-3.  **Full Screen Backgrounds:** Opaque or dense simulations intended to serve as the bottom-most layer of a scene. Examples: `background.html`, `topo-landscape.html`, `galaxy-bg.html`, `voronoi-stippling.html` (Digital Organism).
+## Required Working Rules
 
-## Color Palette: Catppuccin Mocha
+- Never traverse or inspect `node_modules`.
+- Always exclude `node_modules` from searches.
+- Prefer `rg` for discovery.
+- Keep edits narrowly scoped; this repository holds many separate effects.
+- Do not revert unrelated local changes.
 
-We strictly adhere to the **Catppuccin Mocha** palette for a consistent, professional "hacker" aesthetic across all screens.
+## Current Engineering Pattern
 
-| Label        | Hex        | Use Case                       |
-| :----------- | :--------- | :----------------------------- |
-| **Base**     | `0x1e1e2e` | Primary background color       |
-| **Surface0** | `0x313244` | Grid lines, subtle UI elements |
-| **Text**     | `0xcdd6f4` | Primary labels                 |
-| **Subtext**  | `0xa6adc8` | Secondary info labels          |
-| **Mauve**    | `0xcba6f7` | Primary accent / magic         |
-| **Blue**     | `0x89b4fa` | Tech / electricity             |
-| **Sapphire** | `0x74c7ec` | Water / cold                   |
-| **Sky**      | `0x89dceb` | Highlights                     |
-| **Teal**     | `0x94e2d5` | Active states                  |
-| **Green**    | `0xa6e3a1` | Success / nature               |
-| **Yellow**   | `0xf9e2af` | Warnings / energy              |
-| **Peach**    | `0xfab387` | Warm accents                   |
-| **Red**      | `0xf38ba8` | Danger / hot                   |
+### Screen classes
 
-## Development Workflow
+- Extend `Container`.
+- Usually keep one persistent `Graphics` object and redraw every frame.
+- Implement `show()`, `resize()`, and `update(ticker)` as needed.
+- Clamp large delta time jumps in animation updates.
 
-To add a new screen:
+### Entry points
 
-1.  **Screen Logic:** Create a class extending `Container` in `src/app/screens/`.
-2.  **Entry Point:** Create a `.ts` file in `src/` to initialize the engine and show the screen.
-3.  **HTML:** Create a `.html` file in the root linking to the `.ts` entry point.
-4.  **Vite Config:** Register the new `.html` file in the `input` section of `vite.config.ts`.
+- Create `CreationEngine`.
+- Call `setEngine(engine)`.
+- Await `engine.init(...)`.
+- Show the screen via `engine.navigation.showScreen(...)`.
 
-## Webcam Border Architecture (Circular)
+### OBS intent
 
-Circular webcam borders (e.g., `CameraScreen.ts`) follow a layered design pattern to ensure transparency and dynamic visuals:
+- Use `backgroundAlpha: 0` for transparent overlays and webcam frames.
+- Use an opaque `background` only when the page is meant to be a background layer.
 
-1.  **Screen Class:** Extends `Container` and manages the `CameraBorder` instance. Defines `static assetBundles = ["main"]` to ensure core assets like logos are preloaded.
-2.  **Layered Stack:** Visuals are split into multiple `Graphics` or `Container` layers (bottom to top):
-    - **Base Ring:** Solid anchor ring (e.g., Catppuccin Mocha Base).
-    - **Dynamic Waves:** Animated `Graphics` using wave functions.
-    - **VFX:** Sparkles, sparks, and lightning arcs.
-    - **Particles:** GPU-accelerated orbiting dots.
-3.  **Animation Lifecycle:**
-    - `update(time)`: Uses delta-time for movement and "heartbeat" kicks.
-    - `drawFrame()`: Clears and redraws dynamic `Graphics` layers each frame.
-4.  **OBS Integration:** Always set `backgroundAlpha: 0` in the engine init to ensure the center of the circle is transparent for the camera feed.
+## Visual and Performance Guidance
 
-## Full Screen Background Architecture (Opaque)
+- Prefer typed interfaces for particles, mesh nodes, and projected geometry.
+- Avoid per-frame object churn where possible.
+- Use depth-aware alpha, size, and ordering for sphere/globe effects.
+- Keep resize behavior explicit; most scenes should recalculate layout from the current viewport.
+- Use filters and masks sparingly.
 
-Full screen backgrounds (e.g., `GenerativeScreen.ts`) are intended as the bottom layer of an OBS scene and are typically opaque.
+## Recent Project Context
 
-1.  **Engine Initialization:** In the entry point (e.g., `src/generative.ts`), set a specific `background` color (e.g., `0x11111b`) and omit `backgroundAlpha: 0` to ensure an opaque fill.
-2.  **Procedural Drawing:**
-    - Use a single `Graphics` object (e.g., `this.gfx`) added to the screen container.
-    - In `update(ticker)`, call `this.gfx.clear()` and redraw the entire simulation state.
-    - Utilize PixiJS 8's `stroke()` and `fill()` API for drawing primitives.
-3.  **State Management:**
-    - Maintain a collection of entities (e.g., `dots: Dot[]`) with properties like `history`, `angle`, `speed`, and `color`.
-    - Handle edge logic (e.g., spawning at random margins or wrapping) to ensure the background feels "alive" and continuous.
-4.  **Responsiveness:**
-    - Implement `resize(w, h)` to update internal width/height variables.
-    - Often re-initializes the simulation state (e.g., `_initDots()`) to ensure the distribution matches the new aspect ratio/resolution without stretching.
+As of `2026-04-24`, the latest effect work added and refined a new page called `wavy-planet-mesh`.
 
-## Engineering Standards
+### Files added
 
-- **Performance:** Avoid object allocation in `update()` loops. Reuse `Graphics` objects or use `ParticleContainer` for large counts.
-- **Transparency:** All screens should default to `backgroundAlpha: 0` unless specifically intended as an opaque background.
-- **Responsiveness:** Implement the `resize(w, h)` method to ensure visuals scale correctly to OBS canvas resolutions.
-- **Lifecycle Simulations:** For "living" backgrounds (e.g., Voronoi Stippling), use staggered initial ages and long lifespans (30s+) to avoid synchronized "mass death" events and maintain a calm ambient flow.
+- `src/app/screens/WavyPlanetMeshScreen.ts`
+- `src/wavy-planet-mesh.ts`
+- `wavy-planet-mesh.html`
+
+### Files updated
+
+- `vite.config.ts`
+- `map.html`
+
+### Feature summary
+
+The user asked for a rotating dotted-grid sphere with a connected mesh and a fluid, wavy surface, effectively a planet-like globe made of linked dots.
+
+The implementation:
+
+- builds a latitude/longitude mesh
+- projects it with perspective
+- connects adjacent points with depth-aware line rendering
+- draws dots at nodes
+- animates the surface with wave-based displacement
+
+### Follow-up refinement summary
+
+The next prompt asked for:
+
+- better wave motion
+- slower planet rotation
+- more realistic dot elevation
+
+The resulting changes in `WavyPlanetMeshScreen.ts` were:
+
+- slower rotation
+- slower, broader traveling swells instead of harsher oscillation
+- explicit `elevation` and `crest` values
+- radius deformation from local elevation
+- stronger coupling between wave relief and the mesh line rendering
+- dot size/glow/lift driven by elevation so crests read as physical rise
+
+If this page is touched again, keep that physical interpretation intact.
+
+## How To Respond To Similar Prompts
+
+- If the user asks for “a new page”, implement the full three-file page plus Vite/map integration.
+- If the user asks for a visual refinement, patch the existing screen math rather than creating a parallel version unless requested.
+- For globe, sphere, mesh, or fluid prompts, inspect nearby prior art in:
+  - `ParticleGlobeScreen`
+  - `DottedMeshScreen`
+  - `GeodesicSphereScreen`
+  - `WireframeIcosphereScreen`
+  - `WireframeSphereCamScreen`
+
+## Validation Expectations
+
+- Preferred checks:
+  - `npm run lint`
+  - `npm run build`
+- If dependencies are missing, report that directly.
+- Do not claim visual verification you did not perform.
+
+## Commit Guidance
+
+Use Conventional Commits when creating commits.
+
+Example:
+
+```text
+feat(mesh): add wavy planet sphere page
+```
