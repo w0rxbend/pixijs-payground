@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>STARTING SOON — Ancient Sigil</title>
+    <style>
+      @font-face {
+        font-family: "MonoLisa";
+        src:
+          local("MonoLisa"),
+          local("MonoLisa-Regular"),
+          url("/fonts/MonoLisa-Regular.woff2") format("woff2");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #020202;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "MonoLisa", "Courier New", Courier, monospace;
+      }
+
+      #obs-scene {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        perspective: 1200px;
+        overflow: hidden;
+        /* Hardware acceleration */
+        transform: translateZ(0);
+        will-change: transform;
+      }
+
+      svg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        pointer-events: none;
+      }
+
+      #sigil-container {
+        width: 600px;
+        height: 600px;
+        z-index: 2;
+        will-change: transform, opacity;
+      }
+
+      #text-container {
+        position: absolute;
+        bottom: 10%;
+        width: 100%;
+        height: 150px;
+        z-index: 5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        will-change: transform, opacity;
+      }
+
+      #text-svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .bg-rune {
+        fill: none;
+        will-change: transform, opacity;
+      }
+
+      .ember {
+        fill: url(#ember-grad);
+        will-change: transform, opacity;
+      }
+
+      #vignette {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 20;
+        pointer-events: none;
+        background: radial-gradient(
+          circle,
+          transparent 20%,
+          rgba(0, 0, 0, 0.6) 70%,
+          #000 100%
+        );
+      }
+
+      #grain-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 21;
+        opacity: 0.05;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="obs-scene">
+      <div id="vignette"></div>
+
+      <!-- Static Film Grain -->
+      <svg id="grain-overlay">
+        <filter id="grain">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.9"
+            numOctaves="3"
+            stitchTiles="stitch"
+          />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#grain)" />
+      </svg>
+
+      <!-- Atmosphere & Filters -->
+      <svg id="atmosphere-svg">
+        <defs>
+          <!-- Simplified filters for performance -->
+          <filter id="weathered-edge">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.05"
+              numOctaves="1"
+              result="warp"
+            />
+            <feDisplacementMap in="SourceGraphic" in2="warp" scale="3" />
+          </filter>
+
+          <filter
+            id="ancient-glow"
+            x="-20%"
+            y="-20%"
+            width="140%"
+            height="140%"
+          >
+            <!-- Lighter blur for glow -->
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+            <feColorMatrix
+              in="blur"
+              type="matrix"
+              values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 15 -5"
+              result="glow"
+            />
+            <feBlend in="SourceGraphic" in2="glow" mode="screen" />
+          </filter>
+
+          <linearGradient id="blood-ink" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color: #440000; stop-opacity: 1" />
+            <stop offset="50%" style="stop-color: #ff1100; stop-opacity: 1" />
+            <stop offset="100%" style="stop-color: #440000; stop-opacity: 1" />
+          </linearGradient>
+
+          <radialGradient id="ember-grad">
+            <stop offset="0%" style="stop-color: #ffbb00; stop-opacity: 1" />
+            <stop offset="100%" style="stop-color: #aa0000; stop-opacity: 0" />
+          </radialGradient>
+        </defs>
+        <g id="runes-group"></g>
+        <g id="embers-group"></g>
+      </svg>
+
+      <!-- The Pentagram Sigil -->
+      <svg id="sigil-container" viewBox="0 0 500 500">
+        <g
+          id="sigil-paths"
+          stroke="url(#blood-ink)"
+          fill="none"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            id="knot-circle"
+            d="M250,480c-126.5,0-230-103.5-230-230s103.5-230,230-230s230,103.5,230,230S376.5,480,250,480z"
+          />
+          <path
+            class="star-seg"
+            d="M269.458,168.295 254.677,157.561 381.412,65.483 307.271,293.624 289.005,293.624 348.333,110.983z"
+          />
+          <path
+            class="star-seg"
+            d="M331.136,243.449 336.777,226.074 463.512,318.152 223.626,318.139 217.982,300.768 410.017,300.752z"
+          />
+          <path
+            class="star-seg"
+            d="M278.699,325.342 296.966,325.338 248.558,474.325 174.442,246.175 189.219,235.439 248.576,418.071z"
+          />
+          <path
+            class="star-seg"
+            d="M184.583,300.792 190.233,318.165 33.579,318.165 227.66,177.174 242.436,187.911 87.085,300.798z"
+          />
+          <path
+            class="star-seg"
+            d="M178.868,203.711 164.091,214.453 115.683,65.465 309.747,206.479 304.102,223.849 148.733,110.987z"
+          />
+        </g>
+      </svg>
+
+      <!-- "Starting Soon" Text -->
+      <div id="text-container">
+        <svg id="text-svg" viewBox="0 0 1200 150">
+          <text
+            id="main-text"
+            x="50%"
+            y="90"
+            text-anchor="middle"
+            fill="none"
+            stroke="url(#blood-ink)"
+            stroke-width="1.8"
+            font-family="MonoLisa, monospace"
+            font-size="82"
+            letter-spacing="18"
+            style="filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.4))"
+          >
+            STARTING SOON
+          </text>
+        </svg>
+      </div>
+    </div>
+
+    <script type="module" src="/src/animated-lines.ts"></script>
+  </body>
+</html>
