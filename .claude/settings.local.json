@@ -31,7 +31,9 @@
       "Bash(npx vite *)",
       "Bash(xargs -n1 basename)",
       "Bash(identify /home/worxbend/Worxpace/obs-effects/raw-assets/main\\\\{m\\\\}/sprite-linux.png)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(identify /home/worxbend/Workspace/obs-effects/raw-assets/main\\\\{m\\\\}/cat-shape.png)",
+      "Bash(python3 -c \"from PIL import Image; img = Image.open\\('/home/worxbend/Workspace/obs-effects/raw-assets/main{m}/cat-shape.png'\\); print\\(img.size, img.mode\\)\")"
     ]
   }
 }

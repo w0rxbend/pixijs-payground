@@ -129,6 +129,7 @@ export default defineConfig({
         topography: resolve(__dirname, "topography.html"),
         dottedMesh: resolve(__dirname, "dotted-mesh.html"),
         wavyPlanetMesh: resolve(__dirname, "wavy-planet-mesh.html"),
+        catMesh: resolve(__dirname, "cat-mesh.html"),
         nightCityHorizon: resolve(__dirname, "night-city-horizon.html"),
         microbialColony: resolve(__dirname, "microbial-colony.html"),
         avatar: resolve(__dirname, "avatar.html"),
