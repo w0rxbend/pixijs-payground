@@ -49,7 +49,7 @@ function init() {
 
   // Initial states
   gsap.set([knotCircle, ...Array.from(starSegs)], { drawSVG: "0%" });
-  gsap.set(mainText, { drawSVG: "0%", opacity: 0 });
+  gsap.set(mainText, { opacity: 0, scale: 0.95 });
   gsap.set("#sigil-container", { scale: 0.8, opacity: 0 });
 
   // --- DRAWING AND ERASING LOOP ---
@@ -69,23 +69,21 @@ function init() {
       { duration: 2.5, drawSVG: "100%", stagger: 0.5, ease: "sine.inOut" },
       1.5,
     )
-    .to(mainText, { duration: 1, opacity: 1 }, "-=1.5")
-    .to(mainText, { duration: 4.5, drawSVG: "100%", ease: "power2.inOut" }, "<")
     .to(
       mainText,
-      { duration: 2, fill: "rgba(100, 0, 0, 0.4)", ease: "sine.inOut" },
-      "-=2",
+      {
+        duration: 4,
+        opacity: 1,
+        scale: 1,
+        ease: "power2.out",
+      },
+      "-=2.5",
     )
 
     .to({}, { duration: 5 }) // Hold peak
 
     // Erase
-    .to(mainText, { duration: 1.5, fill: "rgba(0,0,0,0)", ease: "sine.in" })
-    .to(
-      mainText,
-      { duration: 3.5, drawSVG: "0%", ease: "power2.inOut" },
-      "-=0.5",
-    )
+    .to(mainText, { duration: 2, opacity: 0, scale: 0.95, ease: "power2.in" })
     .to(
       starSegs,
       { duration: 2, drawSVG: "0%", stagger: -0.3, ease: "sine.inOut" },
