@@ -138,6 +138,7 @@ export default defineConfig({
         catCircleCam: resolve(__dirname, "cat-circle-cam.html"),
         animatedLines: resolve(__dirname, "animated-lines.html"),
         mountainNightRailway: resolve(__dirname, "mountain-night-railway.html"),
+        tuxBlob: resolve(__dirname, "tux-blob.html"),
       },
     },
   },
