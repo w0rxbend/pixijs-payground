@@ -140,6 +140,7 @@ export default defineConfig({
         mountainNightRailway: resolve(__dirname, "mountain-night-railway.html"),
         tuxBlob: resolve(__dirname, "tux-blob.html"),
         bioluminescentCell: resolve(__dirname, "bioluminescent-cell.html"),
+        metaBlobs: resolve(__dirname, "meta-blobs.html"),
       },
     },
   },
