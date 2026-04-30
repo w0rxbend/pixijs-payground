@@ -149,6 +149,7 @@ export default defineConfig({
           "amorphous-square-border.html",
         ),
         darkSunCam: resolve(__dirname, "dark-sun-cam.html"),
+        lavenderDashesCam: resolve(__dirname, "lavender-dashes-cam.html"),
       },
     },
   },
