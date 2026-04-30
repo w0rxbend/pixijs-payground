@@ -141,6 +141,7 @@ export default defineConfig({
         tuxBlob: resolve(__dirname, "tux-blob.html"),
         bioluminescentCell: resolve(__dirname, "bioluminescent-cell.html"),
         metaBlobs: resolve(__dirname, "meta-blobs.html"),
+        iridescentBlobs: resolve(__dirname, "iridescent-blobs.html"),
       },
     },
   },
