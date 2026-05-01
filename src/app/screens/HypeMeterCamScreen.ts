@@ -7,10 +7,13 @@ const SIZE = 600;
 const HOLE_R = 240;
 const RING_R = 294;
 
-// Neon color stops: calm → mid → hot
-const C_CALM = { r: 0x00, g: 0xcc, b: 0xff };
-const C_MID = { r: 0xaa, g: 0x00, b: 0xff };
-const C_HOT = { r: 0xff, g: 0x22, b: 0x00 };
+// Fraction of full-scale RMS below which audio is treated as silence.
+// Raise this if background noise triggers the effect unintentionally.
+const MIC_THRESHOLD = 0.22;
+
+// Catppuccin Mocha Teal (inactive gray-green) → toxic neon green (active)
+const C_INACTIVE = { r: 0x94, g: 0xe2, b: 0xd5 };
+const C_ACTIVE = { r: 0x39, g: 0xff, b: 0x14 };
 
 function lerpC(
   a: { r: number; g: number; b: number },
@@ -24,9 +27,7 @@ function lerpC(
 }
 
 function volumeColor(vol: number): number {
-  const v = Math.max(0, Math.min(1, vol));
-  if (v < 0.45) return lerpC(C_CALM, C_MID, v / 0.45);
-  return lerpC(C_MID, C_HOT, (v - 0.45) / 0.55);
+  return lerpC(C_INACTIVE, C_ACTIVE, Math.max(0, Math.min(1, vol)));
 }
 
 function lerp(a: number, b: number, t: number): number {
@@ -193,7 +194,7 @@ export class HypeMeterCamScreen extends Container {
   private prevVolume = 0;
 
   private analyser: AnalyserNode | null = null;
-  private audioData: Uint8Array | null = null;
+  private audioData: Uint8Array<ArrayBuffer> | null = null;
 
   private readonly particles: Spark[] = [];
 
@@ -220,7 +221,9 @@ export class HypeMeterCamScreen extends Container {
       this.analyser.fftSize = 512;
       this.analyser.smoothingTimeConstant = 0.5;
       src.connect(this.analyser);
-      this.audioData = new Uint8Array(this.analyser.frequencyBinCount);
+      this.audioData = new Uint8Array(
+        this.analyser.frequencyBinCount,
+      ) as Uint8Array<ArrayBuffer>;
     } catch {
       // No mic — idle animation runs at low volume
     }
@@ -244,7 +247,12 @@ export class HypeMeterCamScreen extends Container {
     this.time += dt;
 
     this.prevVolume = this.volume;
-    const raw = clamp(this.readRMS() * 4, 0, 1);
+    const rms = this.readRMS() * 4;
+    const raw = clamp(
+      rms < MIC_THRESHOLD ? 0 : (rms - MIC_THRESHOLD) / (1 - MIC_THRESHOLD),
+      0,
+      1,
+    );
     const rate = raw > this.volume ? 0.6 : 0.055;
     this.volume += (raw - this.volume) * rate;
 
@@ -378,7 +386,7 @@ export class HypeMeterCamScreen extends Container {
     for (const def of RINGS) {
       const col = volumeColor(clamp(vol + def.colBias, 0, 1));
       const pts = this.buildRing(def);
-      const glowW = def.glowWidth * (1 + vol * 0.4);
+      const glowW = def.glowWidth * (1 + vol * 0.9);
 
       // Outer halo
       gc.poly(pts, true).stroke({
@@ -404,11 +412,11 @@ export class HypeMeterCamScreen extends Container {
         cap: "round",
         join: "round",
       });
-      // Core line
+      // Core line — gets significantly bolder when audio activates
       gn.poly(pts, true).stroke({
         color: col,
-        width: def.coreWidth * (1 + vol * 0.6),
-        alpha: lerp(0.35, 0.9, vol) * def.coreAlphaMul,
+        width: def.coreWidth * (1 + vol * 3.0),
+        alpha: lerp(0.35, 0.95, vol) * def.coreAlphaMul,
         cap: "round",
         join: "round",
       });
@@ -424,22 +432,16 @@ export class HypeMeterCamScreen extends Container {
       }
     }
 
-    // ── Inner rim at hole edge ──────────────────────────────────────────────
-    const rimCol = volumeColor(clamp(vol - 0.15, 0, 1));
+    // ── Inner rim at hole edge — static bold black border ───────────────────
     gc.circle(0, 0, HOLE_R).stroke({
-      color: rimCol,
-      width: 30,
-      alpha: 0.05 + vol * 0.1,
-    });
-    gc.circle(0, 0, HOLE_R).stroke({
-      color: rimCol,
-      width: 3,
-      alpha: 0.2 + vol * 0.5,
+      color: 0x303446,
+      width: 12,
+      alpha: 0.45,
     });
     gn.circle(0, 0, HOLE_R).stroke({
-      color: 0xffffff,
-      width: 1,
-      alpha: lerp(0.06, 0.35, vol),
+      color: 0x303446,
+      width: 6,
+      alpha: 1.0,
     });
 
     // ── Particles ──────────────────────────────────────────────────────────
