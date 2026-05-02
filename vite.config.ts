@@ -159,6 +159,7 @@ export default defineConfig({
           __dirname,
           "main-audio-activated-border.html",
         ),
+        blobFaceCam: resolve(__dirname, "blob-face-cam.html"),
       },
     },
   },
