@@ -2,7 +2,7 @@
 
 A collection of GPU-accelerated PixiJS 8 overlays and animated screens for use as OBS Browser Sources. All screens render with a transparent background and are designed to layer over your stream.
 
-[live demo](http://130.61.92.255:8080/map.html)
+[live demo](https://obs-effects.worxbend.com/hype-meter-cam.html)
 
 ---
 
